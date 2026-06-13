@@ -1,8 +1,0 @@
-{
-  "title": "Series",
-  "description": "Gamma-compatible series discovery endpoints.",
-  "icon": "Layers3",
-  "pages": [
-    "list-series"
-  ]
-}

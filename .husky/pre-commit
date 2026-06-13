@@ -1,2 +1,0 @@
-npx knip --no-config-hints
-npx lint-staged
