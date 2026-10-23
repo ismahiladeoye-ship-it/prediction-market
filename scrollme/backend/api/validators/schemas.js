@@ -2,6 +2,9 @@ const mongoose = require('mongoose');
 const { z } = require('zod');
 const { COLLECTION_SLUGS } = require('../config/collections');
 
+// A missing value reads "Required" rather than zod 4's type error (applies to every schema).
+z.config({ customError: (issue) => (issue.code === 'invalid_type' && issue.input === undefined ? 'Required' : undefined) });
+
 const objectId = z.string().refine((v) => mongoose.isValidObjectId(v) && /^[a-f\d]{24}$/i.test(v), 'Invalid id');
 
 // bcrypt only uses the first 72 bytes, so longer passwords are rejected rather than silently truncated.
