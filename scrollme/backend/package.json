@@ -13,7 +13,9 @@
 		"lint:fix": "eslint . --fix",
 		"format": "prettier --write \"**/*.js\"",
 		"seed": "node scripts/seedDatabase.js",
-		"create-admin": "node scripts/createAdmin.js"
+		"create-admin": "node scripts/createAdmin.js",
+		"reset-mfa": "node scripts/resetMfa.js",
+		"dev-admin-code": "node scripts/devAdminCode.js"
 	},
 	"keywords": [],
 	"author": "",
@@ -32,6 +34,8 @@
 		"mongoose": "^8.24.6",
 		"multer": "^2.5.0",
 		"nodemailer": "^10.2.1",
+		"otpauth": "^9.5.2",
+		"qrcode-generator": "^2.0.4",
 		"sharp": "^0.35.5",
 		"stripe": "^17.7.0",
 		"zod": "^4.6.7"

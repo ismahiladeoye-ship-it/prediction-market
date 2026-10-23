@@ -5,6 +5,7 @@ const { fromCents } = require('../utils/money');
 const { getConfig } = require('../config/env');
 const { notFound, forbidden, conflict, badRequest } = require('../utils/httpError');
 const logger = require('../utils/logger');
+const { hasAdminAccess } = require('../middleware/authMiddleware');
 
 // `admin` adds internal notes; customers only learn that the order needs attention.
 const serializeOrder = (order, { admin = false } = {}) => {
@@ -51,7 +52,7 @@ const loadOwnOrder = async (req) => {
   const order = await Order.findById(req.params.orderId);
   if (!order) throw notFound('Order not found');
   const isOwner = order.userId.equals(req.user._id);
-  if (!isOwner && !req.user.isAdmin()) throw notFound('Order not found');
+  if (!isOwner && !hasAdminAccess(req)) throw notFound('Order not found');
   return order;
 };
 

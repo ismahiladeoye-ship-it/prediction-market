@@ -40,6 +40,16 @@ const API_PORT = Number(process.env.E2E_API_PORT || 8090);
   await mongoose.connection.db.dropDatabase();
   await seedProducts({ reset: true, limit: 400 });
   await seedUsers({ reset: true });
+  // An admin without two-factor, for the setup test.
+  const User = require(path.join(BACKEND, 'api/models/userModel'));
+  await User.create({
+    firstName: 'New',
+    lastName: 'Admin',
+    username: 'e2enewadmin',
+    email: 'newadmin@example.com',
+    password: 'Passw0rd!e2e',
+    roles: ['user', 'admin'],
+  });
 
   createApp().listen(API_PORT, () => console.log(`API on ${API_PORT}`));
   require('./static-server')(BUILD, API_PORT).listen(WEB_PORT, () => console.log(`Storefront on http://localhost:${WEB_PORT}`));

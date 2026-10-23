@@ -1,7 +1,7 @@
 const crypto = require('node:crypto');
 const User = require('../models/userModel');
 const { getConfig } = require('../config/env');
-const { REFRESH_COOKIE, setAuthCookies, clearAuthCookies, verifyRefreshToken } = require('../services/tokens');
+const { REFRESH_COOKIE, setAuthCookies, clearAuthCookies, verifyRefreshToken, setMfaPendingCookie, clearMfaPendingCookie } = require('../services/tokens');
 const mailer = require('../services/mailer');
 const googleAuth = require('../services/googleAuth');
 const { badRequest, unauthorized, conflict, HttpError } = require('../utils/httpError');
@@ -9,6 +9,17 @@ const logger = require('../utils/logger');
 
 // Real bcrypt hash of a random string, compared against when the user does not exist.
 const DUMMY_HASH = '$2b$12$QRwGchrL8LjfV4hGSmigAup8WIdSYopb8y.uAszQLu8qei1DpUXMK';
+
+// After a correct password (or Google): accounts with two-factor get a
+// short-lived "code needed" cookie instead of a session.
+const beginSession = (res, user, message) => {
+  if (user.mfa?.enabled) {
+    setMfaPendingCookie(res, user);
+    return res.status(200).json({ mfaRequired: true, message: 'Enter the 6-digit code from your authenticator app' });
+  }
+  setAuthCookies(res, user);
+  return res.status(200).json({ message, user: user.toPublicJSON() });
+};
 
 const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
 
@@ -34,9 +45,7 @@ exports.login = async (req, res) => {
   // Same message and a hash comparison either way, so responses do not reveal which usernames exist.
   const ok = user ? await user.comparePassword(password) : await User.hydrate({ password: DUMMY_HASH }).comparePassword(password);
   if (!user || !ok) throw unauthorized('Invalid username or password');
-
-  setAuthCookies(res, user);
-  res.status(200).json({ message: 'Logged in successfully', user: user.toPublicJSON() });
+  beginSession(res, user, 'Logged in successfully');
 };
 
 exports.logOut = async (req, res) => {
@@ -51,6 +60,7 @@ exports.logOut = async (req, res) => {
     }
   }
   clearAuthCookies(res);
+  clearMfaPendingCookie(res);
   res.status(200).json({ message: 'Logged out successfully' });
 };
 
@@ -69,7 +79,8 @@ exports.refreshToken = async (req, res) => {
     clearAuthCookies(res);
     throw unauthorized('Session has been revoked');
   }
-  setAuthCookies(res, user);
+  // A session keeps its two-factor status for as long as the account has it on.
+  setAuthCookies(res, user, { mfa: decoded.mfa === true && Boolean(user.mfa?.enabled) });
   res.status(200).json({ message: 'Tokens refreshed', user: user.toPublicJSON() });
 };
 
@@ -151,6 +162,5 @@ exports.googleLogin = async (req, res) => {
       authProvider: 'google',
     });
   }
-  setAuthCookies(res, user);
-  res.status(200).json({ message: 'Logged in successfully', user: user.toPublicJSON() });
+  beginSession(res, user, 'Logged in successfully');
 };

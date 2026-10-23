@@ -4,8 +4,12 @@ const { createApp } = require('../../api/app');
 const { resetConfig } = require('../../api/config/env');
 const User = require('../../api/models/userModel');
 const Product = require('../../api/models/productModel');
+const { encrypt, totp } = require('../../api/services/mfa');
 
 const STRONG_PASSWORD = 'Str0ng!Passw0rd';
+// Authenticator key given to test admins (admin features need two-factor).
+const TEST_MFA_SECRET = 'KRSXG5CTMVRXEZLUKRSXG5CTMVRXEZLU';
+const isAdminRole = (roles = []) => roles.some((r) => r === 'admin' || r === 'super_admin');
 
 // Connects to this file's database and returns helpers bound to a fresh app.
 const useTestApp = () => {
@@ -40,12 +44,18 @@ const createUser = async (overrides = {}) => {
   });
 };
 
-// Returns a supertest agent that keeps cookies, already signed in.
+// Returns a supertest agent that keeps cookies, already signed in. Admins get
+// two-factor set up and pass the code step, as in production.
 const signedInAgent = async (app, overrides = {}) => {
-  const user = await createUser(overrides);
+  const withMfa = isAdminRole(overrides.roles) && overrides.mfa === undefined;
+  const user = await createUser(withMfa ? { ...overrides, mfa: { enabled: true, secret: encrypt(TEST_MFA_SECRET), recoveryCodes: [] } } : overrides);
   const agent = request.agent(app);
   const res = await agent.post('/api/auth/login').send({ username: user.username, password: STRONG_PASSWORD });
   if (res.status !== 200) throw new Error(`login failed: ${res.status} ${JSON.stringify(res.body)}`);
+  if (res.body.mfaRequired) {
+    const verified = await agent.post('/api/auth/mfa/verify').send({ code: totp(TEST_MFA_SECRET).generate() });
+    if (verified.status !== 200) throw new Error(`two-factor failed: ${verified.status} ${JSON.stringify(verified.body)}`);
+  }
   return { agent, user };
 };
 
@@ -63,4 +73,4 @@ const createProduct = (overrides = {}) =>
     ...overrides,
   });
 
-module.exports = { useTestApp, createUser, signedInAgent, createProduct, STRONG_PASSWORD };
+module.exports = { useTestApp, createUser, signedInAgent, createProduct, STRONG_PASSWORD, TEST_MFA_SECRET };

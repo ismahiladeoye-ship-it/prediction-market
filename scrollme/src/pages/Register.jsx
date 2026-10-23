@@ -281,7 +281,10 @@ const Register = () => {
             </Button>
           </Form>
           <br></br>
-          <GoogleSignInButton onSuccess={() => navigate(redirectTo, { replace: true })} />
+          <GoogleSignInButton
+            onSuccess={() => navigate(redirectTo, { replace: true })}
+            onMfaRequired={() => navigate('/login', { state: { ...location.state, mfaPending: true } })}
+          />
         </Wrapper>
       </Container>
     </>

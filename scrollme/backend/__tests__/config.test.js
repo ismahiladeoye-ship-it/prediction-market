@@ -2,6 +2,8 @@ const { loadConfig } = require('../api/config/env');
 
 const base = { MONGODB_URI: 'mongodb://x/y', JWT_SECRET: 'a', REFRESH_TOKEN_SECRET: 'b' };
 const strong = (c) => c.repeat(40);
+// A valid production configuration to vary one setting at a time.
+const prod = { ...base, NODE_ENV: 'production', JWT_SECRET: strong('a'), REFRESH_TOKEN_SECRET: strong('b'), MFA_SECRET_KEY: strong('m') };
 
 describe('configuration', () => {
   it('fails fast when required variables are missing', () => {
@@ -13,10 +15,15 @@ describe('configuration', () => {
     expect(() => loadConfig({ ...base, NODE_ENV: 'production', JWT_SECRET: strong('a'), REFRESH_TOKEN_SECRET: strong('a') })).toThrow(/must differ/);
   });
 
+  it('requires its own strong key for two-factor secrets in production', () => {
+    expect(() => loadConfig({ ...prod, MFA_SECRET_KEY: undefined })).toThrow(/MFA_SECRET_KEY/);
+    expect(() => loadConfig({ ...prod, MFA_SECRET_KEY: 'short' })).toThrow(/MFA_SECRET_KEY/);
+    expect(() => loadConfig({ ...prod, MFA_SECRET_KEY: prod.JWT_SECRET })).toThrow(/MFA_SECRET_KEY/);
+    expect(loadConfig(prod).mfaKey).toHaveLength(32);
+  });
+
   it('refuses the mock payment provider in production', () => {
-    expect(() => loadConfig({ ...base, NODE_ENV: 'production', JWT_SECRET: strong('a'), REFRESH_TOKEN_SECRET: strong('b'), PAYMENT_PROVIDER: 'mock' })).toThrow(
-      /mock/
-    );
+    expect(() => loadConfig({ ...prod, PAYMENT_PROVIDER: 'mock' })).toThrow(/mock/);
   });
 
   it('defaults to a UK store: pounds, free delivery from £100, no express, UK addresses', () => {
@@ -39,7 +46,7 @@ describe('configuration', () => {
   });
 
   it('uses secure cookies by default in production', () => {
-    const c = loadConfig({ ...base, NODE_ENV: 'production', JWT_SECRET: strong('a'), REFRESH_TOKEN_SECRET: strong('b') });
+    const c = loadConfig(prod);
     expect(c.cookieSecure).toBe(true);
     expect(loadConfig(base).cookieSecure).toBe(false);
   });

@@ -69,7 +69,8 @@ const UserSlice = createSlice({
         state.error = null;
       })
       .addCase(userSignIn.fulfilled, (state, action) => {
-        applyUser(state, action.payload.user);
+        // Accounts with two-factor are not signed in until the code is checked.
+        if (action.payload.user) applyUser(state, action.payload.user);
         state.isFetching = false;
         state.authChecked = true;
       })

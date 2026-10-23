@@ -8,6 +8,8 @@ import { mobile, tablet } from '../responsive';
 import { useToast } from '@chakra-ui/react';
 import Logo from '../components/Logo';
 import GoogleSignInButton from '../components/GoogleSignInButton';
+import { verifyMfaAPI } from '../services/auth/authService';
+import { getErrorMessage } from '../api/client';
 
 const Container = styled.div`
   width: 100vw;
@@ -84,6 +86,23 @@ const Link = styled(RouterLink)`
   }
 `;
 
+const Hint = styled.p`
+  font-size: 14px;
+  margin: 12px 0 4px;
+  line-height: 1.5;
+`;
+
+const TextButton = styled.button`
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 5px 0;
+  font-size: 12px;
+  text-decoration: underline;
+  cursor: pointer;
+  color: inherit;
+`;
+
 const ErrorText = styled.p`
   color: #c53030;
   font-size: 14px;
@@ -98,6 +117,9 @@ const Login = () => {
   const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  // 'password', then 'code' for accounts with two-factor sign-in.
+  const [step, setStep] = useState(location.state?.mfaPending ? 'code' : 'password');
+  const [useRecoveryCode, setUseRecoveryCode] = useState(false);
   // Return to the page that required sign-in.
   const from = location.state?.from;
   const redirectTo = from ? `${from.pathname}${from.search || ''}` : '/';
@@ -114,6 +136,10 @@ const Login = () => {
     };
     try {
       const response = await dispatch(userSignIn(loginData)).unwrap();
+      if (response.mfaRequired) {
+        setStep('code');
+        return;
+      }
       await dispatch(startSession(response.user));
       toast({
         title: 'Login Successful',
@@ -136,6 +162,87 @@ const Login = () => {
       setSubmitting(false);
     }
   };
+
+  const handleCode = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSubmitting(true);
+    try {
+      const response = await verifyMfaAPI(e.target.code.value);
+      await dispatch(startSession(response.user));
+      if (response.recoveryCodesLeft !== undefined) {
+        toast({
+          title: `Recovery code used (${response.recoveryCodesLeft} left)`,
+          description: 'If you have lost your phone, set up a new authenticator in Admin → Security.',
+          status: 'warning',
+          duration: 10000,
+          isClosable: true,
+        });
+      }
+      navigate(redirectTo, { replace: true });
+    } catch (err) {
+      const message = getErrorMessage(err, 'That code is not right. Try again.');
+      setError(message);
+      // The password step has to be repeated once the 5-minute window has passed.
+      if (/timed out/i.test(message)) setStep('password');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (step === 'code') {
+    return (
+      <Container>
+        <Wrapper>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold' }}>
+            <Logo />
+          </div>
+          <br />
+          <Title>TWO-STEP VERIFICATION</Title>
+          <Form onSubmit={handleCode}>
+            <Hint>
+              {useRecoveryCode
+                ? 'Enter one of the recovery codes you saved when you set up two-factor sign-in. Each code works once.'
+                : 'Enter the 6-digit code from your authenticator app.'}
+            </Hint>
+            <Input
+              key={useRecoveryCode ? 'recovery' : 'app'}
+              name='code'
+              placeholder={useRecoveryCode ? 'XXXXX-XXXXX' : '123456'}
+              aria-label={useRecoveryCode ? 'Recovery code' : 'Authentication code'}
+              inputMode={useRecoveryCode ? 'text' : 'numeric'}
+              autoComplete='one-time-code'
+              maxLength={useRecoveryCode ? 20 : 7}
+              autoFocus
+              required
+            />
+            {error && <ErrorText role='alert'>{error}</ErrorText>}
+            <Button type='submit' disabled={submitting}>
+              {submitting ? 'CHECKING…' : 'VERIFY'}
+            </Button>
+            <TextButton
+              type='button'
+              onClick={() => {
+                setUseRecoveryCode((r) => !r);
+                setError('');
+              }}
+            >
+              {useRecoveryCode ? 'Use my authenticator app instead' : 'Use a recovery code instead'}
+            </TextButton>
+            <TextButton
+              type='button'
+              onClick={() => {
+                setStep('password');
+                setError('');
+              }}
+            >
+              Back to sign in
+            </TextButton>
+          </Form>
+        </Wrapper>
+      </Container>
+    );
+  }
 
   return (
     <Container>
@@ -164,7 +271,7 @@ const Login = () => {
             CREATE A NEW ACCOUNT
           </Link>
         </Form>
-        <GoogleSignInButton onSuccess={() => navigate(redirectTo, { replace: true })} />
+        <GoogleSignInButton onSuccess={() => navigate(redirectTo, { replace: true })} onMfaRequired={() => setStep('code')} />
       </Wrapper>
     </Container>
   );

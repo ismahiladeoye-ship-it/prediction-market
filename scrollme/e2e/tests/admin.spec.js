@@ -1,6 +1,6 @@
 const path = require('node:path');
 const { test, expect } = require('@playwright/test');
-const { login, chooseSize, ADMIN, findProduct, fillAddress } = require('./helpers');
+const { login, chooseSize, ADMIN, NEW_ADMIN, totpCode, findProduct, fillAddress } = require('./helpers');
 
 // Real JPEGs, made with the API's own image library.
 const sharp = require(path.resolve(__dirname, '../../backend/node_modules/sharp'));
@@ -105,5 +105,44 @@ test.describe('administration', () => {
       .getByRole('img', { name: `E2E Relaxed Tracksuit ${sku}` })
       .evaluate((img) => img.complete && img.naturalWidth > 0);
     expect(loaded).toBe(true);
+  });
+
+  test('a new admin must set up two-factor, and can sign in with a recovery code', async ({ page, browser }) => {
+    await login(page, NEW_ADMIN);
+    await page.goto('/admin');
+    await expect(page.getByRole('heading', { name: 'Turn on two-factor sign-in' })).toBeVisible();
+    await expect(page.getByRole('navigation', { name: 'Admin sections' })).toHaveCount(0);
+    await expect(page.getByAltText('QR code for your authenticator app')).toBeVisible();
+
+    // Scan-free: type the key into "the app".
+    const secret = (await page.locator('code').first().textContent()).replace(/\s/g, '');
+    await page.getByLabel('Code from your authenticator app').fill(totpCode(secret));
+    await page.getByRole('button', { name: 'Turn on' }).click();
+
+    await expect(page.getByRole('heading', { name: 'Save your recovery codes' })).toBeVisible();
+    const codes = await page.getByLabel('Recovery codes').locator('code').allTextContents();
+    expect(codes).toHaveLength(10);
+    const proceed = page.getByRole('button', { name: 'Continue' });
+    await expect(proceed).toBeDisabled();
+    await page.getByText('I have saved my recovery codes').click();
+    await proceed.click();
+
+    await expect(page.getByRole('navigation', { name: 'Admin sections' })).toBeVisible();
+    await page.getByRole('navigation', { name: 'Admin sections' }).getByRole('link', { name: 'Security' }).click();
+    await expect(page.getByText('Recovery codes left: 10')).toBeVisible();
+
+    // Signing in on another device needs the second step; a recovery code works once.
+    const other = await browser.newPage();
+    await other.goto('/login');
+    await other.getByLabel('Username or email').fill(NEW_ADMIN.username);
+    await other.getByLabel('Password').fill(NEW_ADMIN.password);
+    await other.getByRole('button', { name: 'LOGIN' }).click();
+    await expect(other.getByLabel('Authentication code')).toBeVisible();
+    await other.getByRole('button', { name: 'Use a recovery code instead' }).click();
+    await other.getByLabel('Recovery code').fill(codes[0]);
+    await other.getByRole('button', { name: 'VERIFY' }).click();
+    await expect(other).not.toHaveURL(/\/login$/);
+    await other.goto('/admin/security');
+    await expect(other.getByText('Recovery codes left: 9')).toBeVisible();
   });
 });

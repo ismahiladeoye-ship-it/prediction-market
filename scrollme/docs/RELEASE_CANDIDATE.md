@@ -7,11 +7,11 @@ Branch `claude/scrollme-ecommerce-phases-cwocsl`. Baseline: the original code im
 | Check | Result |
 | --- | --- |
 | API lint (ESLint + Prettier) | ✅ clean |
-| API tests (Jest + Supertest, real MongoDB) | ✅ **110 / 110** — in-memory MongoDB and an external MongoDB (as CI uses) |
+| API tests (Jest + Supertest, real MongoDB) | ✅ **121 / 121** — in-memory MongoDB and an external MongoDB (as CI uses) |
 | Storefront lint + Prettier check | ✅ clean (the original failed Prettier in 28 files) |
 | Storefront unit tests | ✅ **24 / 24** (the original suite could not run) |
 | Storefront production build | ✅ compiles; no inline scripts (CSP-safe) |
-| End-to-end browser tests (Playwright, desktop + phone) | ✅ **20 / 20** (one phone-only test is skipped in the desktop browser) against the real API, a seeded database and the production build |
+| End-to-end browser tests (Playwright, desktop + phone) | ✅ **21 / 21** (one phone-only test is skipped in the desktop browser) against the real API, a seeded database and the production build |
 | Full purchase through nginx with production headers | ✅ 17 steps, 0 CSP violations, 0 console/page errors, 0 px horizontal overflow at 390 px |
 | nginx config (`nginx -t`) and headers | ✅ CSP, HSTS, X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy on pages; `no-store` + API CSP on `/api`; immutable caching on assets |
 | Backup → restore drill | ✅ counts identical after restore into a separate database; tampered archive rejected |
@@ -80,6 +80,7 @@ New screens (checkout, payment sheet, orders, account, admin) reuse the original
 - **Collections and newsletter**: products are grouped into four collections (`backend/api/config/collections.js`); footer sign-ups are stored and admins can export them from `GET /api/newsletter`.
 - **Placeholder content to replace**: `storeConfig` in `src/data.js` holds the location ("United Kingdom"), empty social links (icons are hidden until set), contact email and the *We'll source it* section (remove it with `feature: null` if the store does not take sourcing requests); the About page copy is a starting point.
 - **Home product rows** show each collection's best-rated items in stock (by rating, not sales, so they are not labelled "best sellers"); repeated catalogue listings are shown once. Shortcuts and collections are set in `storeConfig.homeCollections`.
+- **Admin two-factor sign-in** (added at the owner's request): admins need an authenticator-app code after their password; new admins set it up on their first visit to `/admin` and save ten recovery codes. Production needs `MFA_SECRET_KEY` ([DEPLOYMENT.md](DEPLOYMENT.md#2-environment-variables)); lost phones are handled as in [OPERATIONS.md](OPERATIONS.md#admin-two-factor-sign-in). Customer accounts are unchanged, but deploying this version signs everyone out once (session tokens gained a type check).
 - **Renamed to Get It Sourced** at the owner's request: wordmark, page title, footer, FAQ, emails and order numbers (`GIS-…`). Internal identifiers (folder, database name, CI) keep `scrollme`.
 - **Contributors page removed** at the owner's request (page, GitHub data hook, footer link, CSP allowance for api.github.com). `/contributors` now shows the empty category page.
 - **Newsletter / contact forms** still only show a confirmation (as in the original); no backend exists for them.

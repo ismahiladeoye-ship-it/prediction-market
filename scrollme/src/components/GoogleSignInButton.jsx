@@ -31,7 +31,8 @@ const GoogleButton = styled.button`
 `;
 
 // Renders nothing when Google sign-in is not configured.
-const GoogleSignInButton = ({ onSuccess }) => {
+// onMfaRequired: the account has two-factor, so the code step comes next.
+const GoogleSignInButton = ({ onSuccess, onMfaRequired }) => {
   const dispatch = useDispatch();
   const toast = useToast();
   const [busy, setBusy] = useState(false);
@@ -41,7 +42,11 @@ const GoogleSignInButton = ({ onSuccess }) => {
     setBusy(true);
     try {
       const idToken = await getGoogleIdToken();
-      const { user } = await googleSignInAPI(idToken);
+      const { user, mfaRequired } = await googleSignInAPI(idToken);
+      if (mfaRequired) {
+        onMfaRequired?.();
+        return;
+      }
       await dispatch(startSession(user));
       toast({
         title: 'Google Login Successful',

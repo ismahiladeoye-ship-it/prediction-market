@@ -205,6 +205,9 @@ describe('checkout (mock provider)', () => {
     const { body } = await owner.agent.post('/api/orders').send({ shippingAddress: address });
     expect((await admin.agent.get(`/api/orders/${body.order.id}`)).status).toBe(200);
     expect((await admin.agent.post(`/api/orders/${body.order.id}/pay`).send({})).status).toBe(403);
+    // An admin who has not passed two-factor sign-in cannot see customers' orders.
+    const noMfa = await signedInAgent(ctx.app, { roles: ['user', 'admin'], mfa: { enabled: false } });
+    expect((await noMfa.agent.get(`/api/orders/${body.order.id}`)).status).toBe(404);
     expect((await owner.agent.post(`/api/orders/${body.order.id}/pay`).send({})).status).toBe(200);
   });
 

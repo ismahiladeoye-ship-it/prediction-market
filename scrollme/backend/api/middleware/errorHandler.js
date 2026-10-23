@@ -9,7 +9,9 @@ const notFoundHandler = (req, res) => {
 // eslint-disable-next-line no-unused-vars
 const errorHandler = (err, req, res, next) => {
   if (err instanceof HttpError) {
-    return res.status(err.status).json({ message: err.message, ...(err.details ? { details: err.details } : {}) });
+    return res
+      .status(err.status)
+      .json({ message: err.message, ...(err.details ? { details: err.details } : {}), ...(err.reason ? { reason: err.reason } : {}) });
   }
   if (err instanceof mongoose.Error.CastError) {
     return res.status(404).json({ message: 'Not found' });

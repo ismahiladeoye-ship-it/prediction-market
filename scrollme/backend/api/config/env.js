@@ -1,3 +1,4 @@
+const crypto = require('node:crypto');
 const path = require('node:path');
 const { z } = require('zod');
 
@@ -50,6 +51,8 @@ const schema = z.object({
   SMTP_URL: z.string().optional(),
   MAIL_FROM: z.string().default('Get It Sourced <no-reply@getitsourced.com>'),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error', 'silent']).default('info'),
+  // Encrypts admins' two-factor secrets in the database (required in production).
+  MFA_SECRET_KEY: z.string().optional(),
   // Where uploaded product photos are stored (a persistent volume in production).
   UPLOAD_DIR: z.string().default(path.resolve(__dirname, '../../uploads')),
 });
@@ -76,6 +79,9 @@ function loadConfig(source = process.env) {
     if (env.JWT_SECRET === env.REFRESH_TOKEN_SECRET) {
       throw new Error('Invalid configuration:\n  - JWT_SECRET and REFRESH_TOKEN_SECRET must differ');
     }
+    if (!env.MFA_SECRET_KEY || env.MFA_SECRET_KEY.length < 32 || [env.JWT_SECRET, env.REFRESH_TOKEN_SECRET].includes(env.MFA_SECRET_KEY)) {
+      throw new Error('Invalid configuration:\n  - MFA_SECRET_KEY must be its own random value of at least 32 characters in production');
+    }
     if (env.PAYMENT_PROVIDER === 'mock') {
       throw new Error('Invalid configuration:\n  - PAYMENT_PROVIDER=mock is not allowed in production');
     }
@@ -91,6 +97,11 @@ function loadConfig(source = process.env) {
     isProd,
     isTest: env.NODE_ENV === 'test',
     paymentMethods: [...new Set(env.PAYMENT_METHODS.split(',').map((m) => m.trim()))].filter((m) => PAYMENT_METHOD_IDS.includes(m)),
+    // 32-byte AES key for two-factor secrets; outside production it may be derived from JWT_SECRET.
+    mfaKey: crypto
+      .createHash('sha256')
+      .update(env.MFA_SECRET_KEY || `mfa-dev:${env.JWT_SECRET}`)
+      .digest(),
     shipToCountries: [...new Set(env.SHIP_TO_COUNTRIES.split(',').map((c) => c.trim().toUpperCase()))],
     clientOrigins: env.CLIENT_ORIGINS.split(',')
       .map((o) => o.trim())

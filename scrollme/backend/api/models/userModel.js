@@ -48,6 +48,16 @@ const UserSchema = new Schema({
     expiresAt: { type: Date, select: false },
   },
   authProvider: { type: String, enum: ['password', 'google'], default: 'password' },
+  // Two-factor sign-in (authenticator app); required for admins. Secrets are
+  // AES-GCM encrypted (services/mfa.js); recovery codes are stored hashed.
+  mfa: {
+    enabled: { type: Boolean, default: false },
+    enabledAt: Date,
+    secret: { type: String, select: false },
+    pendingSecret: { type: String, select: false },
+    lastStep: { type: Number, select: false },
+    recoveryCodes: { type: [String], select: false },
+  },
   created: {
     type: Date,
     default: Date.now,
@@ -84,6 +94,7 @@ UserSchema.methods.toPublicJSON = function () {
     username: this.username,
     email: this.email,
     roles: this.roles,
+    mfaEnabled: Boolean(this.mfa?.enabled),
   };
 };
 

@@ -16,7 +16,8 @@ export const setSessionExpiredHandler = (handler) => {
   onSessionExpired = handler;
 };
 
-const NO_RETRY = [AUTH_ENDPOINTS.REFRESH, AUTH_ENDPOINTS.SIGN_IN, AUTH_ENDPOINTS.SIGN_UP, AUTH_ENDPOINTS.LOGOUT];
+// A 401 from these means wrong details, not an expired session.
+const NO_RETRY = [AUTH_ENDPOINTS.REFRESH, AUTH_ENDPOINTS.SIGN_IN, AUTH_ENDPOINTS.SIGN_UP, AUTH_ENDPOINTS.LOGOUT, AUTH_ENDPOINTS.MFA_VERIFY];
 
 client.interceptors.response.use(
   (response) => response,

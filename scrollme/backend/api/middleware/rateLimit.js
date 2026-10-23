@@ -20,7 +20,14 @@ const loginAccountLimiter = make({
   skipSuccessfulRequests: true,
   keyGenerator: (req) => `login:${String(req.body?.username || '').toLowerCase()}`,
 });
+// Two-factor codes: 5 wrong tries per account per 15 minutes.
+const mfaAccountLimiter = make({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  skipSuccessfulRequests: true,
+  keyGenerator: (req) => `mfa:${req.mfaUser?._id}`,
+});
 const checkoutLimiter = make({ windowMs: 10 * 60 * 1000, limit: 30 });
 const apiLimiter = make({ windowMs: 60 * 1000, limit: 300 });
 
-module.exports = { authLimiter, loginAccountLimiter, checkoutLimiter, apiLimiter };
+module.exports = { authLimiter, loginAccountLimiter, mfaAccountLimiter, checkoutLimiter, apiLimiter };

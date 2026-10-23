@@ -49,6 +49,14 @@ const login = z.object({
 const forgotPassword = z.object({ email: z.string().trim().toLowerCase().email('Please enter a valid email address') });
 const resetPassword = z.object({ token: z.string().regex(/^[a-f0-9]{64}$/, 'Invalid or expired reset link'), password });
 const googleLogin = z.object({ idToken: z.string().min(20).max(5000) });
+// A 6-digit authenticator code or a recovery code; spaces are ignored.
+const mfaCode = z.object({
+  code: z
+    .string()
+    .max(40)
+    .transform((v) => v.replace(/\s+/g, ''))
+    .refine((v) => v.length >= 6, 'Enter the code from your authenticator app'),
+});
 
 const sortValues = ['newest', 'price_asc', 'price_desc', 'rating', 'name'];
 const productListQuery = z.object({
@@ -187,6 +195,7 @@ module.exports = {
   forgotPassword,
   resetPassword,
   googleLogin,
+  mfaCode,
   productListQuery,
   cartAdd,
   cartUpdate,

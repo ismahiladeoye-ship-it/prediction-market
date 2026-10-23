@@ -17,7 +17,7 @@ Use a managed MongoDB 7 (e.g. MongoDB Atlas) or the `mongo` service in `docker-c
 - Enable provider backups **and** schedule `scripts/backup.sh` (see [OPERATIONS.md](OPERATIONS.md)).
 - If you run MongoDB yourself (e.g. the `mongo` service in `docker-compose.yml`), enable authentication and put the credentials in `MONGODB_URI`; see the [security audit](security/SECURITY_AUDIT.md) for other hardening notes.
 - Set `MONGODB_URI=mongodb+srv://USER:PASSWORD@cluster.example.net/scrollme?retryWrites=true&w=majority`.
-- Load the catalogue once: `docker compose run --rm api npm run seed -- --force` (catalogue only; demo users are never created in production). Create the first administrator with `npm run create-admin`.
+- Load the catalogue once: `docker compose run --rm api npm run seed -- --force` (catalogue only; demo users are never created in production). Create the first administrator with `npm run create-admin`; on their first visit to `/admin` they set up two-factor sign-in with an authenticator app (admin pages stay locked until they do).
 
 ## 2. Environment variables
 
@@ -28,6 +28,7 @@ API (`backend/.env`, from `backend/.env.example`):
 | `NODE_ENV` | `production` |
 | `MONGODB_URI` | production connection string |
 | `JWT_SECRET`, `REFRESH_TOKEN_SECRET` | two different random values, ≥ 32 chars: `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` |
+| `MFA_SECRET_KEY` | a third random value (same command). Encrypts admins' two-factor secrets; the API will not start in production without it. Back it up with your other secrets and do not change it (see [OPERATIONS.md](OPERATIONS.md#admin-two-factor-sign-in)) |
 | `APP_URL` | public storefront URL, e.g. `https://shop.example.com` (payment return links, emails) |
 | `CLIENT_ORIGINS` | same origin, e.g. `https://shop.example.com` |
 | `TRUST_PROXY` | number of proxies in front of the API (`1` for nginx only, `2` with a load balancer in front of nginx) |

@@ -26,6 +26,7 @@ const LazyAdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const LazyAdminProducts = lazy(() => import('./pages/admin/AdminProducts'));
 const LazyAdminOrders = lazy(() => import('./pages/admin/AdminOrders'));
 const LazyAdminImport = lazy(() => import('./pages/admin/AdminImport'));
+const LazyAdminSecurity = lazy(() => import('./pages/admin/AdminSecurity'));
 
 const protect = (element, adminOnly = false) => <ProtectedRoute adminOnly={adminOnly}>{element}</ProtectedRoute>;
 
@@ -58,6 +59,7 @@ function App() {
             <Route path='products' element={<LazyAdminProducts />} />
             <Route path='orders' element={<LazyAdminOrders />} />
             <Route path='import' element={<LazyAdminImport />} />
+            <Route path='security' element={<LazyAdminSecurity />} />
           </Route>
           <Route path='/products' element={<LazyAllProducts />} />
           <Route path='/collections/:slug' element={<LazyCollectionProducts />} />

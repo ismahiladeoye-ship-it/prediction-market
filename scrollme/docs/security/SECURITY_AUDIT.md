@@ -83,4 +83,14 @@ None of the remaining 38 storefront advisories are in code sent to browsers. The
 
 ## Secrets
 
-No Stripe keys, webhook secrets, database passwords, JWT secrets or private keys are in the code or the git history. Secrets are read from environment variables, and the API refuses to start in production with weak or shared JWT secrets, the mock payment provider, or a live Stripe key that has not been explicitly allowed.
+No Stripe keys, webhook secrets, database passwords, JWT secrets or private keys are in the code or the git history. Secrets are read from environment variables, and the API refuses to start in production with weak or shared JWT secrets, a missing or weak `MFA_SECRET_KEY`, the mock payment provider, or a live Stripe key that has not been explicitly allowed.
+
+## After the audit: two-factor sign-in for admins
+
+Added at the owner's request (not a finding above; admin passwords were already hashed with bcrypt and rate limited). Admin accounts now need an authenticator-app code (TOTP, RFC 6238) after the password:
+
+- `/api/admin/*` and the original product-write endpoints require two-factor to be set up on the account **and** completed in the current session (an `mfa` claim in the signed session tokens, kept on refresh). A password alone, a password reset or Google sign-in only gets as far as a 5-minute, separately signed `mfaPending` cookie that is accepted nowhere else; session tokens carry a `typ` claim so one kind cannot stand in for another.
+- Authenticator secrets are encrypted with AES-256-GCM under `MFA_SECRET_KEY` (required in production, distinct from the JWT secrets). Recovery codes (10, single use) are stored as SHA-256 hashes; codes are random, from a 32-character alphabet, 50 bits each.
+- Each 6-digit code is accepted once (the last used time step is stored and claimed atomically, so parallel replays fail); ±30 s clock drift is allowed. Wrong codes are limited to 5 per 15 minutes per account, on top of the per-IP sign-in limit.
+- Turning it on, or moving to a new phone, signs the account out everywhere else. Lost phone and codes: `npm run reset-mfa` on the server (see OPERATIONS.md).
+- Covered by `backend/__tests__/mfa.test.js` (10 tests) and an end-to-end test of a new admin's setup and recovery-code sign-in.
