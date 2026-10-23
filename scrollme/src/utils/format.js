@@ -22,7 +22,7 @@ export const ORDER_STATUS_LABELS = {
 
 export const ORDER_STATUS_COLORS = {
   pending_payment: 'orange',
-  paid: 'teal',
+  paid: 'green',
   processing: 'blue',
   shipped: 'purple',
   delivered: 'green',

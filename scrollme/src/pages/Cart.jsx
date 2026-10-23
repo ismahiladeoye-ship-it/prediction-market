@@ -25,7 +25,12 @@ const Wrapper = styled.div`
 `;
 
 const Title = styled.h1`
-  font-weight: 300;
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  font-size: clamp(44px, 10vw, 72px);
   text-align: center;
 `;
 
@@ -39,16 +44,19 @@ const Top = styled.div`
 `;
 
 const TopButton = styled.button`
-  padding: 10px;
-  font-weight: 600;
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.08em;
   cursor: pointer;
+  border: 1.5px solid var(--ink);
+  background-color: ${(props) => (props.type === 'filled' ? 'var(--ink)' : 'transparent')};
+  color: ${(props) => (props.type === 'filled' ? 'white' : 'var(--ink)')};
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
   }
-  border: ${(props) => props.type === 'filled' && 'none'};
-  background-color: ${(props) => (props.type === 'filled' ? 'black' : 'transparent')};
-  color: ${(props) => props.type === 'filled' && 'white'};
 `;
 
 const TopTexts = styled.div`
@@ -94,9 +102,8 @@ const Product = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
-  padding: 6px;
-  border-radius: 2px;
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0;
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -115,6 +122,8 @@ const ProductDetail = styled.div`
 
 const Image = styled.img`
   width: 150px;
+  border-radius: 12px;
+  background: var(--soft);
   @media (max-width: 768px) {
     width: 150px;
   }
@@ -155,8 +164,8 @@ const PriceDetail = styled.div`
 `;
 
 const ProductPrice = styled.div`
-  font-size: 30px;
-  font-weight: 200;
+  font-size: 20px;
+  font-weight: 700;
 `;
 
 const Hr = styled.hr`
@@ -181,8 +190,13 @@ const Summary = styled.div`
   }
 `;
 
-const SummaryTitle = styled.h1`
-  font-weight: 200;
+const SummaryTitle = styled.h2`
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  font-size: 36px;
 `;
 
 const SummaryItem = styled.div`
@@ -199,7 +213,10 @@ const SummaryItemPrice = styled.span``;
 
 const Button = styled.button`
   width: 100%;
-  padding: 10px;
+  height: 52px;
+  border-radius: 999px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
   background-color: black;
   color: white;
   font-weight: 600;
@@ -216,7 +233,7 @@ const EmptyState = styled.p`
   font-size: 18px;
   font-weight: 300;
   a {
-    color: teal;
+    color: var(--accent);
     text-decoration: underline;
   }
 `;
@@ -255,7 +272,7 @@ const Cart = () => {
         toast({
           position: 'bottom-right',
           render: () => (
-            <Box color='white' p={1} bg='teal.500' borderRadius='xs'>
+            <Box color='white' p={1} bg='gray.900' borderRadius='xs'>
               Quantity updated!
             </Box>
           ),
@@ -319,8 +336,8 @@ const Cart = () => {
 
   return (
     <Container>
-      <Navbar />
       <Announcement />
+      <Navbar />
       <Wrapper>
         <Title>YOUR BAG</Title>
         <Top>
@@ -341,7 +358,7 @@ const Cart = () => {
           <Info>
             {status === 'loading' && isEmpty && (
               <Box w='100%' textAlign='center' py={10}>
-                <Spinner size='lg' color='teal' />
+                <Spinner size='lg' color='gray.900' />
               </Box>
             )}
             {status !== 'loading' && isEmpty && (
@@ -446,7 +463,8 @@ const Actions = styled.div`
   display: flex;
   gap: 16px;
   font-size: 12px;
-  color: #007bff;
+  color: var(--muted);
+  text-decoration: underline;
   cursor: pointer;
 
   span {

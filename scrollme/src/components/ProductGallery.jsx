@@ -1,24 +1,32 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import ProductCard from './ProductCard';
-import { listCategoriesAPI, listProductsAPI } from '../services/products/productService';
+import styled from 'styled-components';
+import ProductTile from './ProductTile';
+import { listCategoriesAPI, listCollectionsAPI, listProductsAPI } from '../services/products/productService';
 import { getErrorMessage } from '../api/client';
 import { humanize } from '../utils/format';
-import {
-  Box,
-  Button,
-  Checkbox,
-  Flex,
-  Heading,
-  HStack,
-  Input,
-  InputGroup,
-  InputLeftAddon,
-  Select,
-  SimpleGrid,
-  Spinner,
-  Text,
-} from '@chakra-ui/react';
+import { Box, Button, Checkbox, Flex, HStack, Input, InputGroup, InputLeftAddon, Select, Spinner, Text } from '@chakra-ui/react';
+
+const Title = styled.h1`
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: clamp(44px, 10vw, 80px);
+  line-height: 1;
+  padding: 32px 16px 8px;
+  text-align: center;
+  word-break: break-word;
+`;
+
+const Grid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px 12px;
+  @media (min-width: 900px) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 32px 20px;
+  }
+`;
 
 const PAGE_SIZE = 40;
 const SORTS = [
@@ -32,7 +40,7 @@ const SORTS = [
 // Catalogue grid. All filters live in the URL so results can be shared,
 // bookmarked and restored with the Back button. `category` fixes the category
 // (used by the /:categorySlug pages).
-const ProductGallery = ({ category: fixedCategory, title }) => {
+const ProductGallery = ({ category: fixedCategory, collection, title, notFound = false }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [data, setData] = useState({ products: [], totalPages: 0, totalProducts: 0 });
   const [categories, setCategories] = useState([]);
@@ -64,10 +72,15 @@ const ProductGallery = ({ category: fixedCategory, title }) => {
     setLoading(true);
     setError(null);
     try {
+      if (notFound) {
+        setData({ products: [], totalPages: 0, totalProducts: 0 });
+        return;
+      }
       const response = await listProductsAPI({
         page,
         limit: PAGE_SIZE,
         q,
+        collection,
         category,
         sort,
         minPrice,
@@ -80,18 +93,20 @@ const ProductGallery = ({ category: fixedCategory, title }) => {
     } finally {
       setLoading(false);
     }
-  }, [page, q, category, sort, minPrice, maxPrice, inStock]);
+  }, [page, q, collection, category, sort, minPrice, maxPrice, inStock, notFound]);
 
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
 
+  // Category choices: every category, or only those inside the current collection.
   useEffect(() => {
     if (fixedCategory) return;
-    listCategoriesAPI()
-      .then(setCategories)
-      .catch(() => setCategories([]));
-  }, [fixedCategory]);
+    const load = collection
+      ? listCollectionsAPI().then((all) => (all.find((c) => c.slug === collection)?.categories || []).map((slug) => ({ slug })))
+      : listCategoriesAPI();
+    load.then(setCategories).catch(() => setCategories([]));
+  }, [fixedCategory, collection]);
 
   const goToPage = (p) => {
     updateParams({ page: p > 1 ? p : '' }, false);
@@ -108,10 +123,8 @@ const ProductGallery = ({ category: fixedCategory, title }) => {
 
   return (
     <React.Fragment>
-      <Heading as='h2' size='lg' p={4}>
-        {heading}
-      </Heading>
-      <Box p={4} bg='#f5fafd' minHeight='100vh'>
+      <Title>{heading}</Title>
+      <Box px={{ base: 4, md: 8 }} py={4} minHeight='60vh'>
         <Flex as='section' aria-label='Filters' gap={3} wrap='wrap' align='flex-end' mb={6}>
           {!fixedCategory && (
             <Box minW={{ base: '100%', sm: '200px' }}>
@@ -122,7 +135,8 @@ const ProductGallery = ({ category: fixedCategory, title }) => {
                 <option value=''>All categories</option>
                 {categories.map((c) => (
                   <option key={c.slug} value={c.slug}>
-                    {humanize(c.slug)} ({c.count})
+                    {humanize(c.slug)}
+                    {c.count !== undefined ? ` (${c.count})` : ''}
                   </option>
                 ))}
               </Select>
@@ -168,12 +182,12 @@ const ProductGallery = ({ category: fixedCategory, title }) => {
                 aria-label='Maximum price'
               />
             </InputGroup>
-            <Button type='submit' colorScheme='teal' variant='outline'>
+            <Button type='submit' colorScheme='brand' variant='outline'>
               Apply
             </Button>
           </HStack>
           <Checkbox
-            colorScheme='teal'
+            colorScheme='brand'
             isChecked={inStock}
             onChange={(e) => updateParams({ inStock: e.target.checked ? 'true' : '' })}
             pb={2}
@@ -181,7 +195,7 @@ const ProductGallery = ({ category: fixedCategory, title }) => {
             In stock only
           </Checkbox>
           {hasFilters && (
-            <Button variant='link' colorScheme='teal' pb={2} onClick={() => setSearchParams(new URLSearchParams())}>
+            <Button variant='link' colorScheme='brand' pb={2} onClick={() => setSearchParams(new URLSearchParams())}>
               Clear filters
             </Button>
           )}
@@ -202,7 +216,7 @@ const ProductGallery = ({ category: fixedCategory, title }) => {
         ) : data.products.length === 0 ? (
           <Box textAlign='center' mt={10}>
             <Text fontSize='xl' fontWeight={600}>
-              No products found
+              {notFound ? 'This collection does not exist' : 'No products found'}
             </Text>
             <Text mt={2} color='gray.600'>
               Try a different search or remove some filters.
@@ -213,11 +227,11 @@ const ProductGallery = ({ category: fixedCategory, title }) => {
             <Text mb={4} color='gray.600' fontSize='sm'>
               {data.totalProducts.toLocaleString()} products
             </Text>
-            <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={4} justifyItems='center' alignItems='center' gap={6}>
+            <Grid>
               {data.products.map((product) => (
-                <ProductCard product={product} key={product._id} />
+                <ProductTile product={product} key={product._id} />
               ))}
-            </SimpleGrid>
+            </Grid>
           </>
         )}
 

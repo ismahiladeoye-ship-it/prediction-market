@@ -13,11 +13,11 @@ const Card = ({ label, value, to }) => (
     bg='white'
     borderRadius='lg'
     boxShadow='0 2px 10px rgba(0,0,0,0.08)'
-    _hover={to ? { boxShadow: '0 2px 14px rgba(0,128,128,0.25)' } : undefined}
+    _hover={to ? { boxShadow: '0 2px 14px rgba(0,0,0,0.18)' } : undefined}
   >
     <Stat>
       <StatLabel color='gray.600'>{label}</StatLabel>
-      <StatNumber color='teal'>{value}</StatNumber>
+      <StatNumber color='gray.900'>{value}</StatNumber>
     </Stat>
   </Box>
 );
@@ -33,7 +33,7 @@ const AdminDashboard = () => {
   }, []);
 
   if (error) return <Text color='red.500'>{error}</Text>;
-  if (!stats) return <Spinner color='teal' />;
+  if (!stats) return <Spinner color='gray.900' />;
 
   return (
     <>

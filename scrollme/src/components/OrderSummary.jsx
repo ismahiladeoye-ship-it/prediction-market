@@ -9,9 +9,13 @@ const Summary = styled.div`
   height: fit-content;
 `;
 
-const SummaryTitle = styled.h1`
-  font-weight: 200;
-  font-size: 2em;
+const SummaryTitle = styled.h2`
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  font-size: 36px;
 `;
 
 const SummaryItem = styled.div`

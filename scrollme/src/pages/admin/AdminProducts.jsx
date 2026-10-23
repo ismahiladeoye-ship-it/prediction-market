@@ -105,7 +105,7 @@ const AdminProducts = () => {
             maxW='280px'
             bg='white'
           />
-          <Button type='submit' variant='outline' colorScheme='teal'>
+          <Button type='submit' variant='outline' colorScheme='brand'>
             Search
           </Button>
         </HStack>
@@ -118,13 +118,13 @@ const AdminProducts = () => {
           <option value=''>Any stock</option>
           <option value='true'>Low stock (≤ 5)</option>
         </Select>
-        <Button colorScheme='teal' ml={{ md: 'auto' }} onClick={() => openEditor(null)}>
+        <Button colorScheme='brand' ml={{ md: 'auto' }} onClick={() => openEditor(null)}>
           New product
         </Button>
       </Flex>
 
       {error && <Text color='red.500'>{error}</Text>}
-      {!data && !error && <Spinner color='teal' />}
+      {!data && !error && <Spinner color='gray.900' />}
       {data && (
         <>
           <Text fontSize='sm' color='gray.600' mb={2}>
@@ -165,7 +165,7 @@ const AdminProducts = () => {
                         {p.stock}
                       </Text>
                     </Td>
-                    <Td>{p.isActive ? <Badge colorScheme='teal'>Visible</Badge> : <Badge>Hidden</Badge>}</Td>
+                    <Td>{p.isActive ? <Badge colorScheme='brand'>Visible</Badge> : <Badge>Hidden</Badge>}</Td>
                     <Td>
                       <HStack spacing={1}>
                         <Button size='xs' onClick={() => openEditor(p)}>
@@ -186,7 +186,7 @@ const AdminProducts = () => {
                         ) : (
                           <Button
                             size='xs'
-                            colorScheme='teal'
+                            colorScheme='brand'
                             variant='outline'
                             onClick={() => act(() => updateProductAPI(p._id, { isActive: true }), 'Product visible')}
                           >

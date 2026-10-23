@@ -12,13 +12,13 @@ test.describe('accounts', () => {
     await page.getByLabel('Password', { exact: true }).fill('Str0ng!Passw0rd');
     await page.getByLabel('Confirm password').fill('Str0ng!Passw0rd');
     await page.getByRole('button', { name: 'CREATE' }).click();
-    await expect(page.getByRole('link', { name: 'ACCOUNT', exact: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Account', exact: true })).toBeVisible();
 
     await page.reload();
-    await expect(page.getByRole('link', { name: 'ACCOUNT', exact: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Account', exact: true })).toBeVisible();
 
-    await page.getByRole('button', { name: 'LOG OUT' }).click();
-    await expect(page.getByRole('link', { name: 'SIGN IN', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Log out' }).click();
+    await expect(page.getByRole('link', { name: 'Log in', exact: true })).toBeVisible();
     // The server session is gone too: a protected page sends us to sign in.
     await page.goto('/account');
     await expect(page).toHaveURL(/\/login$/);

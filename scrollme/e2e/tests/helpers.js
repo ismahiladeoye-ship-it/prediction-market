@@ -8,7 +8,12 @@ const login = async (page, { username, password } = SEEDED) => {
   await page.getByLabel('Username or email').fill(username);
   await page.getByLabel('Password').fill(password);
   await page.getByRole('button', { name: 'LOGIN' }).click();
-  await expect(page.getByRole('link', { name: 'ACCOUNT', exact: true })).toBeVisible();
+  await expect(page).not.toHaveURL(/\/login$/);
+};
+
+// Sizes are buttons with role="radio" on the product page.
+const chooseSize = async (page, size) => {
+  await page.getByRole('radiogroup', { name: 'Size' }).getByRole('radio', { name: size, exact: true }).click();
 };
 
 // An in-stock product from the seeded catalogue, via the public API.
@@ -27,4 +32,4 @@ const fillAddress = async (page) => {
   await page.getByLabel('Country').selectOption('GB');
 };
 
-module.exports = { SEEDED, ADMIN, login, findProduct, fillAddress };
+module.exports = { SEEDED, ADMIN, login, chooseSize, findProduct, fillAddress };

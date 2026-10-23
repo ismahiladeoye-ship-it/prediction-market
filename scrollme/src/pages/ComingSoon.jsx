@@ -64,7 +64,7 @@ const NotifyButton = styled.button`
   padding: 10px 20px;
   font-size: 1rem;
   color: #fff;
-  background-color: teal;
+  background-color: var(--accent);
   border: none;
   border-radius: 30px;
   cursor: pointer;

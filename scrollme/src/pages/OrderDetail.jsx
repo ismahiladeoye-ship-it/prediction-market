@@ -107,12 +107,12 @@ const OrderDetail = () => {
 
   return (
     <div>
-      <Navbar />
       <Announcement />
+      <Navbar />
       <Wrapper>
         {!order && !error && (
           <Box textAlign='center' py={20}>
-            <Spinner size='xl' color='teal' />
+            <Spinner size='xl' color='gray.900' />
           </Box>
         )}
         {error && (
@@ -120,7 +120,7 @@ const OrderDetail = () => {
             <Title>{error === 'not_found' ? 'Order not found' : 'Something went wrong'}</Title>
             {error !== 'not_found' && <p>{error}</p>}
             <p>
-              <Link to='/account' style={{ color: 'teal', textDecoration: 'underline' }}>
+              <Link to='/account' style={{ color: 'var(--accent)', textDecoration: 'underline' }}>
                 View your orders
               </Link>
             </p>
@@ -259,8 +259,12 @@ const Wrapper = styled.div`
 `;
 
 const Title = styled.h1`
-  font-weight: 300;
-  font-size: 2em;
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  font-size: clamp(36px, 8vw, 60px);
   text-align: center;
   word-break: break-word;
 `;
@@ -310,7 +314,7 @@ const Address = styled.p`
 `;
 
 const Timeline = styled.ol`
-  border-left: 2px solid teal;
+  border-left: 2px solid var(--accent);
   padding-left: 14px;
   li {
     margin-bottom: 10px;
@@ -325,7 +329,9 @@ const Timeline = styled.ol`
 
 const Button = styled.button`
   width: 100%;
-  padding: 10px;
+  height: 52px;
+  border-radius: 999px;
+  letter-spacing: 0.08em;
   background-color: black;
   color: white;
   font-weight: 600;

@@ -20,3 +20,8 @@ export const getProductByIdAPI = async (productId) => {
   const response = await client.get(PRODUCT_ENDPOINTS.GET_PRODUCT_BY_ID(productId));
   return response.data;
 };
+
+export const listCollectionsAPI = async () => {
+  const response = await client.get(PRODUCT_ENDPOINTS.COLLECTIONS);
+  return response.data.collections;
+};

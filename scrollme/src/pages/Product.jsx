@@ -1,14 +1,13 @@
 import styled from 'styled-components';
 import Navbar from '../components/Navbar';
 import Announcement from '../components/Announcement';
-import Newsletter from '../components/Newsletter';
 import { mobile, tablet } from '../responsive';
 import { Link as RouterLink, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import Footer from '../components/Footer';
 import { getProductByIdAPI } from '../services/products/productService';
-import { renderStars } from '../components/ProductCard';
+import { renderStars } from '../components/Stars';
 import { capitalizeFirstChar } from '../utils/stringUtils';
 import { Box, ButtonSpinner, Text } from '@chakra-ui/react';
 import { useToast } from '@chakra-ui/react';
@@ -158,8 +157,8 @@ const Product = () => {
   if (loading || error) {
     return (
       <Container>
-        <Navbar />
         <Announcement />
+        <Navbar />
         <Box
           display='flex'
           flexDirection='column'
@@ -178,7 +177,7 @@ const Product = () => {
                 Product not found
               </Text>
               <Text color='gray.600'>It may have been removed or is no longer available.</Text>
-              <RouterLink to='/products' style={{ color: 'teal', textDecoration: 'underline' }}>
+              <RouterLink to='/products' style={{ color: 'var(--accent)', textDecoration: 'underline' }}>
                 Browse all products
               </RouterLink>
             </>
@@ -194,8 +193,8 @@ const Product = () => {
   }
   return (
     <Container>
-      <Navbar />
       <Announcement />
+      <Navbar />
       <Wrapper>
         <ImgContainer>
           {product && <Image src={imageSrc(product?.imageUrl)} alt={product?.name} onClick={handleImageClick} onError={onImageError} />}
@@ -210,7 +209,11 @@ const Product = () => {
               isInWishlist={isProductInWishlist}
               onClick={handleWishlistToggle}
             >
-              {!isProductInWishlist ? <FavoriteBorderIcon style={{ color: 'teal' }} /> : <FavoriteIcon style={{ color: 'teal' }} />}
+              {!isProductInWishlist ? (
+                <FavoriteBorderIcon style={{ color: 'var(--accent)' }} />
+              ) : (
+                <FavoriteIcon style={{ color: 'var(--accent)' }} />
+              )}
             </HeartIcon>
           </Flex>
           <ProductRating>
@@ -233,21 +236,27 @@ const Product = () => {
             )}
             {needsSize && (
               <Filter>
-                <FilterTitle>Size</FilterTitle>
-                <FilterSize value={size} onChange={(e) => setSize(e.target.value)} aria-label='Size'>
-                  <FilterSizeOption value=''>Select</FilterSizeOption>
+                <FilterTitle $block>Size</FilterTitle>
+                <SizePills role='radiogroup' aria-label='Size'>
                   {product.sizes.map((s) => (
-                    <FilterSizeOption key={s} value={s}>
+                    <SizePill
+                      key={s}
+                      type='button'
+                      role='radio'
+                      aria-checked={size === s}
+                      $selected={size === s}
+                      onClick={() => setSize(s)}
+                    >
                       {s}
-                    </FilterSizeOption>
+                    </SizePill>
                   ))}
-                </FilterSize>
+                </SizePills>
               </Filter>
             )}
           </FilterContainer>
           <AddContainer>
             <ActionButtons>
-              <Button onClick={handleAddToCart} disabled={outOfStock || adding}>
+              <Button $primary onClick={handleAddToCart} disabled={outOfStock || adding}>
                 {outOfStock ? 'OUT OF STOCK' : 'ADD TO CART'}
               </Button>
               <Button onClick={handleBuyNow} disabled={outOfStock || adding}>
@@ -261,7 +270,6 @@ const Product = () => {
           </ProductDetails>
         </InfoContainer>
       </Wrapper>
-      <Newsletter />
       <Footer />
       {modalOpen && (
         <Modal onClick={closeModal}>
@@ -290,35 +298,38 @@ const Flex = styled.div`
 `;
 
 const Wrapper = styled.div`
-  padding: 50px;
   display: flex;
   justify-content: flex-start;
   align-items: flex-start;
-  ${mobile({ flexDirection: 'column;' })}
-  ${mobile({ padding: '10px;' })}
-    ${tablet({ padding: '10px;' })}
+  gap: 32px;
+  padding: 40px 32px;
+  ${tablet({ padding: '24px 16px' })}
+  ${mobile({ flexDirection: 'column', padding: '16px', gap: '20px' })}
 `;
 
 const ImgContainer = styled.div`
   flex: 1;
-  width: 200px;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
 `;
 
 const Image = styled.img`
-  width: fit-content;
-  height: 64vh;
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  max-height: 78vh;
   object-fit: contain;
-  margin-inline: auto;
-  ${mobile({ height: '40vh;' })}
-  ${mobile({ width: '100%;' })}
-    ${tablet({ height: '40vh;' })}
-    ${tablet({ width: '100%;' })}
-    object-position: center;
+  border-radius: var(--radius);
+  background: white;
+  border: 1px solid var(--line);
+  cursor: zoom-in;
 `;
 
 const InfoContainer = styled.div`
   flex: 1;
-  padding: 0px 50px;
+  min-width: 0;
+  padding: 0px 24px;
   justify-content: flex-start;
   align-items: flex-start;
   ${mobile({ padding: '4px;' })}
@@ -326,8 +337,12 @@ const InfoContainer = styled.div`
 `;
 
 const Title = styled.h1`
-  font-weight: 500;
-  font-size: 24px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: clamp(38px, 8vw, 60px);
+  line-height: 1;
+  letter-spacing: 0.01em;
 `;
 
 const ProductRating = styled.div`
@@ -352,24 +367,24 @@ const ProductStar = styled.div`
 const ProductReview = styled.p`
   font-size: 14px;
   font-weight: 400;
-  color: #2c90d7;
+  color: var(--muted);
 `;
 
 const Desc = styled.p`
-  margin: 10px 0px;
-  font-size: 18px;
-  font-weight: 400;
+  margin: 14px 0px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--muted);
 `;
 
 const Price = styled.span`
-  font-weight: 200;
-  font-size: 40px;
+  font-weight: 700;
+  font-size: 26px;
 `;
 
 const FilterContainer = styled.div`
-  width: 50%;
-  ${mobile({ width: '100%' })}
-  margin: 30px 0px;
+  width: 100%;
+  margin: 26px 0px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -379,11 +394,17 @@ const FilterContainer = styled.div`
 const Filter = styled.div`
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
 `;
 
 const FilterTitle = styled.span`
-  font-size: 20px;
-  font-weight: 200;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  min-width: 64px;
+  width: ${({ $block }) => ($block ? '100%' : 'auto')};
 `;
 
 const FilterColor = styled.div`
@@ -396,16 +417,30 @@ const FilterColor = styled.div`
   cursor: pointer;
 `;
 
-const FilterSize = styled.select`
-  margin-left: 10px;
-  padding: 5px;
+const SizePills = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 `;
 
-const FilterSizeOption = styled.option``;
+const SizePill = styled.button`
+  min-width: 52px;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1.5px solid ${({ $selected }) => ($selected ? 'var(--ink)' : 'var(--line)')};
+  background: ${({ $selected }) => ($selected ? 'var(--ink)' : 'white')};
+  color: ${({ $selected }) => ($selected ? 'white' : 'var(--ink)')};
+  font-weight: 600;
+  cursor: pointer;
+  &:hover {
+    border-color: var(--ink);
+  }
+`;
 
 const AddContainer = styled.div`
-  width: 80%;
-  ${mobile({ width: '100%' })}
+  width: 100%;
+  max-width: 480px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -414,29 +449,31 @@ const AddContainer = styled.div`
 `;
 
 const ActionButtons = styled.div`
+  width: 100%;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
   gap: 12px;
-  ${mobile({ width: '100%' })}
 `;
 
 const Button = styled.button`
-  width: 200px;
-  ${mobile({ width: 'auto', flex: 1, minWidth: 0 })}
-  padding: 15px;
-  border: 2px solid teal;
-  background-color: white;
+  width: 100%;
+  height: 56px;
+  border-radius: 999px;
+  border: 1.5px solid var(--ink);
+  background-color: ${({ $primary }) => ($primary ? 'var(--ink)' : 'white')};
+  color: ${({ $primary }) => ($primary ? 'white' : 'var(--ink)')};
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   &:hover {
-    background-color: #f8f4f4;
+    opacity: 0.88;
   }
   &:disabled {
     border-color: #ccc;
-    color: #999;
+    background-color: ${({ $primary }) => ($primary ? '#ccc' : 'white')};
+    color: ${({ $primary }) => ($primary ? 'white' : '#999')};
     cursor: not-allowed;
-    background-color: white;
+    opacity: 1;
   }
 `;
 
@@ -444,7 +481,7 @@ const StockInfo = styled.p`
   margin-top: 10px;
   font-size: 14px;
   font-weight: 500;
-  color: ${({ low }) => (low ? 'red' : 'teal')};
+  color: ${({ low }) => (low ? 'var(--sale)' : 'var(--ink)')};
 `;
 
 const ColorName = styled.span`

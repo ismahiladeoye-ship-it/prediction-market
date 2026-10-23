@@ -95,3 +95,32 @@ describe('product catalogue', () => {
     expect(hidden.body.totalProducts).toBe(0);
   });
 });
+
+describe('collections', () => {
+  beforeEach(async () => {
+    await createProduct({ name: 'Runner Sneaker', category: 'sports-shoes', ratings: { numberOfReviews: 50 } });
+    await createProduct({ name: 'Leather Boot', category: 'boots' });
+    await createProduct({ name: 'Logo Tee', category: 'tshirts' });
+    await createProduct({ name: 'Eau de Parfum', category: 'perfume-and-body-mist' });
+    await createProduct({ name: 'Throw Pillow', category: 'pillows' });
+  });
+
+  it('filters products by collection and narrows by category inside it', async () => {
+    const footwear = await request(ctx.app).get('/api/product/list?collection=footwear&sort=name');
+    expect(footwear.body.products.map((p) => p.name)).toEqual(['Leather Boot', 'Runner Sneaker']);
+    const boots = await request(ctx.app).get('/api/product/list?collection=footwear&category=boots');
+    expect(boots.body.totalProducts).toBe(1);
+    const outside = await request(ctx.app).get('/api/product/list?collection=footwear&category=tshirts');
+    expect(outside.body.totalProducts).toBe(0);
+    expect((await request(ctx.app).get('/api/product/list?collection=homeware')).status).toBe(400);
+  });
+
+  it('lists collections with counts and a cover image', async () => {
+    const res = await request(ctx.app).get('/api/product/collections');
+    const bySlug = Object.fromEntries(res.body.collections.map((c) => [c.slug, c]));
+    expect(Object.keys(bySlug)).toEqual(['clothing', 'footwear', 'accessories', 'fragrances']);
+    expect(bySlug.footwear).toMatchObject({ title: 'Footwear', count: 2, imageUrl: 'https://example.com/shirt.jpg' });
+    expect(bySlug.fragrances.count).toBe(1);
+    expect(bySlug.accessories).toMatchObject({ count: 0, imageUrl: null });
+  });
+});

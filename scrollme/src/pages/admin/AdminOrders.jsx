@@ -80,7 +80,7 @@ const OrderDrawer = ({ orderId, onClose, onChanged }) => {
         <DrawerHeader>{order ? `Order ${order.orderNumber}` : 'Order'}</DrawerHeader>
         <DrawerBody>
           {!order ? (
-            <Spinner color='teal' />
+            <Spinner color='gray.900' />
           ) : (
             <Box fontSize='sm'>
               <HStack mb={3} wrap='wrap'>
@@ -147,7 +147,7 @@ const OrderDrawer = ({ orderId, onClose, onChanged }) => {
                         Reserved stock is returned automatically. Refunds must also be issued in the payment provider&apos;s dashboard.
                       </Text>
                     )}
-                    <Button colorScheme='teal' onClick={save} isDisabled={!status} isLoading={saving}>
+                    <Button colorScheme='brand' onClick={save} isDisabled={!status} isLoading={saving}>
                       Save
                     </Button>
                   </>
@@ -220,7 +220,7 @@ const AdminOrders = () => {
             maxW='280px'
             bg='white'
           />
-          <Button type='submit' variant='outline' colorScheme='teal'>
+          <Button type='submit' variant='outline' colorScheme='brand'>
             Search
           </Button>
         </HStack>
@@ -234,7 +234,7 @@ const AdminOrders = () => {
         </Select>
       </Flex>
       {error && <Text color='red.500'>{error}</Text>}
-      {!data && !error && <Spinner color='teal' />}
+      {!data && !error && <Spinner color='gray.900' />}
       {data && data.orders.length === 0 && <Text color='gray.600'>No orders found.</Text>}
       {data && data.orders.length > 0 && (
         <TableContainer bg='white' borderRadius='md' boxShadow='0 2px 10px rgba(0,0,0,0.06)'>

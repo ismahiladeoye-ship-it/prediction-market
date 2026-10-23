@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { login, ADMIN, findProduct, fillAddress } = require('./helpers');
+const { login, chooseSize, ADMIN, findProduct, fillAddress } = require('./helpers');
 
 test.describe('administration', () => {
   test('customers cannot open admin pages or call admin APIs', async ({ page }) => {
@@ -16,7 +16,7 @@ test.describe('administration', () => {
     const customer = await browser.newPage();
     await login(customer);
     await customer.goto(`/${product.category}/${product._id}`);
-    if (product.sizes.length) await customer.getByLabel('Size').selectOption(product.sizes[0]);
+    if (product.sizes.length) await chooseSize(customer, product.sizes[0]);
     await customer.getByRole('button', { name: 'BUY NOW' }).click();
     await expect(customer).toHaveURL(/\/checkout$/);
     await fillAddress(customer);

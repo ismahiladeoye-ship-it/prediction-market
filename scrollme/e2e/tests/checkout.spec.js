@@ -1,9 +1,9 @@
 const { test, expect } = require('@playwright/test');
-const { login, findProduct, fillAddress } = require('./helpers');
+const { login, chooseSize, findProduct, fillAddress } = require('./helpers');
 
 const addToCart = async (page, product) => {
   await page.goto(`/${product.category}/${product._id}`);
-  if (product.sizes.length) await page.getByLabel('Size').selectOption(product.sizes[0]);
+  if (product.sizes.length) await chooseSize(page, product.sizes[0]);
   await page.getByRole('button', { name: 'ADD TO CART' }).click();
   await expect(page.getByText('Product added to cart.')).toBeVisible();
 };

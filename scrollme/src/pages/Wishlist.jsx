@@ -12,7 +12,7 @@ import { formatPrice } from '../utils/format';
 import { imageSrc, onImageError } from '../utils/imageFallback';
 
 const Container = styled.div`
-  margin-top: 100px;
+  margin-top: 16px;
   padding: 20px;
   display: flex;
   flex-wrap: wrap;
@@ -125,8 +125,9 @@ const Wishlist = () => {
 
   return (
     <>
-      <Navbar />
       <Announcement />
+      <Navbar />
+      <PageTitle>Wishlist</PageTitle>
       <Container>
         {wishlistItems?.length > 0 ? (
           wishlistItems?.map((product) => (
@@ -156,6 +157,17 @@ const Wishlist = () => {
     </>
   );
 };
+
+const PageTitle = styled.h1`
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  font-size: clamp(44px, 10vw, 72px);
+  text-align: center;
+  margin-top: 40px;
+`;
 
 const Unavailable = styled.p`
   margin-top: auto;

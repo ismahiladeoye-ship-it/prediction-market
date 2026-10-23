@@ -116,8 +116,8 @@ const Checkout = () => {
   if (loaded && cart.items.length === 0) {
     return (
       <Container>
-        <Navbar />
         <Announcement />
+        <Navbar />
         <Wrapper>
           <Title>CHECKOUT</Title>
           <EmptyState>
@@ -147,8 +147,8 @@ const Checkout = () => {
 
   return (
     <Container>
-      <Navbar />
       <Announcement />
+      <Navbar />
       <Wrapper>
         <Title>CHECKOUT</Title>
         <Bottom as='form' onSubmit={handleSubmit} noValidate>
@@ -226,7 +226,7 @@ const Checkout = () => {
           </Info>
           <Side>
             {!loaded ? (
-              <Spinner color='teal' />
+              <Spinner color='gray.900' />
             ) : (
               <OrderSummary summary={cart.summary} compact>
                 <Button type='submit' disabled={submitting || cart.issues.length > 0 || cart.items.length === 0}>
@@ -265,9 +265,13 @@ const Wrapper = styled.div`
 `;
 
 const Title = styled.h1`
-  font-weight: 300;
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  font-size: clamp(44px, 10vw, 72px);
   text-align: center;
-  font-size: 2em;
   margin-bottom: 20px;
 `;
 
@@ -352,14 +356,14 @@ const Option = styled.label`
   align-items: center;
   gap: 10px;
   padding: 12px;
-  border: 1px solid ${(props) => (props.selected ? 'teal' : '#ddd')};
+  border: 1px solid ${(props) => (props.selected ? 'var(--accent)' : '#ddd')};
   border-radius: 6px;
   cursor: pointer;
   span {
     flex: 1;
   }
   input {
-    accent-color: teal;
+    accent-color: var(--accent);
   }
 `;
 
@@ -398,7 +402,9 @@ const ItemPrice = styled.span`
 
 const Button = styled.button`
   width: 100%;
-  padding: 10px;
+  height: 52px;
+  border-radius: 999px;
+  letter-spacing: 0.08em;
   background-color: black;
   color: white;
   font-weight: 600;
@@ -425,7 +431,7 @@ const PaymentCard = styled.button`
     flex: 1;
   }
   &:hover {
-    border-color: teal;
+    border-color: var(--accent);
   }
 `;
 
@@ -469,7 +475,7 @@ const EmptyState = styled.p`
   font-size: 18px;
   font-weight: 300;
   a {
-    color: teal;
+    color: var(--accent);
     text-decoration: underline;
   }
 `;

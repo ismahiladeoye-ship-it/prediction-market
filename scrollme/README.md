@@ -13,8 +13,8 @@
 
 ## Features
 
-- [x] **Original ScrollMe look, Get It Sourced name**: Urbanist type, teal identity, two-tone wordmark, original pages and assets, now responsive on phones, tablets and desktops.
-- [x] **Catalogue**: 24k products in 278 real categories; search, category pages, price/stock filters, sorting, pagination.
+- [x] **Streetwear storefront design**: monochrome black-and-white look, condensed display headings, rotating announcement bar, hero carousel, shop-by-collection, phone menu drawer, scrolling-brand footer with newsletter sign-up; responsive on phones, tablets and desktops. Edit text, images and links in `src/data.js` (`storeConfig`) and colours/fonts in `src/styles/global.css`.
+- [x] **Catalogue**: 24k products in 278 real categories grouped into Clothing, Footwear, Accessories and Fragrances collections; search, collection and category pages, price/stock filters, sorting, pagination.
 - [x] **Accounts**: registration, login, logout, refresh tokens in httpOnly cookies, password reset, optional Google sign-in.
 - [x] **Wishlist**: saved per account (guest wishlists are merged on sign-in).
 - [x] **Cart**: sizes, stock checks; prices, tax and delivery always computed on the server.
@@ -63,9 +63,9 @@ With `PAYMENT_PROVIDER=mock` the payment step opens a local **test-mode** page f
 
 | Suite | Command | What it covers |
 | --- | --- | --- |
-| API | `cd backend && npm test` | 86 tests on a real MongoDB: auth, permissions, catalogue, cart pricing, checkout, stock, payments/webhooks, admin, wishlist, HTTP hardening |
+| API | `cd backend && npm test` | 91 tests on a real MongoDB: auth, permissions, catalogue and collections, cart pricing, checkout, stock, payments/webhooks, admin, wishlist, newsletter, HTTP hardening |
 | Storefront unit | `npm run test:ci` | 24 tests: route guards, payment sheet, gallery states, cart/wishlist state, validation |
-| End-to-end | `npm run build && cd e2e && npm install && npx playwright test` | 18 browser tests (desktop + phone) against the real API, database and production build |
+| End-to-end | `npm run build && cd e2e && npm install && npx playwright test` | 19 browser tests (desktop + phone) against the real API, database and production build |
 | Lint/format | `npm run lint && npm run lint-check`, `cd backend && npm run lint` | |
 
 CI runs all of the above plus Docker image builds: [.github/workflows/scrollme.yml](../.github/workflows/scrollme.yml).

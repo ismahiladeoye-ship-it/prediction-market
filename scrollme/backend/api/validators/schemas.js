@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { z } = require('zod');
+const { COLLECTION_SLUGS } = require('../config/collections');
 
 const objectId = z.string().refine((v) => mongoose.isValidObjectId(v) && /^[a-f\d]{24}$/i.test(v), 'Invalid id');
 
@@ -59,6 +60,7 @@ const productListQuery = z.object({
     .regex(/^[a-z0-9-]*$/, 'Invalid category')
     .optional(),
   brand: z.string().trim().max(60).optional(),
+  collection: z.enum(COLLECTION_SLUGS, { message: 'Unknown collection' }).optional(),
   minPrice: z.coerce.number().min(0).optional(),
   maxPrice: z.coerce.number().min(0).optional(),
   inStock: z.enum(['true', 'false']).optional(),

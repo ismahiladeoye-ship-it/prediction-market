@@ -11,7 +11,7 @@ const Container = styled.div`
 `;
 
 const Heading = styled.h2`
-  color: teal;
+  color: var(--accent);
   font-weight: bold;
   font-size: 2rem;
   text-align: center;
@@ -25,14 +25,14 @@ const Form = styled.form`
 `;
 
 const Label = styled.label`
-  color: teal;
+  color: var(--accent);
   font-weight: bold;
   text-align: left;
 `;
 
 const Input = styled.input`
   padding: 10px;
-  border: 1px solid teal;
+  border: 1px solid var(--accent);
   border-radius: 5px;
   font-size: 16px;
   width: 100%;
@@ -40,7 +40,7 @@ const Input = styled.input`
 
 const TextArea = styled.textarea`
   padding: 10px;
-  border: 1px solid teal;
+  border: 1px solid var(--accent);
   border-radius: 5px;
   font-size: 16px;
   width: 100%;
@@ -54,7 +54,7 @@ const ButtonContainer = styled.div`
 
 const Button = styled.button`
   padding: 10px 20px;
-  background-color: teal;
+  background-color: var(--accent);
   color: white;
   font-size: 16px;
   border: none;

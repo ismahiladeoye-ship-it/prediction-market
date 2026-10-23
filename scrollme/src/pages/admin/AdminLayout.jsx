@@ -5,8 +5,8 @@ import Announcement from '../../components/Announcement';
 
 const tabStyle = ({ isActive }) => ({
   padding: '8px 14px',
-  borderBottom: isActive ? '2px solid teal' : '2px solid transparent',
-  color: isActive ? 'teal' : 'inherit',
+  borderBottom: isActive ? '2px solid var(--accent)' : '2px solid transparent',
+  color: isActive ? 'var(--accent)' : 'inherit',
   fontWeight: 600,
   whiteSpace: 'nowrap',
 });

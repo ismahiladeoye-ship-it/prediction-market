@@ -15,6 +15,8 @@ import ResetPassword from './pages/ResetPassword';
 import useAuthCheck from './hooks/useAuthCheck';
 const LazyAllProducts = lazy(() => import('./pages/AllProducts'));
 const LazyCategoryProducts = lazy(() => import('./pages/CategoryProducts'));
+const LazyCollectionProducts = lazy(() => import('./pages/CollectionProducts'));
+const LazyAbout = lazy(() => import('./pages/About'));
 const LazyCheckout = lazy(() => import('./pages/Checkout'));
 const LazyMockPayment = lazy(() => import('./pages/MockPayment'));
 const LazyOrderDetail = lazy(() => import('./pages/OrderDetail'));
@@ -30,7 +32,7 @@ const NotFound = () => (
   <div style={{ padding: '60px 20px', textAlign: 'center' }}>
     <h1>404 Not Found</h1>
     <p style={{ marginTop: 12 }}>
-      <Link to='/' style={{ color: 'teal', textDecoration: 'underline' }}>
+      <Link to='/' style={{ color: 'var(--accent)', textDecoration: 'underline' }}>
         Back to the store
       </Link>
     </p>
@@ -56,6 +58,8 @@ function App() {
             <Route path='orders' element={<LazyAdminOrders />} />
           </Route>
           <Route path='/products' element={<LazyAllProducts />} />
+          <Route path='/collections/:slug' element={<LazyCollectionProducts />} />
+          <Route path='/about' element={<LazyAbout />} />
           <Route path='/login' element={<Login />} />
           <Route path='/forgot-password' element={<ForgotPassword />} />
           <Route path='/reset-password' element={<ResetPassword />} />

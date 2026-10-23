@@ -186,7 +186,7 @@ const MockPayment = () => {
         <Logo />
         <Badge>TEST MODE — no real payment is taken</Badge>
         {error && <p role='alert'>{error}</p>}
-        {!order && !error && <Spinner color='teal' />}
+        {!order && !error && <Spinner color='gray.900' />}
         {order && (
           <>
             <Summary>
@@ -311,7 +311,7 @@ const PayButton = styled.button`
   height: 52px;
   border: none;
   border-radius: 999px;
-  background: teal;
+  background: var(--accent);
   color: white;
   font-weight: 700;
   font-size: 17px;

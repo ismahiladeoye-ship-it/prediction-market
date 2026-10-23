@@ -34,7 +34,7 @@ describe('ProductGallery', () => {
     renderWithProviders(<ProductGallery />, { route: '/products?q=shirt&sort=price_asc&page=1' });
     expect(await screen.findByText('Product 1')).toBeInTheDocument();
     expect(screen.getByText('Product 2')).toBeInTheDocument();
-    expect(screen.getAllByText('Only 3 left in stock.')).toHaveLength(2);
+    expect(screen.getAllByText('Only 3 left')).toHaveLength(2);
     expect(listProductsAPI).toHaveBeenCalledWith(expect.objectContaining({ q: 'shirt', sort: 'price_asc', page: 1 }));
     expect(screen.getByText('Results for “shirt”')).toBeInTheDocument();
   });

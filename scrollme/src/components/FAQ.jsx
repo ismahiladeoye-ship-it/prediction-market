@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import styled from 'styled-components';
+import { HiChevronDown } from 'react-icons/hi2';
+import SectionHeading from './home/SectionHeading';
 
-// FAQ Data Example
 const faqData = [
   {
     question: 'What is Get It Sourced?',
@@ -19,70 +20,79 @@ const faqData = [
       'We accept credit and debit cards (Visa, Mastercard, American Express and more), Apple Pay, Google Pay, PayPal and Klarna. Payments are processed securely by our payment provider; we never store your card details.',
   },
   {
-    question: 'What is your return policy?',
+    question: "What if I'm not happy with my order?",
     answer:
-      'Our return policy allows you to return items within 30 days of delivery, provided they are in original condition. Contact us with your order number to arrange a return.',
+      'You can return items within 30 days of delivery, provided they are in original condition. Contact us with your order number to arrange a return.',
   },
 ];
 
-// Styled components
-const Container = styled.div`
-  max-width: 800px;
-  margin: 5px auto;
-  padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
+const List = styled.div`
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 `;
 
-const Heading = styled.h2`
-  color: teal;
-  text-align: center;
-  font-weight: bold;
-  font-size: 2rem;
-  margin-bottom: 20px;
+const Item = styled.div`
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.08);
 `;
 
-const Question = styled.h3`
-  color: teal;
+const Question = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 22px 24px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 17px;
+  font-weight: 500;
   cursor: pointer;
-  padding: 10px;
-  margin: 10px;
-  background-color: #e6f7f8;
-  border: 1px solid teal;
-  border-radius: 5px;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background-color: #cceff0;
+  color: var(--ink);
+  svg {
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+    transform: rotate(${({ $open }) => ($open ? '180deg' : '0deg')});
   }
 `;
 
 const Answer = styled.p`
-  padding: 10px;
-  margin: 5px 0 15px 0;
-  background-color: #f0fefe;
-  border: 1px solid teal;
-  border-radius: 5px;
+  padding: 0 24px 22px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--muted);
 `;
 
 const FAQ = () => {
-  const [activeIndex, setActiveIndex] = useState(null);
-
-  // Toggle the active question
-  const toggleFAQ = (index) => {
-    setActiveIndex(activeIndex === index ? null : index);
-  };
+  const [open, setOpen] = useState(null);
 
   return (
-    <Container>
-      <Heading>Frequently Asked Questions</Heading>
-      {faqData.map((faq, index) => (
-        <div key={index}>
-          <Question onClick={() => toggleFAQ(index)}>{faq.question}</Question>
-          {activeIndex === index && <Answer>{faq.answer}</Answer>}
-        </div>
-      ))}
-    </Container>
+    <section id='faq' aria-labelledby='faq-title'>
+      <SectionHeading id='faq-title'>FAQ</SectionHeading>
+      <List>
+        {faqData.map((item, index) => (
+          <Item key={item.question}>
+            <Question
+              type='button'
+              $open={open === index}
+              aria-expanded={open === index}
+              aria-controls={`faq-${index}`}
+              onClick={() => setOpen(open === index ? null : index)}
+            >
+              {item.question}
+              <HiChevronDown size={22} aria-hidden='true' />
+            </Question>
+            {open === index && <Answer id={`faq-${index}`}>{item.answer}</Answer>}
+          </Item>
+        ))}
+      </List>
+    </section>
   );
 };
 

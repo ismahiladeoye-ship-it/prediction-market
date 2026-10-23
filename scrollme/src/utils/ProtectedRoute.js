@@ -11,7 +11,7 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
   if (isAuthenticated && !authChecked) {
     return (
       <Box display='flex' justifyContent='center' alignItems='center' height='60vh'>
-        <Spinner size='xl' color='teal' />
+        <Spinner size='xl' color='gray.900' />
       </Box>
     );
   }

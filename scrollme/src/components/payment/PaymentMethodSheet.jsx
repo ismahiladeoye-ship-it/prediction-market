@@ -234,7 +234,7 @@ const Row = styled.label`
     height: 1px;
   }
   input:focus-visible + span {
-    outline: 2px solid teal;
+    outline: 2px solid var(--accent);
     outline-offset: 2px;
   }
 `;
@@ -249,7 +249,7 @@ const Radio = styled.span`
   justify-content: center;
   color: white;
   border: ${(p) => (p.checked ? 'none' : '2px solid #bbb')};
-  background: ${(p) => (p.checked ? 'teal' : 'white')};
+  background: ${(p) => (p.checked ? 'var(--accent)' : 'white')};
 `;
 
 const Body = styled.span`
@@ -305,7 +305,7 @@ const ConfirmButton = styled.button`
   height: 56px;
   border: none;
   border-radius: 999px;
-  background: teal;
+  background: var(--accent);
   color: white;
   font-size: 20px;
   font-weight: 700;

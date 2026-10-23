@@ -2,12 +2,14 @@ const { test, expect } = require('@playwright/test');
 const { findProduct } = require('./helpers');
 
 test.describe('catalogue', () => {
-  test('home page shows the original storefront sections and real products @phone', async ({ page }) => {
+  test('home page shows the store sections and real products @phone', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByText('Super deal hour started')).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'SUMMER SALE' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'SHIRT STYLE!' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'View product' }).first()).toBeAttached();
+    await expect(page.getByText('SOURCED FASHION, FOOTWEAR & ACCESSORIES')).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Footwear, sourced' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Shop by collection' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Trending now' })).toBeVisible();
+    await expect(page.getByRole('link', { name: /^Footwear/ }).first()).toBeVisible();
+    await expect(page.getByRole('button', { name: /Add .* to wishlist/ }).first()).toBeAttached();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(overflow).toBeLessThanOrEqual(0);
   });
@@ -16,6 +18,7 @@ test.describe('catalogue', () => {
     const product = await findProduct(request);
     const word = product.name.split(' ').find((w) => w.length > 3);
     await page.goto('/');
+    await page.getByRole('button', { name: 'Search', exact: true }).click();
     await page.getByLabel('Search products').fill(word);
     await page.getByLabel('Search products').press('Enter');
     await expect(page).toHaveURL(new RegExp(`/products\\?q=${word}`));
@@ -24,8 +27,9 @@ test.describe('catalogue', () => {
 
     await page.getByLabel('Sort products').selectOption('price_asc');
     await expect(page).toHaveURL(/sort=price_asc/);
-    const prices = await page.locator('h3').allTextContents();
-    const values = prices.filter((t) => t.startsWith('$')).map((t) => Number(t.replace(/[^\d.]/g, '')));
+    await expect(page.getByText(/^\$ \d/).first()).toBeVisible();
+    const prices = await page.getByText(/^\$ \d/).allTextContents();
+    const values = prices.map((t) => Number(t.replace(/[^\d.]/g, '')));
     expect(values).toEqual([...values].sort((a, b) => a - b));
   });
 
@@ -34,12 +38,27 @@ test.describe('catalogue', () => {
     await expect(page.getByText('No products found')).toBeVisible();
   });
 
-  test('category tiles open category pages', async ({ page }) => {
+  test('collection cards and the menu open collection pages', async ({ page }) => {
     await page.goto('/');
-    // The tile under "SHIRT STYLE!" (the hero slider has its own SHOP NOW links).
-    await page.locator('a[href="/shirts"]', { hasText: 'SHOP NOW' }).click();
-    await expect(page).toHaveURL(/\/shirts$/);
-    await expect(page.getByRole('heading', { name: 'Shirts' })).toBeVisible();
+    await page.locator('a[href="/collections/footwear"]', { hasText: 'items' }).click();
+    await expect(page).toHaveURL(/\/collections\/footwear$/);
+    await expect(page.getByRole('heading', { level: 1, name: 'Footwear' })).toBeVisible();
+    await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Fragrances' }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Fragrances' })).toBeVisible();
+    await page.goto('/collections/not-a-collection');
+    await expect(page.getByText('This collection does not exist')).toBeVisible();
+  });
+
+  test('phone menu lists the collections @phone', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'The hamburger menu only exists on phones');
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Open menu' }).click();
+    const menu = page.getByRole('dialog', { name: 'Menu' });
+    for (const name of ['Home', 'Contact', 'About us', 'Clothing', 'Footwear', 'Accessories', 'Fragrances', 'Login']) {
+      await expect(menu.getByRole('link', { name, exact: true })).toBeVisible();
+    }
+    await menu.getByRole('link', { name: 'Footwear', exact: true }).click();
+    await expect(page).toHaveURL(/\/collections\/footwear$/);
   });
 
   test('product page shows real sizes and colour, and 404s cleanly', async ({ page, request }) => {
@@ -47,8 +66,8 @@ test.describe('catalogue', () => {
     await page.goto(`/${product.category}/${product._id}`);
     await expect(page.getByRole('heading', { name: product.name })).toBeVisible();
     if (product.sizes.length) {
-      const options = await page.getByLabel('Size').locator('option').allTextContents();
-      expect(options.slice(1)).toEqual(product.sizes);
+      const sizes = await page.getByRole('radiogroup', { name: 'Size' }).getByRole('radio').allTextContents();
+      expect(sizes).toEqual(product.sizes);
     }
     await page.goto('/tshirts/507f1f77bcf86cd799439011');
     await expect(page.getByText('Product not found')).toBeVisible();

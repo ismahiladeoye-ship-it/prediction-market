@@ -29,8 +29,12 @@ const Wrapper = styled.div`
 `;
 
 const Title = styled.h1`
-  font-size: 24px;
-  font-weight: 300;
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  font-size: 40px;
 `;
 
 const Form = styled.form`
@@ -51,7 +55,7 @@ const Button = styled.button`
   width: 100%;
   border: none;
   padding: 15px 20px;
-  background-color: teal;
+  background-color: var(--accent);
   color: white;
   cursor: pointer;
   margin-bottom: 10px;

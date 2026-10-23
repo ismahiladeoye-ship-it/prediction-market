@@ -26,8 +26,8 @@ const Account = () => {
 
   return (
     <div>
-      <Navbar />
       <Announcement />
+      <Navbar />
       <Wrapper>
         <Title>MY ACCOUNT</Title>
         <Profile>
@@ -46,7 +46,7 @@ const Account = () => {
         )}
         {!data && !error && (
           <Box textAlign='center' py={10}>
-            <Spinner color='teal' />
+            <Spinner color='gray.900' />
           </Box>
         )}
         {data && data.orders.length === 0 && (
@@ -101,8 +101,12 @@ const Wrapper = styled.div`
 `;
 
 const Title = styled.h1`
-  font-weight: 300;
-  font-size: 2em;
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  font-size: clamp(44px, 10vw, 72px);
   text-align: center;
   margin-bottom: 20px;
 `;
@@ -156,7 +160,7 @@ const Empty = styled.p`
   font-weight: 300;
   font-size: 18px;
   a {
-    color: teal;
+    color: var(--accent);
     text-decoration: underline;
   }
 `;

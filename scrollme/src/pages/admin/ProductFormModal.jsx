@@ -141,7 +141,7 @@ const ProductFormModal = ({ isOpen, onClose, product, onSaved }) => {
               <FormLabel>Description</FormLabel>
               <Textarea value={form.description} onChange={set('description')} rows={4} />
             </FormControl>
-            <Checkbox colorScheme='teal' isChecked={form.isActive} onChange={set('isActive')}>
+            <Checkbox colorScheme='brand' isChecked={form.isActive} onChange={set('isActive')}>
               Visible in the store
             </Checkbox>
           </SimpleGrid>
@@ -150,7 +150,7 @@ const ProductFormModal = ({ isOpen, onClose, product, onSaved }) => {
           <Button variant='ghost' onClick={onClose}>
             Cancel
           </Button>
-          <Button colorScheme='teal' onClick={save} isLoading={saving}>
+          <Button colorScheme='brand' onClick={save} isLoading={saving}>
             Save
           </Button>
         </ModalFooter>

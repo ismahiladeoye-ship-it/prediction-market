@@ -16,6 +16,7 @@ const wishlistRoute = require('./routes/wishlistRoute');
 const orderRoute = require('./routes/orderRoute');
 const paymentRoute = require('./routes/paymentRoute');
 const adminRoute = require('./routes/adminRoute');
+const newsletterRoute = require('./routes/newsletterRoute');
 
 // Operator injection ({ "$ne": null }) is prevented by validating every request
 // body/query with zod into plain strings and numbers before it reaches a query.
@@ -78,6 +79,7 @@ const createApp = () => {
   app.use('/api/orders', orderRoute);
   app.use('/api/payments', paymentRoute);
   app.use('/api/admin', adminRoute);
+  app.use('/api/newsletter', newsletterRoute);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
