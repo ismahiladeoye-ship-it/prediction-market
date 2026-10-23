@@ -180,6 +180,7 @@ describe('checkout (Stripe provider, test mode)', () => {
             return { id: `cs_test_${created.length}`, url: `https://checkout.stripe.com/c/pay/cs_test_${created.length}` };
           }),
           retrieve: jest.fn(async (id) => ({ id, payment_status: 'unpaid', status: 'open' })),
+          expire: jest.fn(async () => ({})),
         },
       },
     });
@@ -311,6 +312,31 @@ describe('checkout (Stripe provider, test mode)', () => {
     expect(res.status).toBe(201);
     expect(res.body.order.payment.method).toBe(method);
     expect(created[0].payment_method_types).toEqual(types);
+  });
+
+  it('renews the reservation and closes the old session when resuming payment', async () => {
+    const { order, agent } = await placeOrder();
+    const expire = jest.fn(async () => ({}));
+    const client = {
+      checkout: {
+        sessions: {
+          create: jest.fn(async (p) => (created.push(p), { id: 'cs_test_new', url: 'https://checkout.stripe.com/c/pay/new' })),
+          retrieve: jest.fn(async () => ({ payment_status: 'unpaid' })),
+          expire,
+        },
+      },
+    };
+    stripeProvider.setClient(client);
+    // Only 5 minutes of the reservation left.
+    await Order.updateOne({ _id: order.id }, { reservationExpiresAt: new Date(Date.now() + 5 * 60 * 1000) });
+
+    const res = await agent.post(`/api/orders/${order.id}/pay`).send({});
+    expect(res.status).toBe(200);
+    expect(expire).toHaveBeenCalledWith('cs_test_1');
+    const params = created[created.length - 1];
+    // Stripe requires at least 30 minutes.
+    expect(params.expires_at - Math.floor(Date.now() / 1000)).toBeGreaterThanOrEqual(30 * 60);
+    expect((await Order.findById(order.id)).payment.sessionId).toBe('cs_test_new');
   });
 
   it('lets the shopper switch method when resuming payment', async () => {

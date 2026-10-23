@@ -7,7 +7,7 @@ Branch `claude/scrollme-ecommerce-phases-cwocsl`. Baseline: the original code im
 | Check | Result |
 | --- | --- |
 | API lint (ESLint + Prettier) | ✅ clean |
-| API tests (Jest + Supertest, real MongoDB) | ✅ **85 / 85** — in-memory MongoDB and an external MongoDB (as CI uses) |
+| API tests (Jest + Supertest, real MongoDB) | ✅ **86 / 86** — in-memory MongoDB and an external MongoDB (as CI uses) |
 | Storefront lint + Prettier check | ✅ clean (the original failed Prettier in 28 files) |
 | Storefront unit tests | ✅ **24 / 24** (the original suite could not run) |
 | Storefront production build | ✅ compiles; no inline scripts (CSP-safe) |
@@ -69,7 +69,7 @@ New screens (checkout, payment sheet, orders, account, admin) reuse the original
 - **Storefront build tooling**: Create React App (`react-scripts`) is unmaintained, and `npm audit` flags its build-time dependencies. They are not shipped to browsers. The remaining runtime-tree finding is `@grpc/grpc-js` under Firebase's Firestore, which the app does not import and which is Node-only. A move to Vite would clear these; it was left out as it is a tooling change beyond this scope.
 - **Email**: password-reset emails need `SMTP_URL`; order-confirmation emails are not implemented.
 - **Newsletter / contact forms** still only show a confirmation (as in the original); no backend exists for them.
-- **Main bundle** is ~637 kB gzipped (original: 649 kB). Firebase now loads only when Google sign-in is used; further splitting of Chakra/MUI is possible.
+- **Main bundle** is ~640 kB gzipped (original: 649 kB). Firebase now loads only when Google sign-in is used; further splitting of Chakra/MUI is possible.
 
 ## Promotion to `main`
 

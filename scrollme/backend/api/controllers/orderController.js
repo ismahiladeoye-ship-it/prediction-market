@@ -112,6 +112,11 @@ exports.resumePayment = async (req, res) => {
     if (!getConfig().paymentMethods.includes(req.body.paymentMethod)) throw badRequest('That payment method is not available');
     order.payment.method = req.body.paymentMethod;
   }
+  // Never leave two payable sessions for one order.
+  if (order.payment.sessionId && provider.expireSession) await provider.expireSession(order.payment.sessionId);
+  // A new session must stay open at least 30 minutes (Stripe minimum), so the
+  // stock reservation is renewed with it.
+  order.reservationExpiresAt = new Date(Date.now() + getConfig().RESERVATION_MINUTES * 60 * 1000);
   order.payment.attempts = (order.payment.attempts || 0) + 1;
   const session = await provider.createCheckout(order);
   order.payment.sessionId = session.sessionId;

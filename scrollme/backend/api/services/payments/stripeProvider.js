@@ -77,6 +77,16 @@ const getSessionStatus = async (sessionId) => {
   };
 };
 
+// Closes an unpaid session so it can no longer be paid (e.g. before opening a
+// new one for the same order). Already completed/expired sessions are ignored.
+const expireSession = async (sessionId) => {
+  try {
+    await getClient().checkout.sessions.expire(sessionId);
+  } catch (err) {
+    if (err?.code !== 'resource_missing' && !/status|expire/i.test(err?.message || '')) throw err;
+  }
+};
+
 const constructWebhookEvent = (rawBody, signature) => {
   const { STRIPE_WEBHOOK_SECRET } = getConfig();
   if (!STRIPE_WEBHOOK_SECRET) throw new HttpError(503, 'Webhook secret not configured');
@@ -84,4 +94,4 @@ const constructWebhookEvent = (rawBody, signature) => {
   return Stripe.webhooks.constructEvent(rawBody, signature, STRIPE_WEBHOOK_SECRET);
 };
 
-module.exports = { name: 'stripe', createCheckout, getSessionStatus, constructWebhookEvent, setClient };
+module.exports = { name: 'stripe', createCheckout, getSessionStatus, expireSession, constructWebhookEvent, setClient };
