@@ -50,32 +50,49 @@ export const storeConfig = {
       position: 'center 25%',
     },
   ],
-  // "Shop by collection" carousels. Each card opens a collection, optionally
-  // narrowed to one category; cards with no products are hidden.
-  collectionRows: [
+  // Home page, one entry per collection in display order: a card in "Shop by
+  // collection" and a row of its products with shortcuts to some categories.
+  // Collections and shortcuts with no products are hidden.
+  homeCollections: [
     {
-      label: 'Clothing',
-      items: [
-        { id: 'hoodies', title: 'Hoodies & sweats', collection: 'clothing', category: 'sweatshirts', img: pexels(9594679, 900) },
-        {
-          id: 'jackets',
-          title: 'Jackets',
-          collection: 'clothing',
-          category: 'jackets',
-          img: pexels(19426409, 900),
-          position: 'center 30%',
-        },
-        { id: 'clothing', title: 'All clothing', collection: 'clothing', img: pexels(3812433, 900) },
-        { id: 'tshirts', title: 'T-shirts', collection: 'clothing', category: 'tshirts', img: pexels(5698851, 900) },
-        { id: 'knitwear', title: 'Knitwear', collection: 'clothing', category: 'sweaters', img: pexels(1937336, 900) },
+      collection: 'clothing',
+      img: pexels(3812433, 900),
+      shortcuts: [
+        { label: 'Hoodies & sweats', category: 'sweatshirts' },
+        { label: 'Jackets', category: 'jackets' },
+        { label: 'T-shirts', category: 'tshirts' },
+        { label: 'Jeans', category: 'jeans' },
+        { label: 'Knitwear', category: 'sweaters' },
       ],
     },
     {
-      label: 'Footwear, fragrances and accessories',
-      items: [
-        { id: 'footwear', title: 'Footwear', collection: 'footwear', img: pexels(7193634, 900) },
-        { id: 'fragrances', title: 'Fragrances', collection: 'fragrances', img: pexels(34036480, 900) },
-        { id: 'accessories', title: 'Accessories', collection: 'accessories', img: pexels(11817096, 900) },
+      collection: 'footwear',
+      img: pexels(7193634, 900),
+      shortcuts: [
+        { label: 'Trainers', category: 'sports-shoes' },
+        { label: 'Casual shoes', category: 'casual-shoes' },
+        { label: 'Boots', category: 'boots' },
+        { label: 'Sandals', category: 'sandals' },
+      ],
+    },
+    {
+      collection: 'accessories',
+      img: pexels(11817096, 900),
+      shortcuts: [
+        { label: 'Bags', category: 'backpacks' },
+        { label: 'Watches', category: 'watches' },
+        { label: 'Wallets', category: 'wallets' },
+        { label: 'Sunglasses', category: 'sunglasses' },
+        { label: 'Caps', category: 'caps' },
+      ],
+    },
+    {
+      collection: 'fragrances',
+      img: pexels(34036480, 900),
+      shortcuts: [
+        { label: 'Perfume', category: 'perfume-and-body-mist' },
+        { label: 'Deodorant', category: 'deodorant' },
+        { label: 'Gift sets', category: 'fragrance-gift-set' },
       ],
     },
   ],
