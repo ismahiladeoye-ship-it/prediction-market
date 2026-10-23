@@ -4,6 +4,7 @@ const router = express.Router();
 const { authMiddleware, requireAdmin } = require('../middleware/authMiddleware');
 const validate = require('../middleware/validate');
 const admin = require('../controllers/adminController');
+const uploads = require('../controllers/uploadController');
 const s = require('../validators/schemas');
 const { asyncHandler } = require('../utils/httpError');
 
@@ -19,8 +20,26 @@ router.use(authMiddleware, requireAdmin);
 
 router.get('/stats', asyncHandler(admin.stats));
 
+// Product photos (multipart, one image per request).
+router.post('/uploads', uploads.receivePhoto, asyncHandler(uploads.uploadPhoto));
+
 router.get('/products', validate({ query: adminProductQuery }), asyncHandler(admin.listProducts));
 router.post('/products', validate({ body: s.productCreate }), asyncHandler(admin.createProduct));
+router.post(
+  '/products/import',
+  validate({
+    body: z.object({
+      csv: z.string().min(1, 'Choose a spreadsheet').max(2_000_000, 'The spreadsheet is too large (2 MB maximum)'),
+      dryRun: z.boolean().default(true),
+      // Photo file name -> uploaded URL (null while only checking).
+      photos: z
+        .record(z.string().max(255), z.string().max(200).nullable())
+        .refine((p) => Object.keys(p).length <= 2000, 'Too many photos')
+        .default({}),
+    }),
+  }),
+  asyncHandler(admin.importProducts)
+);
 router.get('/products/:productId', productId, asyncHandler(admin.getProduct));
 router.patch('/products/:productId', productId, validate({ body: s.productUpdate }), asyncHandler(admin.updateProduct));
 router.delete('/products/:productId', productId, asyncHandler(admin.deleteProduct));

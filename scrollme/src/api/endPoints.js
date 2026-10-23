@@ -50,6 +50,8 @@ export const ADMIN_ENDPOINTS = {
   PRODUCTS: `${API_BASE_URL}/admin/products`,
   PRODUCT: (productId) => `${API_BASE_URL}/admin/products/${productId}`,
   STOCK: (productId) => `${API_BASE_URL}/admin/products/${productId}/stock`,
+  IMPORT: `${API_BASE_URL}/admin/products/import`,
+  UPLOADS: `${API_BASE_URL}/admin/uploads`,
   ORDERS: `${API_BASE_URL}/admin/orders`,
   ORDER: (orderId) => `${API_BASE_URL}/admin/orders/${orderId}`,
   ORDER_STATUS: (orderId) => `${API_BASE_URL}/admin/orders/${orderId}/status`,

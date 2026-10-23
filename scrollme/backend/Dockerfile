@@ -11,6 +11,9 @@ RUN npm ci --omit=dev --no-audit --no-fund --ignore-scripts \
 COPY --chown=node:node api ./api
 COPY --chown=node:node scripts ./scripts
 COPY --chown=node:node server.js ./
+# Product photos live here; mount a volume so they survive new deployments.
+RUN mkdir -p /app/uploads && chown node:node /app/uploads
+ENV UPLOAD_DIR=/app/uploads
 
 USER node
 EXPOSE 8080

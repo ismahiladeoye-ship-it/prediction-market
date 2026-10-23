@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link as RouterLink, useSearchParams } from 'react-router-dom';
 import {
   Badge,
   Box,
@@ -99,7 +99,7 @@ const AdminProducts = () => {
           }}
         >
           <Input
-            placeholder='Search name, brand, category'
+            placeholder='Search name, brand, category, SKU'
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             maxW='280px'
@@ -118,7 +118,10 @@ const AdminProducts = () => {
           <option value=''>Any stock</option>
           <option value='true'>Low stock (≤ 5)</option>
         </Select>
-        <Button colorScheme='brand' ml={{ md: 'auto' }} onClick={() => openEditor(null)}>
+        <Button as={RouterLink} to='/admin/import' variant='outline' colorScheme='brand' ml={{ md: 'auto' }}>
+          Bulk upload
+        </Button>
+        <Button colorScheme='brand' onClick={() => openEditor(null)}>
           New product
         </Button>
       </Flex>
@@ -153,7 +156,7 @@ const AdminProducts = () => {
                             {p.name}
                           </Text>
                           <Text fontSize='xs' color='gray.500'>
-                            {p.brand}
+                            {[p.brand, p.sku && `SKU ${p.sku}`].filter(Boolean).join(' · ')}
                           </Text>
                         </Box>
                       </HStack>

@@ -25,6 +25,13 @@ const STRIPE_METHOD_TYPES = {
   klarna: ['klarna'],
 };
 
+// Stripe shows product photos only from public https URLs; uploaded photos
+// are made absolute with the shop's address.
+const stripeImage = (url, appUrl) => {
+  const absolute = url?.startsWith('/api/uploads/') ? `${appUrl}${url}` : url;
+  return absolute && /^https:\/\//.test(absolute) ? absolute : null;
+};
+
 // Uses Stripe Checkout (hosted page): card data never touches this server.
 const createCheckout = async (order) => {
   const config = getConfig();
@@ -35,7 +42,7 @@ const createCheckout = async (order) => {
       unit_amount: item.unitPriceCents,
       product_data: {
         name: item.size ? `${item.name} (size ${item.size})` : item.name,
-        ...(item.imageUrl && /^https:\/\//.test(item.imageUrl) ? { images: [item.imageUrl] } : {}),
+        ...(stripeImage(item.imageUrl, config.APP_URL) ? { images: [stripeImage(item.imageUrl, config.APP_URL)] } : {}),
       },
     },
   }));

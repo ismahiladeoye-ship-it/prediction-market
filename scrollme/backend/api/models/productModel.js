@@ -36,9 +36,20 @@ const ProductSchema = new Schema(
       min: [0, 'Stock cannot be negative'],
       validate: { validator: Number.isInteger, message: 'Stock must be a whole number' },
     },
+    // Shop's own stock-keeping code; bulk uploads update products by SKU.
+    sku: {
+      type: String,
+      trim: true,
+      maxlength: 64,
+    },
     imageUrl: {
       type: String,
       trim: true,
+    },
+    // All photos in display order (the first is also imageUrl).
+    images: {
+      type: [String],
+      default: [],
     },
     brand: {
       type: String,
@@ -109,6 +120,7 @@ const ProductSchema = new Schema(
 
 ProductSchema.index({ isActive: 1, category: 1, createdAt: -1 });
 ProductSchema.index({ isActive: 1, price: 1 });
+ProductSchema.index({ sku: 1 }, { unique: true, partialFilterExpression: { sku: { $type: 'string' } } });
 
 // Middleware to update `updatedAt` before saving
 ProductSchema.pre('save', function (next) {

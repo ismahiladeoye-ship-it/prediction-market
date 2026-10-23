@@ -27,6 +27,9 @@ services:
       MONGODB_URI: ${MONGODB_URI:-mongodb://mongo:27017/scrollme}
       # One proxy (nginx) in front of the API.
       TRUST_PROXY: '1'
+    volumes:
+      # Uploaded product photos (back these up along with the database).
+      - uploads:/app/uploads
     depends_on:
       mongo:
         condition: service_healthy
@@ -50,3 +53,4 @@ services:
 
 volumes:
   mongo-data:
+  uploads:

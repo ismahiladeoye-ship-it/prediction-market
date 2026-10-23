@@ -26,6 +26,9 @@ const AdminLayout = () => (
         <NavLink to='/admin/products' style={tabStyle}>
           Products
         </NavLink>
+        <NavLink to='/admin/import' style={tabStyle}>
+          Bulk upload
+        </NavLink>
         <NavLink to='/admin/orders' style={tabStyle}>
           Orders
         </NavLink>

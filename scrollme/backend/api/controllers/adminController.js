@@ -4,6 +4,7 @@ const User = require('../models/userModel');
 const { buildFilter, paginate } = require('./productController');
 const { serializeOrder } = require('./orderController');
 const { changeStatus } = require('../services/orders');
+const { importProducts } = require('../services/productImport');
 const { fromCents } = require('../utils/money');
 const { notFound, conflict } = require('../utils/httpError');
 const logger = require('../utils/logger');
@@ -26,14 +27,22 @@ exports.getProduct = async (req, res) => {
   res.json(product);
 };
 
+// The first photo is the main image; a single imageUrl becomes the gallery.
+const withPhotos = (body) => {
+  if (body.images?.length) return { ...body, imageUrl: body.images[0] };
+  if (body.images && !body.images.length) return { ...body, imageUrl: '' };
+  if (body.imageUrl) return { ...body, images: [body.imageUrl] };
+  return body;
+};
+
 exports.createProduct = async (req, res) => {
-  const product = await Product.create(req.body);
+  const product = await Product.create(withPhotos(req.body));
   audit(req, 'product_create', { productId: String(product._id) });
   res.status(201).json({ message: 'Product added successfully', product });
 };
 
 exports.updateProduct = async (req, res) => {
-  const product = await Product.findByIdAndUpdate(req.params.productId, { $set: req.body }, { new: true, runValidators: true });
+  const product = await Product.findByIdAndUpdate(req.params.productId, { $set: withPhotos(req.body) }, { new: true, runValidators: true });
   if (!product) throw notFound('Product not found');
   audit(req, 'product_update', { productId: String(product._id), fields: Object.keys(req.body) });
   res.json({ message: 'Product updated successfully', product });
@@ -45,6 +54,13 @@ exports.deleteProduct = async (req, res) => {
   if (!product) throw notFound('Product not found');
   audit(req, 'product_deactivate', { productId: String(product._id) });
   res.json({ message: 'Product deleted successfully', product });
+};
+
+// Bulk create/update from a spreadsheet (see services/productImport.js).
+exports.importProducts = async (req, res) => {
+  const result = await importProducts(req.body);
+  if (!req.body.dryRun && result.ok) audit(req, 'product_import', { created: result.summary.create, updated: result.summary.update });
+  res.status(result.ok ? 200 : 400).json(result);
 };
 
 exports.adjustStock = async (req, res) => {

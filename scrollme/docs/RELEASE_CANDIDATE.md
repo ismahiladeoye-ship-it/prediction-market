@@ -7,11 +7,11 @@ Branch `claude/scrollme-ecommerce-phases-cwocsl`. Baseline: the original code im
 | Check | Result |
 | --- | --- |
 | API lint (ESLint + Prettier) | ✅ clean |
-| API tests (Jest + Supertest, real MongoDB) | ✅ **103 / 103** — in-memory MongoDB and an external MongoDB (as CI uses) |
+| API tests (Jest + Supertest, real MongoDB) | ✅ **110 / 110** — in-memory MongoDB and an external MongoDB (as CI uses) |
 | Storefront lint + Prettier check | ✅ clean (the original failed Prettier in 28 files) |
 | Storefront unit tests | ✅ **24 / 24** (the original suite could not run) |
 | Storefront production build | ✅ compiles; no inline scripts (CSP-safe) |
-| End-to-end browser tests (Playwright, desktop + phone) | ✅ **19 / 19** (one phone-only test is skipped in the desktop browser) against the real API, a seeded database and the production build |
+| End-to-end browser tests (Playwright, desktop + phone) | ✅ **20 / 20** (one phone-only test is skipped in the desktop browser) against the real API, a seeded database and the production build |
 | Full purchase through nginx with production headers | ✅ 17 steps, 0 CSP violations, 0 console/page errors, 0 px horizontal overflow at 390 px |
 | nginx config (`nginx -t`) and headers | ✅ CSP, HSTS, X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy on pages; `no-store` + API CSP on `/api`; immutable caching on assets |
 | Backup → restore drill | ✅ counts identical after restore into a separate database; tampered archive rejected |

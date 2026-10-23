@@ -32,6 +32,7 @@ const Product = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [size, setSize] = useState('');
   const [adding, setAdding] = useState(false);
+  const [photo, setPhoto] = useState(0);
   const { productId } = useParams();
   const toast = useToast();
   const dispatch = useDispatch();
@@ -46,6 +47,7 @@ const Product = () => {
         setLoading(true);
         setError(null);
         setSize('');
+        setPhoto(0);
         const selectedProduct = await getProductByIdAPI(productId);
         setProduct(selectedProduct);
       } catch (err) {
@@ -58,6 +60,8 @@ const Product = () => {
   }, [productId]);
 
   const outOfStock = product && product.stock <= 0;
+  const photos = product?.images?.length ? product.images : [product?.imageUrl];
+  const mainPhoto = photos[photo] || photos[0];
   const needsSize = Boolean(product?.sizes?.length);
 
   const addCurrentToCart = async () => {
@@ -201,7 +205,23 @@ const Product = () => {
       <Navbar />
       <Wrapper>
         <ImgContainer>
-          {product && <Image src={imageSrc(product?.imageUrl)} alt={product?.name} onClick={handleImageClick} onError={onImageError} />}
+          {product && <Image src={imageSrc(mainPhoto)} alt={product?.name} onClick={handleImageClick} onError={onImageError} />}
+          {photos.length > 1 && (
+            <Thumbs role='group' aria-label='Product photos'>
+              {photos.map((url, i) => (
+                <Thumb
+                  key={url}
+                  type='button'
+                  $active={i === photo}
+                  aria-label={`Photo ${i + 1} of ${photos.length}`}
+                  aria-pressed={i === photo}
+                  onClick={() => setPhoto(i)}
+                >
+                  <img src={url} alt='' onError={onImageError} />
+                </Thumb>
+              ))}
+            </Thumbs>
+          )}
         </ImgContainer>
         <InfoContainer>
           <Flex>
@@ -294,7 +314,7 @@ const Product = () => {
             <CloseButton onClick={closeModal} aria-label='Close image'>
               ✖
             </CloseButton>
-            <ModalImage src={imageSrc(product?.imageUrl)} alt={product?.name} onError={onImageError} />
+            <ModalImage src={imageSrc(mainPhoto)} alt={product?.name} onError={onImageError} />
           </ModalContent>
         </Modal>
       )}
@@ -341,6 +361,29 @@ const Image = styled.img`
   background: white;
   border: 1px solid var(--line);
   cursor: zoom-in;
+`;
+
+const Thumbs = styled.div`
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  overflow-x: auto;
+`;
+
+const Thumb = styled.button`
+  flex: 0 0 72px;
+  height: 96px;
+  padding: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: white;
+  border: 2px solid ${({ $active }) => ($active ? 'var(--ink)' : 'var(--line)')};
+  cursor: pointer;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 `;
 
 const InfoContainer = styled.div`

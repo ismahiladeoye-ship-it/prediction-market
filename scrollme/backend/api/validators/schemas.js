@@ -121,7 +121,25 @@ const checkout = z.object({
 
 const resumePayment = z.object({ paymentMethod: paymentMethod.optional() });
 
+// A product photo: an uploaded file (/api/uploads/…) or an http(s) link.
+const imageRef = z
+  .string()
+  .trim()
+  .max(2000)
+  .refine(
+    (v) => /^\/api\/uploads\/[a-f0-9]{32}\.webp$/.test(v) || (/^https?:\/\//i.test(v) && URL.canParse(v)),
+    'Image must be an uploaded photo or a link starting with http:// or https://'
+  );
+
+const sku = z
+  .string()
+  .trim()
+  .min(1, 'SKU is required')
+  .max(64, 'SKU is too long')
+  .regex(/^[A-Za-z0-9._/-]+$/, 'SKU may contain only letters, numbers, dots, dashes, slashes and underscores');
+
 const productFields = {
+  sku: sku.optional(),
   name: z.string().trim().min(2).max(200),
   description: z.string().trim().max(5000).optional(),
   price: z.coerce.number().min(0).max(1000000),
@@ -133,14 +151,8 @@ const productFields = {
     .regex(/^[a-z0-9-]+$/, 'Category must be a slug, e.g. t-shirts')
     .max(60),
   stock: z.coerce.number().int().min(0).max(1000000),
-  imageUrl: z
-    .string()
-    .trim()
-    .max(2000)
-    .url()
-    .refine((v) => /^https?:\/\//i.test(v), 'Image URL must start with http:// or https://')
-    .optional()
-    .or(z.literal('')),
+  imageUrl: imageRef.optional().or(z.literal('')),
+  images: z.array(imageRef).max(12, 'Up to 12 photos per product').optional(),
   brand: z.string().trim().max(60).optional(),
   material: z.string().trim().max(60).optional(),
   color: z.string().trim().max(40).optional(),

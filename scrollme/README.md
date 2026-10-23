@@ -10,6 +10,7 @@
 | Deployment guide | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) |
 | Operations runbook (logs, health, backups, restore) | [docs/OPERATIONS.md](docs/OPERATIONS.md) |
 | API reference | [backend/README.md](backend/README.md) |
+| Adding products in bulk (spreadsheet + photos) | [docs/BULK_UPLOAD.md](docs/BULK_UPLOAD.md) |
 | Screenshots | [docs/screenshots/](docs/screenshots/) |
 
 ## Features
@@ -21,7 +22,7 @@
 - [x] **Cart**: sizes, stock checks; prices, tax and delivery always computed on the server.
 - [x] **Checkout**: delivery address and method, then a *Secure Payment* sheet — Apple Pay, card, PayPal, Klarna, Google Pay — paid through **Stripe Checkout in test mode**.
 - [x] **Orders**: confirmation, history, status tracking, cancellation of unpaid orders; stock reserved at checkout and released if payment is abandoned.
-- [x] **Administration**: dashboard, product management (create/edit/hide, stock), order fulfilment with status lifecycle and tracking numbers.
+- [x] **Administration**: dashboard, product management (create/edit/hide, stock, photo uploads), **bulk upload from a spreadsheet with photos** (preview, update by SKU), order fulfilment with status lifecycle and tracking numbers.
 - [ ] Email notifications for orders, reviews, discounts, multi-language — not in scope yet.
 
 ## Project layout
@@ -64,9 +65,9 @@ With `PAYMENT_PROVIDER=mock` the payment step opens a local **test-mode** page f
 
 | Suite | Command | What it covers |
 | --- | --- | --- |
-| API | `cd backend && npm test` | 103 tests on a real MongoDB: auth, permissions, catalogue and collections, cart pricing, UK delivery, checkout, stock, payments/webhooks, admin, wishlist, newsletter, HTTP hardening |
+| API | `cd backend && npm test` | 110 tests on a real MongoDB: auth, permissions, catalogue and collections, photo uploads, bulk import, cart pricing, UK delivery, checkout, stock, payments/webhooks, admin, wishlist, newsletter, HTTP hardening |
 | Storefront unit | `npm run test:ci` | 24 tests: route guards, payment sheet, gallery states, cart/wishlist state, validation |
-| End-to-end | `npm run build && cd e2e && npm install && npx playwright test` | 19 browser tests (desktop + phone) against the real API, database and production build |
+| End-to-end | `npm run build && cd e2e && npm install && npx playwright test` | 20 browser tests (desktop + phone) against the real API, database and production build |
 | Lint/format | `npm run lint && npm run lint-check`, `cd backend && npm run lint` | |
 
 CI runs all of the above plus Docker image builds: [.github/workflows/scrollme.yml](../.github/workflows/scrollme.yml).

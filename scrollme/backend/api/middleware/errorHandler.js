@@ -20,6 +20,7 @@ const errorHandler = (err, req, res, next) => {
   }
   if (err?.code === 11000) {
     const field = Object.keys(err.keyPattern || {})[0] || 'value';
+    if (field === 'sku') return res.status(409).json({ message: 'A product with that SKU already exists.' });
     return res.status(409).json({ message: `An account with that ${field} already exists.` });
   }
   if (err?.type === 'entity.parse.failed') {

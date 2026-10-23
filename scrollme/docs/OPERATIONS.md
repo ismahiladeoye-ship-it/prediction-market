@@ -43,6 +43,17 @@ Schedule it (example cron, daily 02:15 UTC) and copy archives off the host (obje
 
 If you use MongoDB Atlas, also enable its continuous backups; the dump is an independent copy.
 
+### Product photos
+
+Uploaded photos are files, not database records: they live in `UPLOAD_DIR` (the `uploads` volume in `docker-compose.yml`). Back them up on the same schedule as the database:
+
+```bash
+docker run --rm -v scrollme_uploads:/data:ro -v "$PWD/backups:/backup" alpine \
+  tar czf "/backup/uploads-$(date -u +%Y%m%dT%H%M%SZ).tgz" -C /data .
+```
+
+Photo file names are random and never reused, so restoring an older copy never overwrites a newer photo.
+
 ## Restore
 
 ```bash

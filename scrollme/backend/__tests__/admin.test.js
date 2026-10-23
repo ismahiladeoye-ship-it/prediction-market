@@ -71,6 +71,18 @@ describe('admin product management', () => {
     expect(adminList.body.products.map((p) => p._id)).toContain(id);
   });
 
+  it('uses the first gallery photo as the main image', async () => {
+    const { agent } = await signedInAgent(ctx.app, { roles: ['admin'] });
+    const photos = ['https://example.com/front.jpg', 'https://example.com/back.jpg'];
+    const created = await agent.post('/api/admin/products').send({ ...newProduct, sku: 'GAL-1', images: photos });
+    expect(created.body.product).toMatchObject({ sku: 'GAL-1', imageUrl: photos[0], images: photos });
+    const swapped = await agent.patch(`/api/admin/products/${created.body.product._id}`).send({ images: [photos[1]] });
+    expect(swapped.body.product).toMatchObject({ imageUrl: photos[1], images: [photos[1]] });
+    const duplicate = await agent.post('/api/admin/products').send({ ...newProduct, sku: 'GAL-1' });
+    expect(duplicate.status).toBe(409);
+    expect(duplicate.body.message).toMatch(/SKU already exists/);
+  });
+
   it('adjusts stock but never below zero', async () => {
     const product = await createProduct({ stock: 2 });
     const { agent } = await signedInAgent(ctx.app, { roles: ['admin'] });

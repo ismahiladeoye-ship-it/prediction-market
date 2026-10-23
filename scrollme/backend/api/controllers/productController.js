@@ -34,7 +34,7 @@ const buildFilter = (query, { includeInactive = false } = {}) => {
     // Every word must match one of the searchable fields.
     filter.$and = words.map((w) => {
       const re = new RegExp(escapeRegex(w), 'i');
-      return { $or: [{ name: re }, { brand: re }, { category: re }, { tags: re }, { color: re }] };
+      return { $or: [{ name: re }, { brand: re }, { category: re }, { tags: re }, { color: re }, { sku: re }] };
     });
   }
   return filter;

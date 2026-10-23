@@ -1,5 +1,13 @@
+const path = require('node:path');
 const { test, expect } = require('@playwright/test');
 const { login, chooseSize, ADMIN, findProduct, fillAddress } = require('./helpers');
+
+// Real JPEGs, made with the API's own image library.
+const sharp = require(path.resolve(__dirname, '../../backend/node_modules/sharp'));
+const photo = (colour) =>
+  sharp({ create: { width: 1200, height: 1600, channels: 3, background: colour } })
+    .jpeg()
+    .toBuffer();
 
 test.describe('administration', () => {
   test('customers cannot open admin pages or call admin APIs', async ({ page }) => {
@@ -52,5 +60,50 @@ test.describe('administration', () => {
     page.once('dialog', (d) => d.accept('+5'));
     await page.getByRole('button', { name: 'Stock' }).first().click();
     await expect(page.getByText('Stock updated')).toBeVisible();
+  });
+
+  test('admin bulk uploads products from a spreadsheet with photos', async ({ page }) => {
+    const sku = `E2E-TRK-${Date.now()}`;
+    const csv = [
+      'sku,name,brand,category,price,stock,sizes,colour,images,active',
+      `${sku},E2E Relaxed Tracksuit ${sku},Fear of God Essentials,Tracksuits,185,4,S|M|L,Black,front.jpg|back.jpg,yes`,
+    ].join('\n');
+    await login(page, ADMIN);
+    await page.goto('/admin/products');
+    await page.getByRole('link', { name: 'Bulk upload' }).first().click();
+    await expect(page).toHaveURL(/\/admin\/import$/);
+    await expect(page.getByRole('link', { name: 'Download the template' })).toHaveAttribute(
+      'href',
+      '/templates/product-upload-template.csv'
+    );
+
+    await page.getByLabel('Spreadsheet (.csv)').setInputFiles({ name: 'stock.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) });
+    await page.getByLabel('Photos').setInputFiles([
+      { name: 'front.jpg', mimeType: 'image/jpeg', buffer: await photo('#111111') },
+      { name: 'back.jpg', mimeType: 'image/jpeg', buffer: await photo('#444444') },
+    ]);
+    await page.getByRole('button', { name: 'Check spreadsheet' }).click();
+    await expect(page.getByText('Ready to import')).toBeVisible();
+    await page.getByRole('button', { name: 'Import 1 products' }).click();
+    await expect(page.getByText('Imported 1 new and updated 0 existing product(s)').first()).toBeVisible({ timeout: 30000 });
+
+    // Live in the shop, with both photos.
+    await page.goto(`/products?q=${sku}`);
+    await page
+      .getByRole('link', { name: `E2E Relaxed Tracksuit ${sku}` })
+      .first()
+      .click();
+    await expect(page.getByRole('heading', { name: `E2E Relaxed Tracksuit ${sku}` })).toBeVisible();
+    const thumbs = page.getByRole('group', { name: 'Product photos' }).getByRole('button');
+    await expect(thumbs).toHaveCount(2);
+    await thumbs.nth(1).click();
+    await expect(page.getByRole('img', { name: `E2E Relaxed Tracksuit ${sku}` })).toHaveAttribute(
+      'src',
+      /^\/api\/uploads\/[a-f0-9]{32}\.webp$/
+    );
+    const loaded = await page
+      .getByRole('img', { name: `E2E Relaxed Tracksuit ${sku}` })
+      .evaluate((img) => img.complete && img.naturalWidth > 0);
+    expect(loaded).toBe(true);
   });
 });

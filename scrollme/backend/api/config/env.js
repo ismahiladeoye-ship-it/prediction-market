@@ -1,3 +1,4 @@
+const path = require('node:path');
 const { z } = require('zod');
 
 // Reads and validates configuration once. Fails fast with a readable message
@@ -49,6 +50,8 @@ const schema = z.object({
   SMTP_URL: z.string().optional(),
   MAIL_FROM: z.string().default('Get It Sourced <no-reply@getitsourced.com>'),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error', 'silent']).default('info'),
+  // Where uploaded product photos are stored (a persistent volume in production).
+  UPLOAD_DIR: z.string().default(path.resolve(__dirname, '../../uploads')),
 });
 
 const PAYMENT_METHOD_IDS = ['apple_pay', 'google_pay', 'card', 'paypal', 'klarna'];

@@ -2,6 +2,7 @@
 // in-memory MongoDB + seeded catalogue/users + API + production build.
 const path = require('node:path');
 const fs = require('node:fs');
+const os = require('node:os');
 
 const BACKEND = path.resolve(__dirname, '../backend');
 const BUILD = path.resolve(__dirname, '../build');
@@ -26,6 +27,7 @@ const API_PORT = Number(process.env.E2E_API_PORT || 8090);
     RATE_LIMIT_ENABLED: 'false',
     TAX_RATE: '0.1',
     LOG_LEVEL: 'warn',
+    UPLOAD_DIR: fs.mkdtempSync(path.join(os.tmpdir(), 'scrollme-e2e-uploads-')),
   });
 
   const mongoose = require(path.join(BACKEND, 'node_modules/mongoose'));

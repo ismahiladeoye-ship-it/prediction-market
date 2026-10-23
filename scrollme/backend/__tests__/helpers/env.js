@@ -23,4 +23,6 @@ Object.assign(process.env, {
   SHIPPING_EXPRESS: '40',
   FREE_SHIPPING_THRESHOLD: '0',
   LOG_LEVEL: 'silent',
+  // Uploaded photos go to a throwaway folder per test file.
+  UPLOAD_DIR: path.join(os.tmpdir(), `${dbName}_uploads`),
 });

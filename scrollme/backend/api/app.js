@@ -55,10 +55,20 @@ const createApp = () => {
     })
   );
 
+  // Uploaded product photos: random names, re-encoded WebP, never change.
+  // Served before the rate limiter because a product grid loads many at once.
+  app.use(
+    '/api/uploads',
+    express.static(config.UPLOAD_DIR, { index: false, dotfiles: 'deny', immutable: true, maxAge: '365d', fallthrough: false }),
+    (err, req, res, next) => (err?.status >= 400 && err.status < 500 ? res.status(err.status).json({ message: 'Not found' }) : next(err))
+  );
+
   // Stripe webhook must receive the raw body, so it is registered before express.json().
   app.post('/api/payments/stripe/webhook', express.raw({ type: 'application/json', limit: '1mb' }), asyncHandler(paymentController.stripeWebhook));
 
   app.use('/api', apiLimiter);
+  // Spreadsheet uploads are larger than any other request body.
+  app.use('/api/admin/products/import', express.json({ limit: '2mb' }));
   app.use(express.json({ limit: '100kb' }));
   app.use(cookieParser());
 
@@ -73,7 +83,9 @@ const createApp = () => {
       return res.status(403).json({ message: 'Cross-site request blocked' });
     }
     const hasBody = Number(req.headers['content-length'] || 0) > 0 || req.headers['transfer-encoding'] !== undefined;
-    if (hasBody && !req.is('application/json')) {
+    // The only non-JSON write: photo uploads (admin-only, Origin-checked above).
+    const isPhotoUpload = req.path === '/admin/uploads' && req.is('multipart/form-data');
+    if (hasBody && !req.is('application/json') && !isPhotoUpload) {
       return res.status(415).json({ message: 'Content-Type must be application/json' });
     }
     next();

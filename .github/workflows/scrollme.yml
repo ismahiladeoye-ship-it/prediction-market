@@ -115,7 +115,15 @@ jobs:
         with:
           context: scrollme/backend
           push: false
+          load: true
           tags: scrollme-api:ci
+      - name: Check the API image can process photos
+        run: |
+          docker run --rm --entrypoint node scrollme-api:ci -e "
+            require('sharp')({ create: { width: 8, height: 8, channels: 3, background: '#000' } }).webp().toBuffer()
+              .then(() => require('fs').accessSync(process.env.UPLOAD_DIR, require('fs').constants.W_OK))
+              .then(() => console.log('photo processing and upload folder OK'))
+              .catch((e) => { console.error(e); process.exit(1); });"
       - name: Build storefront image
         uses: docker/build-push-action@v6
         with:
