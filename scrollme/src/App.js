@@ -7,7 +7,6 @@ import Cart from './pages/Cart';
 import Wishlist from './pages/Wishlist';
 import { Routes, Route, Link } from 'react-router-dom';
 import ProtectedRoute from './utils/ProtectedRoute';
-import ContributorsPage from './pages/ContributorsPage';
 import { lazy, Suspense } from 'react';
 import ContactUsPage from './pages/ContactUsPage';
 import ComingSoon from './pages/ComingSoon';
@@ -57,7 +56,6 @@ function App() {
             <Route path='orders' element={<LazyAdminOrders />} />
           </Route>
           <Route path='/products' element={<LazyAllProducts />} />
-          <Route path='/contributors' element={<ContributorsPage />} />
           <Route path='/login' element={<Login />} />
           <Route path='/forgot-password' element={<ForgotPassword />} />
           <Route path='/reset-password' element={<ResetPassword />} />

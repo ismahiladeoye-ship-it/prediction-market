@@ -142,9 +142,6 @@ const Footer = () => {
             <Link to={'/wishlist'}>Wishlist</Link>
           </ListItem>
           <ListItem>
-            <Link to={'/contributors'}>Contributors</Link>
-          </ListItem>
-          <ListItem>
             <Link to={'/comingsoon'}>Terms</Link>
           </ListItem>
         </List>

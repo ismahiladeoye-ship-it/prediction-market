@@ -17,8 +17,8 @@ Branch `claude/scrollme-ecommerce-phases-cwocsl`. Baseline: the original code im
 | Backup → restore drill | ✅ counts identical after restore into a separate database; tampered archive rejected |
 | Production dependency audit, API | ✅ 0 vulnerabilities (express, mongoose, bcrypt 6, nodemailer upgraded) |
 | Production dependency audit, storefront | ⚠️ see *Known limitations* |
-| Docker images | ⚠️ not built here (no Docker daemon in this environment); built by the `docker` CI job |
-| Push / CI run on GitHub | ⚠️ blocked: the session's GitHub access returns 403 for pushes. All work is committed locally on the branch |
+| Docker images | ✅ both images built by the `docker` CI job ([run #1](https://github.com/ismahiladeoye-ship-it/prediction-market/actions/runs/39897792729)) |
+| CI on GitHub | ✅ run #1: API, storefront, end-to-end and Docker jobs all green |
 
 ## How each audit finding was resolved
 
@@ -43,7 +43,7 @@ Branch `claude/scrollme-ecommerce-phases-cwocsl`. Baseline: the original code im
 | 18–20 | Tile wishlist bug, hard-coded colour/sizes, crashes on missing data | Fixed; real colour/sizes; image fallbacks; empty/error/retry states | unit + e2e |
 | 21 | Wishlist per browser, leaked between users | Stored per account; cleared on logout; guest list merged on sign-in | `wishlist.test.js`, e2e merge |
 | 22 | Hard-coded API URL / Firebase config | Env-driven; same-origin `/api` | — |
-| 24 | Tailwind loaded twice incl. dev-only Play CDN | Play CDN removed; its teal classes defined locally | pixel comparison below |
+| 24 | Tailwind loaded twice incl. dev-only Play CDN | Play CDN removed (the 2.2.19 stylesheet still supplies the site-wide base styles) | pixel comparison below |
 | 26–28 | Phone overflow, mobile CSS bug | Fixed | 0 px overflow at 390 px on every page in the flow |
 
 ## Visual design check (Phase 2)
@@ -54,7 +54,6 @@ Pixel comparison of original vs. new builds (desktop 1366 px, phone 390 px):
 | --- | --- |
 | Coming soon, forgot password (desktop + phone), contact (desktop) | identical |
 | Contact (phone) | 0.09 % — navbar search box now has its intended width (malformed CSS fixed) |
-| Contributors | identical styling (Tailwind teal classes preserved); content is live GitHub data |
 | Login / register | differ only where intended: "username or email" placeholder, password guidance, Google button hidden until Firebase is configured |
 | Home, catalogue, product, cart | same layout, fonts and colours; real data instead of placeholders; see [screenshots/](screenshots/) |
 
@@ -68,9 +67,10 @@ New screens (checkout, payment sheet, orders, account, admin) reuse the original
 - **Duplicate products**: the scraped catalogue contains some duplicated items (same name and image). Hide duplicates in Admin → Products if needed.
 - **Storefront build tooling**: Create React App (`react-scripts`) is unmaintained, and `npm audit` flags its build-time dependencies. They are not shipped to browsers. The remaining runtime-tree finding is `@grpc/grpc-js` under Firebase's Firestore, which the app does not import and which is Node-only. A move to Vite would clear these; it was left out as it is a tooling change beyond this scope.
 - **Email**: password-reset emails need `SMTP_URL`; order-confirmation emails are not implemented.
+- **Contributors page removed** at the owner's request (page, GitHub data hook, footer link, CSP allowance for api.github.com). `/contributors` now shows the empty category page.
 - **Newsletter / contact forms** still only show a confirmation (as in the original); no backend exists for them.
 - **Main bundle** is ~640 kB gzipped (original: 649 kB). Firebase now loads only when Google sign-in is used; further splitting of Chakra/MUI is possible.
 
 ## Promotion to `main`
 
-Do not merge until: GitHub access is restored and the branch is pushed; the `ScrollMe CI` workflow is green (API, storefront, end-to-end, Docker builds); and the Stripe test-mode checklist in DEPLOYMENT.md has been completed on a staging deployment.
+Do not merge until the `ScrollMe CI` workflow is green on the latest commit and the Stripe test-mode checklist in DEPLOYMENT.md has been completed on a staging deployment.
