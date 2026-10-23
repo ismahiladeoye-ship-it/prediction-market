@@ -1,31 +1,23 @@
 const express = require('express');
 const router = express.Router();
-const authMiddleware = require('../middleware/authMiddleware');
+const { authMiddleware, requireAdmin } = require('../middleware/authMiddleware');
+const validate = require('../middleware/validate');
 const productController = require('../controllers/productController');
+const admin = require('../controllers/adminController');
+const s = require('../validators/schemas');
+const { asyncHandler } = require('../utils/httpError');
 
-// Route to add a new product (only for admins)
-router.post('/add', authMiddleware, productController.addProduct);
+const idParams = validate({ params: s.idParam('productId') });
 
-// Route to get a list of all products
-router.get('/list', productController.listProducts);
+// Public catalogue
+router.get('/list', validate({ query: s.productListQuery }), asyncHandler(productController.listProducts));
+router.get('/categories', asyncHandler(productController.listCategories));
+router.get('/brands', asyncHandler(productController.listBrands));
+router.get('/:productId', idParams, asyncHandler(productController.getProductById));
 
-// Route to get details of a specific product by its ID
-router.get('/:productId', productController.getProductById);
+// Original write endpoints, now restricted to admins (same handlers as /api/admin/products)
+router.post('/add', authMiddleware, requireAdmin, validate({ body: s.productCreate }), asyncHandler(admin.createProduct));
+router.put('/update/:productId', authMiddleware, requireAdmin, idParams, validate({ body: s.productUpdate }), asyncHandler(admin.updateProduct));
+router.delete('/delete/:productId', authMiddleware, requireAdmin, idParams, asyncHandler(admin.deleteProduct));
 
-// Route to update a product (only for admins)
-router.put(
-  '/update/:productId',
-  authMiddleware,
-  productController.updateProduct
-);
-
-// Route to delete a product (only for admins)
-router.delete(
-  '/delete/:productId',
-  authMiddleware,
-  productController.deleteProduct
-);
-
-// Export the router
-module.exports = router;
 module.exports = router;

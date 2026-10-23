@@ -1,32 +1,24 @@
 import globals from 'globals';
 import pluginJs from '@eslint/js';
+import prettierRecommended from 'eslint-plugin-prettier/recommended';
 
 export default [
-  { files: ['**/*.js'] },
+  { ignores: ['node_modules/**', 'coverage/**', 'scripts/**/*.json'] },
   {
+    files: ['**/*.js'],
     languageOptions: {
-      sourceType: 'commonjs', // CommonJS for Node.js
-      ecmaVersion: 2021, // ECMAScript version (2021 to support modern JS features)
-      globals: {
-        ...globals.browser, // for browser globals
-        ...globals.node, // for Node.js globals
-      },
+      sourceType: 'commonjs',
+      ecmaVersion: 2022,
+      globals: { ...globals.node, ...globals.jest },
     },
   },
   pluginJs.configs.recommended,
-  'plugin:prettier/recommended',
+  prettierRecommended,
   {
     rules: {
-      'no-unused-vars': 'error',
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrors: 'none' }],
       'prefer-const': ['error', { ignoreReadBeforeAssign: true }],
       'no-unused-expressions': 'error',
-      'arrow-body-style': ['error', 'always'],
-      curly: ['error', 'multi', 'consistent'],
-      'indent': ['error', 'tab', { SwitchCase: 1}], 
-      'prettier/prettier': 'error',
     },
   },
-  {
-    ignores: ["eslint.config.mjs"]
-  }
 ];

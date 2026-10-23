@@ -8,25 +8,33 @@ const ProductSchema = new Schema(
       type: String,
       required: true,
       trim: true,
+      maxlength: 200,
     },
     description: {
       type: String,
       trim: true,
+      maxlength: 5000,
     },
     price: {
       type: Number,
       required: true,
+      min: [0, 'Price must be a positive number'],
     },
     discounted_price: {
-      type: Number, 
+      type: Number,
+      min: 0,
     },
     category: {
       type: String,
       trim: true,
+      lowercase: true,
+      index: true,
     },
     stock: {
       type: Number,
       default: 0,
+      min: [0, 'Stock cannot be negative'],
+      validate: { validator: Number.isInteger, message: 'Stock must be a whole number' },
     },
     imageUrl: {
       type: String,
@@ -35,6 +43,7 @@ const ProductSchema = new Schema(
     brand: {
       type: String,
       trim: true,
+      index: true,
     },
     weight: {
       type: Number,
@@ -62,25 +71,14 @@ const ProductSchema = new Schema(
       type: String,
       trim: true,
     },
+    // Size labels as sold, e.g. ["S", "M", "L"] or ["38", "40"]. Empty means one size.
     sizes: {
-      type: [Number],
-      validate: {
-        validator: function (v) {
-          return Array.isArray(v) && v.every(size => Number.isInteger(size));
-        },
-        message: 'Sizes must be an array of integers',
-      },
+      type: [String],
       default: [],
     },
     tags: {
       type: [String],
       default: [],
-      validate: {
-        validator: function (v) {
-          return Array.isArray(v) && v.every(tag => typeof tag === 'string');
-        },
-        message: 'Tags must be an array of strings',
-      },
     },
     ratings: {
       averageRating: {
@@ -95,6 +93,7 @@ const ProductSchema = new Schema(
     isActive: {
       type: Boolean,
       default: true,
+      index: true,
     },
     createdAt: {
       type: Date,
@@ -108,9 +107,16 @@ const ProductSchema = new Schema(
   { collection: 'products' }
 );
 
+ProductSchema.index({ isActive: 1, category: 1, createdAt: -1 });
+ProductSchema.index({ isActive: 1, price: 1 });
+
 // Middleware to update `updatedAt` before saving
 ProductSchema.pre('save', function (next) {
   this.updatedAt = Date.now();
+  next();
+});
+ProductSchema.pre('findOneAndUpdate', function (next) {
+  this.set({ updatedAt: Date.now() });
   next();
 });
 

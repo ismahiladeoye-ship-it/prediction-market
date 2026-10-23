@@ -3,20 +3,8 @@ const fs = require('node:fs');
 const existingData = require('./products.json');
 
 // Array of possible colors
-const colors = [
-  'Red',
-  'Green',
-  'Blue',
-  'Yellow',
-  'Orange',
-  'Purple',
-  'Pink',
-  'Brown',
-  'Black',
-  'White',
-];
+const colors = ['Red', 'Green', 'Blue', 'Yellow', 'Orange', 'Purple', 'Pink', 'Brown', 'Black', 'White'];
 const sizes = [38, 39, 40, 42, 44];
-
 
 const generateProductFromJson = (jsonData) => {
   return {
@@ -24,7 +12,7 @@ const generateProductFromJson = (jsonData) => {
     description: jsonData.meta_description || faker.lorem.paragraph(),
     price: jsonData.marked_price || Number.parseFloat(faker.number.int({ min: 1200, max: 5600 })),
     discounted_price: jsonData.discounted_price || Number.parseFloat(faker.number.int({ min: 50, max: 4000 })),
-    category: jsonData.brand_tag || faker.commerce.department(),
+    category: jsonData.product_tag || faker.commerce.department(),
     stock: faker.number.int({ min: 0, max: 100 }),
     imageUrl: jsonData.img_link || `https://via.placeholder.com/150?text=${faker.commerce.productName()}`,
     brand: jsonData.brand_tag || faker.company.name(),

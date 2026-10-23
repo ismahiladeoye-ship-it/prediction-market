@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 const Schema = mongoose.Schema;
+
+const ROLES = ['user', 'admin', 'super_admin'];
 
 // User Schema Object
 const UserSchema = new Schema({
@@ -32,12 +33,21 @@ const UserSchema = new Schema({
   password: {
     type: String,
     required: 'Please enter a password',
+    select: false,
   },
   roles: {
-    type: [String],
-    enum: ['user', 'admin', 'super_admin'],
+    type: [{ type: String, enum: ROLES }],
     default: ['user'],
   },
+  // Incremented on logout / password change; refresh tokens carrying an older
+  // version are rejected, which revokes every outstanding session.
+  tokenVersion: { type: Number, default: 0 },
+  wishlist: [{ type: Schema.Types.ObjectId, ref: 'Product' }],
+  passwordReset: {
+    tokenHash: { type: String, select: false },
+    expiresAt: { type: Date, select: false },
+  },
+  authProvider: { type: String, enum: ['password', 'google'], default: 'password' },
   created: {
     type: Date,
     default: Date.now,
@@ -46,41 +56,38 @@ const UserSchema = new Schema({
 
 // Hash password before saving
 UserSchema.pre('save', async function (next) {
-  if (this.isModified('password') || this.isNew) {
-    try {
-      const salt = await bcrypt.genSalt(10);
-      this.password = await bcrypt.hash(this.password, salt);
-      next();
-    } catch (err) {
-      next(err);
-    }
-  } else {
-    return next();
+  if (!this.isModified('password')) return next();
+  try {
+    const rounds = Number(process.env.BCRYPT_ROUNDS) || 12;
+    this.password = await bcrypt.hash(this.password, rounds);
+    next();
+  } catch (err) {
+    next(err);
   }
 });
 
-// Compare password method
+// Compare password method (requires the document to be loaded with +password)
 UserSchema.methods.comparePassword = async function (candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password);
+  if (!this.password || typeof candidatePassword !== 'string') return false;
+  return bcrypt.compare(candidatePassword, this.password);
 };
 
-// Generate access token
-UserSchema.methods.generateAuthToken = function () {
-  return jwt.sign(
-    { id: this._id, roles: this.roles },
-    process.env.JWT_SECRET,
-    { expiresIn: '1h' } // Access token expiration
-  );
+UserSchema.methods.isAdmin = function () {
+  return this.roles.includes('admin') || this.roles.includes('super_admin');
 };
 
-// Generate refresh token
-UserSchema.methods.generateRefreshToken = function () {
-  return jwt.sign(
-    { id: this._id },
-    process.env.JWT_SECRET,
-    { expiresIn: '30d' } // Refresh token expiration
-  );
+UserSchema.methods.toPublicJSON = function () {
+  return {
+    id: this._id,
+    firstName: this.firstName,
+    lastName: this.lastName,
+    username: this.username,
+    email: this.email,
+    roles: this.roles,
+  };
 };
+
+UserSchema.statics.ROLES = ROLES;
 
 // Create and export the User model
 module.exports = mongoose.model('User', UserSchema);

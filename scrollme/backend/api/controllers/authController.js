@@ -1,309 +1,147 @@
+const crypto = require('node:crypto');
 const User = require('../models/userModel');
-const jwt = require('jsonwebtoken');
-const { z } = require('zod');
+const { getConfig } = require('../config/env');
+const { REFRESH_COOKIE, setAuthCookies, clearAuthCookies, verifyRefreshToken } = require('../services/tokens');
+const mailer = require('../services/mailer');
+const { verifyGoogleIdToken } = require('../services/googleAuth');
+const { badRequest, unauthorized, conflict, HttpError } = require('../utils/httpError');
+const logger = require('../utils/logger');
+
+// Real bcrypt hash of a random string, compared against when the user does not exist.
+const DUMMY_HASH = '$2b$12$QRwGchrL8LjfV4hGSmigAup8WIdSYopb8y.uAszQLu8qei1DpUXMK';
+
+const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
 
 exports.register = async (req, res) => {
-  const requiredBody = z.object({
-    username: z
-      .string()
-      .min(3, 'username is too small')
-      .max(30, 'username is too big'),
-    password: z
-      .string()
-      .min(6, 'password must be atleast 12 characters long')
-      .max(64, 'password is too long')
-      .regex(/[A-Z]/, 'password must contain atleast one uppercase character.')
-      .regex(/[a-z]/, 'password must contain atleast one lowercase character.')
-      .regex(/[0-9]/, 'password must contain atleast one numeric character.')
-      .regex(
-        /[\W_]/,
-        'password must contain atleast one special character (e.g., ! @ # $ % ^ & *).'
-      ),
-  });
+  const { firstName, lastName, username, email, password, confirmPassword } = req.body;
+  if (confirmPassword !== undefined && confirmPassword !== password) throw badRequest('Passwords do not match');
 
-  const parsedBody = requiredBody.safeParse(req.body);
-  if (!parsedBody.success) return res.status(400).json(parsedBody.error.errors);
-
-  try {
-    const { firstName, lastName, username, email, password } = req.body;
-
-    // Check if user with the same email or username exists
-    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
-    if (existingUser)
-      return res
-        .status(400)
-        .send('User with the same email or username already exists');
-
-    const user = new User({ firstName, lastName, username, email, password });
-    await user.save();
-
-    const accessToken = user.generateAuthToken();
-    const refreshToken = user.generateRefreshToken();
-
-    // Set cookies
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Only use 'secure' in production
-      sameSite: 'Strict',
-    });
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Only use 'secure' in production
-      sameSite: 'Strict',
-    });
-
-    res.status(201).json({ message: 'User registered successfully' });
-  } catch (error) {
-    console.error('Registration error:', error);
-
-    if (error.code && error.code === 11000) {
-      // MongoDB duplicate key error
-      const field = Object.keys(error.keyPattern)[0];
-      return res
-        .status(400)
-        .json({ message: `An account with that ${field} already exists.` });
-    }
-
-    // General server error
-    res
-      .status(500)
-      .json({ message: 'Internal server error', error: error.message });
+  const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+  if (existingUser) {
+    const field = existingUser.email === email ? 'email' : 'username';
+    throw conflict(`An account with that ${field} already exists.`);
   }
+
+  // Roles are never taken from the request body.
+  const user = await User.create({ firstName, lastName, username, email, password, roles: ['user'] });
+  setAuthCookies(res, user);
+  res.status(201).json({ message: 'User registered successfully', user: user.toPublicJSON() });
 };
 
 exports.login = async (req, res) => {
-  try {
-    const { username, password } = req.body;
+  const { username, password } = req.body;
+  const user = await User.findOne(username.includes('@') ? { email: username } : { username }).select('+password');
+  // Same message and a hash comparison either way, so responses do not reveal which usernames exist.
+  const ok = user ? await user.comparePassword(password) : await User.hydrate({ password: DUMMY_HASH }).comparePassword(password);
+  if (!user || !ok) throw unauthorized('Invalid username or password');
 
-    const user = await User.findOne({ username });
-    if (!user) return res.status(400).send('Invalid username or password');
-
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) return res.status(400).send('Invalid username or password');
-
-    const accessToken = user.generateAuthToken();
-    const refreshToken = user.generateRefreshToken();
-
-    // Set cookies
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Strict',
-    });
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Strict',
-    });
-
-    res.status(200).json({
-      message: 'Logged in successfully',
-      user: {
-        id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        role: user.roles,
-        username: user.username
-      }
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send('Server error');
-  }
+  setAuthCookies(res, user);
+  res.status(200).json({ message: 'Logged in successfully', user: user.toPublicJSON() });
 };
 
 exports.logOut = async (req, res) => {
-  try {
-    res.cookie("accessToken", "", {
-      maxAge: 0,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: "strict",
-    });
-    res.cookie("refreshToken", "", {
-      maxAge: 0,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: "strict",
-    });
-
-    return res.status(200).json({ message: "Logged out successfully" });
-  } catch (error) {
-    console.error("Error during logout:", error);
-    return res.status(500).json({ message: "Internal Server Error" });
+  // Revoke every session of this user when we can identify them from the refresh cookie.
+  const token = req.cookies?.[REFRESH_COOKIE];
+  if (token) {
+    try {
+      const decoded = verifyRefreshToken(token);
+      await User.updateOne({ _id: decoded.id, tokenVersion: decoded.v }, { $inc: { tokenVersion: 1 } });
+    } catch {
+      // An invalid or expired token is already useless; clearing cookies is enough.
+    }
   }
+  clearAuthCookies(res);
+  res.status(200).json({ message: 'Logged out successfully' });
 };
 
 exports.refreshToken = async (req, res) => {
+  const token = req.cookies?.[REFRESH_COOKIE];
+  if (!token) throw unauthorized('No refresh token provided');
+  let decoded;
   try {
-    const { refreshToken } = req.body;
-    if (!refreshToken) return res.status(401).send('No refresh token provided');
-
-    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-    const user = await User.findById(decoded.id);
-
-    if (!user) return res.status(401).send('Invalid refresh token');
-
-    // Generate new tokens
-    const accessToken = user.generateAuthToken();
-    const newRefreshToken = user.generateRefreshToken();
-
-    // Set new cookies
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Strict',
-    });
-    res.cookie('refreshToken', newRefreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Strict',
-    });
-
-    res.status(200).json({ message: 'Tokens refreshed' });
-  } catch (error) {
-    console.error('Refresh token error:', error);
-    res
-      .status(500)
-      .json({ message: 'Internal server error', error: error.message });
+    decoded = verifyRefreshToken(token);
+  } catch {
+    clearAuthCookies(res);
+    throw unauthorized('Invalid or expired refresh token');
   }
+  const user = await User.findById(decoded.id);
+  if (!user || user.tokenVersion !== decoded.v) {
+    clearAuthCookies(res);
+    throw unauthorized('Session has been revoked');
+  }
+  setAuthCookies(res, user);
+  res.status(200).json({ message: 'Tokens refreshed', user: user.toPublicJSON() });
 };
 
-// exports.checkAuthStatus = async (req, res) => {
-//   try {
-//     const accessToken = req.cookies.accessToken;
-//     const refreshToken = req.cookies.refreshToken;
-
-//     if (!accessToken || !refreshToken) {
-//       return res.status(401).json({ message: 'Not authenticated' });
-//     }
-
-//     // Verify the access token
-//     jwt.verify(accessToken, process.env.JWT_SECRET, async (err, decoded) => {
-//       if (err && err.name === 'TokenExpiredError') {
-//         try {
-//           const decodeData = jwt.verify(refreshToken, process.env.JWT_SECRET);
-//           const user = await User.findById(decodeData.id);
-
-//           if (!user) {
-//             return res.status(401).json({ message: 'Invalid refresh token' });
-//           }
-
-//           const newAccessToken = user.generateAuthToken();
-//           const newRefreshToken = user.generateRefreshToken();
-//           res.cookie('accessToken', newAccessToken, {
-//             httpOnly: true,
-//             secure: process.env.NODE_ENV === 'production',
-//             sameSite: 'Strict',
-//           });
-//           res.cookie('refreshToken', newRefreshToken, {
-//             httpOnly: true,
-//             secure: process.env.NODE_ENV === 'production',
-//             sameSite: 'Strict',
-//           });
-
-//           return res.status(200).json({
-//             message: 'New tokens issued!',
-//             user: {
-//               id: user._id,
-//               username: user.username,
-//               email: user.email
-//             }
-//           });
-//         } catch (refreshError) {
-//           console.error('Refresh token error:', refreshError);
-//           return res.status(401).json({ message: 'Invalid or expired refresh token' });
-//         }
-//       } else if (err) {
-//         return res.status(401).json({ message: 'Invalid access token' });
-//       } else {
-//         const user = await User.findById(decoded.id);
-//         if (!user) {
-//           return res.status(401).json({ message: 'User not found' });
-//         }
-//         return res.status(200).json({ message: 'Authenticated', user: { id: user._id, username: user.username, email: user.email } });
-//       }
-//     });
-//   } catch (error) {
-//     console.error('Auth status error:', error);
-//     return res.status(500).json({ message: 'Internal server error', error: error.message });
-//   }
-// };
-
-
+// Kept for the original frontend contract: { message: 'Authenticated', user }.
 exports.checkAuthStatus = async (req, res) => {
-  try {
-    const accessToken = req.cookies.accessToken;
-    const refreshToken = req.cookies.refreshToken;
+  res.status(200).json({ message: 'Authenticated', user: req.user.toPublicJSON() });
+};
 
-    if (!accessToken || !refreshToken) {
-      return res.status(401).json({ message: 'Not authenticated' });
-    }
+exports.me = async (req, res) => {
+  res.status(200).json({ user: req.user.toPublicJSON() });
+};
 
-    // Verify the access token
-    jwt.verify(accessToken, process.env.JWT_SECRET, async (err, decoded) => {
-      if (err) {
-        // Handle token expiration or invalid token case
-        if (err.name === 'TokenExpiredError') {
-          try {
-            const decodeData = jwt.verify(refreshToken, process.env.JWT_SECRET);
-            const user = await User.findById(decodeData.id);
-
-            if (!user) {
-              return res.status(401).json({ message: 'Invalid refresh token' });
-            }
-
-            // Generate new tokens
-            const newAccessToken = user.generateAuthToken();
-            const newRefreshToken = user.generateRefreshToken();
-
-            // Set new tokens in cookies
-            res.cookie('accessToken', newAccessToken, {
-              httpOnly: true,
-              secure: process.env.NODE_ENV === 'production',
-              sameSite: 'Strict',
-            });
-            res.cookie('refreshToken', newRefreshToken, {
-              httpOnly: true,
-              secure: process.env.NODE_ENV === 'production',
-              sameSite: 'Strict',
-            });
-
-            return res.status(200).json({
-              message: 'New tokens issued!',
-              user: {
-                id: user._id,
-                username: user.username,
-                email: user.email,
-              },
-            });
-          } catch (refreshError) {
-            console.error('Refresh token error:', refreshError);
-            return res.status(401).json({ message: 'Invalid or expired refresh token' });
-          }
-        } else {
-          return res.status(401).json({ message: 'Invalid access token' });
-        }
-      }
-
-      // If access token is valid, proceed to get user details
-      const user = await User.findById(decoded.id);
-      if (!user) {
-        return res.status(401).json({ message: 'User not found' });
-      }
-
-      return res.status(200).json({
-        message: 'Authenticated',
-        user: {
-          id: user._id,
-          username: user.username,
-          email: user.email
-        }
-      });
-    });
-  } catch (error) {
-    console.error('Auth status error:', error);
-    return res.status(500).json({ message: 'Internal server error', error: error.message });
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (user) {
+    const token = crypto.randomBytes(32).toString('hex');
+    user.passwordReset = { tokenHash: hashToken(token), expiresAt: new Date(Date.now() + 30 * 60 * 1000) };
+    await user.save();
+    const link = `${getConfig().APP_URL}/reset-password?token=${token}`;
+    await mailer
+      .sendMail({
+        to: user.email,
+        subject: 'Reset your ScrollMe password',
+        text: `Hi ${user.firstName},\n\nUse this link within 30 minutes to choose a new password:\n${link}\n\nIf you did not ask for this, you can ignore this email.`,
+      })
+      .catch((err) => logger.error('password_reset_mail_failed', { err }));
   }
+  // Identical response whether or not the address is registered.
+  res.status(200).json({ message: 'If an account exists for that email, a reset link has been sent.' });
+};
+
+exports.resetPassword = async (req, res) => {
+  const { token, password } = req.body;
+  const user = await User.findOne({
+    'passwordReset.tokenHash': hashToken(token),
+    'passwordReset.expiresAt': { $gt: new Date() },
+  });
+  if (!user) throw badRequest('Invalid or expired reset link');
+  user.password = password;
+  user.passwordReset = undefined;
+  user.tokenVersion += 1; // sign out all existing sessions
+  user.authProvider = user.authProvider || 'password';
+  await user.save();
+  clearAuthCookies(res);
+  res.status(200).json({ message: 'Password updated. Please sign in with your new password.' });
+};
+
+exports.googleLogin = async (req, res) => {
+  const claims = await verifyGoogleIdToken(req.body.idToken);
+  if (!claims.email || !claims.email_verified) throw new HttpError(401, 'Google account email is not verified');
+  const email = claims.email.toLowerCase();
+  let user = await User.findOne({ email });
+  if (!user) {
+    const [first, ...rest] = String(claims.name || email.split('@')[0]).split(' ');
+    const base =
+      email
+        .split('@')[0]
+        .replace(/[^a-z0-9._-]/g, '')
+        .slice(0, 20) || 'user';
+    let username = base;
+    while (await User.exists({ username })) username = `${base}${crypto.randomInt(1000, 9999)}`;
+    user = await User.create({
+      firstName: first || 'Google',
+      lastName: rest.join(' ') || 'User',
+      username,
+      email,
+      // Random unusable password; the account signs in with Google or a reset link.
+      password: `${crypto.randomBytes(24).toString('base64')}aA1!`,
+      authProvider: 'google',
+    });
+  }
+  setAuthCookies(res, user);
+  res.status(200).json({ message: 'Logged in successfully', user: user.toPublicJSON() });
 };
