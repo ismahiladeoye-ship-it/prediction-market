@@ -1,77 +1,15 @@
-import axios from 'axios';
+import client from '../../api/client';
 import { CART_ENDPOINTS } from '../../api/endPoints';
-import { createFetchOptions, HttpMethod } from '../../utils/apiConfig';
 
-// Function to add an item to the cart
-export const addToCartAPI = async (cartData) => {
-  const config = {
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    withCredentials: true,
-  };
-  return await axios
-    .post(CART_ENDPOINTS.ADD_TO_CART, cartData, config)
-    .then((response) => {
-      return Promise.resolve(response.data);
-    })
-    .catch((error) => {
-      console.error(error);
-      return Promise.reject(error.response.data);
-    });
-};
+// Every call returns the full cart as computed by the server
+// ({ items, totalQuantity, summary, deliveryOptions, issues }).
+export const viewCartAPI = async (delivery = 'standard') => (await client.get(CART_ENDPOINTS.VIEW_CART, { params: { delivery } })).data;
 
-// Function to view the user's cart
-export const viewCartAPI = async () => {
-  return await axios
-    .get(CART_ENDPOINTS.VIEW_CART)
-    .then((response) => {
-      return Promise.resolve(response.data);
-    })
-    .catch((error) => {
-      console.error(error);
-      return Promise.reject(error.response.data);
-    });
-};
+export const addToCartAPI = async ({ productId, quantity = 1, size = '' }) => (await client.post(CART_ENDPOINTS.ADD_TO_CART, { productId, quantity, size })).data;
 
-// Function to update an item quantity in the cart
-export const updateCartItemAPI = async (data) => {
-  const config = createFetchOptions(HttpMethod.PUT, true);
-  return await axios
-    .put(CART_ENDPOINTS.UPDATE_CART_ITEM, data, config)
-    .then((response) => {
-      return Promise.resolve(response.data);
-    })
-    .catch((error) => {
-      console.error(error);
-      return Promise.reject(error.response.data);
-    });
-};
+export const updateCartItemAPI = async ({ productId, quantity, size = '' }) =>
+  (await client.put(CART_ENDPOINTS.UPDATE_CART_ITEM, { productId, quantity, size })).data;
 
-// Function to delete an item from the cart
-export const deleteCartItemAPI = async (data) => {
-  const config = createFetchOptions(HttpMethod.DELETE, true);
-  config.data = data;
-  return await axios
-    .delete(CART_ENDPOINTS.DELETE_CART_ITEM, config)
-    .then((response) => {
-      return Promise.resolve(response.data);
-    })
-    .catch((error) => {
-      console.error(error);
-      return Promise.reject(error.response.data);
-    });
-};
+export const deleteCartItemAPI = async ({ productId, size = '' }) => (await client.delete(CART_ENDPOINTS.DELETE_CART_ITEM, { data: { productId, size } })).data;
 
-// Function to clear the cart
-export const clearCartAPI = async () => {
-  return await axios
-    .delete(CART_ENDPOINTS.CLEAR_CART)
-    .then((response) => {
-      return Promise.resolve(response.data);
-    })
-    .catch((error) => {
-      console.error(error);
-      return Promise.reject(error.response.data);
-    });
-};
+export const clearCartAPI = async () => (await client.delete(CART_ENDPOINTS.CLEAR_CART)).data;

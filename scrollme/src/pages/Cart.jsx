@@ -2,14 +2,17 @@ import styled from 'styled-components';
 import Navbar from '../components/Navbar';
 import Announcement from '../components/Announcement';
 import Footer from '../components/Footer';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Text } from '../styles/Text';
 import { LeftDivider } from '../styles/Divider';
 import { useDispatch } from 'react-redux';
-import { Box, useToast } from '@chakra-ui/react';
-import { deleteCartItem, updateCartItem } from '../store/slices/cartSlice';
+import { Box, Spinner, useToast } from '@chakra-ui/react';
+import { deleteCartItem, updateCartItem, viewCart } from '../store/slices/cartSlice';
+import { toggleWishlist } from '../store/slices/wishlistSlice';
+import { formatPrice } from '../utils/format';
+import { imageSrc, onImageError } from '../utils/imageFallback';
 
 const Container = styled.div``;
 
@@ -39,6 +42,10 @@ const TopButton = styled.button`
   padding: 10px;
   font-weight: 600;
   cursor: pointer;
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
   border: ${(props) => props.type === 'filled' && 'none'};
   background-color: ${(props) => (props.type === 'filled' ? 'black' : 'transparent')};
   color: ${(props) => props.type === 'filled' && 'white'};
@@ -164,7 +171,8 @@ const Summary = styled.div`
   border: 0.5px solid lightgray;
   border-radius: 10px;
   padding: 20px;
-  height: 50vh;
+  min-height: 50vh;
+  height: fit-content;
   margin-top: 20px;
 
   @media (max-width: 768px) {
@@ -195,17 +203,53 @@ const Button = styled.button`
   background-color: black;
   color: white;
   font-weight: 600;
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const EmptyState = styled.p`
+  width: 100%;
+  padding: 40px 0;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 300;
+  a {
+    color: teal;
+    text-decoration: underline;
+  }
+`;
+
+const IssueBox = styled.div`
+  width: 100%;
+  padding: 10px 14px;
+  border-left: 3px solid red;
+  background-color: #fff5f5;
+  font-size: 14px;
+`;
+
+const LineTotal = styled.span`
+  font-size: 14px;
+  color: #777;
 `;
 
 const Cart = () => {
-  const cartItems = useSelector((state) => state.cart.items);
+  const { items: cartItems, summary, issues, status } = useSelector((state) => state.cart);
   const wishListItems = useSelector((state) => state.wishlist?.items);
-  const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
   const toast = useToast();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const isEmpty = cartItems.length === 0;
+  const canCheckout = !isEmpty && issues.length === 0;
 
-  const handleQuantityChange = (productId, quantity) => {
-    dispatch(updateCartItem({ productId, quantity }))
+  // Always show the server's current prices and stock.
+  useEffect(() => {
+    dispatch(viewCart());
+  }, [dispatch]);
+
+  const handleQuantityChange = (item, quantity) => {
+    dispatch(updateCartItem({ productId: item.productId, size: item.size, quantity }))
       .unwrap()
       .then(() => {
         toast({
@@ -218,23 +262,24 @@ const Cart = () => {
         });
       })
       .catch((error) => {
-        console.error(error);
         toast({
           position: 'bottom-right',
           status: 'error',
           render: () => (
             <Box color='white' p={3} bg='red.500'>
-              Error while updated quantity!
+              {typeof error === 'string' ? error : 'Error while updating quantity!'}
             </Box>
           ),
         });
+        dispatch(viewCart());
       });
   };
-  const handleRemoveFromCart = (productId) => {
-    console.log(`Removing ${productId} from cart`);
-    dispatch(deleteCartItem(productId))
+
+  const handleRemoveFromCart = (item, { silent = false } = {}) =>
+    dispatch(deleteCartItem({ productId: item.productId, size: item.size }))
       .unwrap()
       .then(() => {
+        if (silent) return;
         toast({
           title: 'Product removed from cart.',
           description: 'The item has been successfully removed from your cart.',
@@ -243,7 +288,7 @@ const Cart = () => {
           isClosable: true,
         });
       })
-      .catch((error) => {
+      .catch(() => {
         toast({
           title: 'Error removing product.',
           description: 'There was an issue removing the item from your cart.',
@@ -251,13 +296,18 @@ const Cart = () => {
           duration: 3000,
           isClosable: true,
         });
-        console.error(error);
       });
+
+  // "Save for Later" moves the item to the wishlist.
+  const handleSaveForLater = async (item) => {
+    if (!wishListItems.some((w) => w._id === item.productId)) {
+      await dispatch(toggleWishlist({ _id: item.productId, name: item.name, imageUrl: item.imageUrl, price: item.price, category: item.category }));
+    }
+    await handleRemoveFromCart(item, { silent: true });
+    toast({ title: 'Saved for later.', description: 'The item was moved to your wishlist.', status: 'success', duration: 3000, isClosable: true });
   };
 
-  const handleSaveForLater = (productId) => {
-    console.log(`Saved product ${productId} for later`);
-  };
+  const goToCheckout = () => navigate('/checkout');
 
   return (
     <Container>
@@ -275,27 +325,52 @@ const Cart = () => {
               <Link to={'/wishlist'}>Your Wishlist ({wishListItems?.length})</Link>
             </TopText>
           </TopTexts>
-          <TopButton type='filled'>CHECKOUT NOW</TopButton>
+          <TopButton type='filled' onClick={goToCheckout} disabled={!canCheckout}>
+            CHECKOUT NOW
+          </TopButton>
         </Top>
         <Bottom>
           <Info>
+            {status === 'loading' && isEmpty && (
+              <Box w='100%' textAlign='center' py={10}>
+                <Spinner size='lg' color='teal' />
+              </Box>
+            )}
+            {status !== 'loading' && isEmpty && (
+              <EmptyState>
+                Your bag is empty. <Link to='/products'>Start shopping</Link>
+              </EmptyState>
+            )}
+            {issues.map((issue) => (
+              <IssueBox key={`${issue.productId}-${issue.size}`} role='alert'>
+                {issue.message}
+              </IssueBox>
+            ))}
             {cartItems.map((item) => (
-              <Product key={item.productId}>
+              <Product key={`${item.productId}-${item.size}`}>
                 <ProductDetail>
-                  <Image src={item.image} />
+                  <Link to={`/${item.category || 'product'}/${item.productId}`}>
+                    <Image src={imageSrc(item.image)} alt={item.name} onError={onImageError} />
+                  </Link>
                   <Details>
                     <ProductBrand>{item.brand}</ProductBrand>
-                    <ProductName>{item.name}</ProductName>
+                    <ProductName>
+                      {item.name}
+                      {item.size ? ` · Size ${item.size}` : ''}
+                    </ProductName>
                     <CartItemActions
+                      key={item.quantity}
                       initialQuantity={item.quantity}
-                      onChange={(newQuantity) => handleQuantityChange(item.productId, newQuantity)}
-                      onRemove={() => handleRemoveFromCart(item.productId)}
-                      onSaveForLater={() => handleSaveForLater(item.productId)}
+                      maxQuantity={Math.min(item.stock, 20)}
+                      onChange={(newQuantity) => handleQuantityChange(item, newQuantity)}
+                      onRemove={() => handleRemoveFromCart(item)}
+                      onSaveForLater={() => handleSaveForLater(item)}
                     />
                   </Details>
                 </ProductDetail>
                 <PriceDetail>
-                  <ProductPrice>$ {item.price}</ProductPrice>
+                  <ProductPrice>{formatPrice(item.price)}</ProductPrice>
+                  {item.quantity > 1 && <LineTotal>{formatPrice(item.lineTotal)} total</LineTotal>}
                 </PriceDetail>
               </Product>
             ))}
@@ -305,21 +380,23 @@ const Cart = () => {
             <SummaryTitle>ORDER SUMMARY</SummaryTitle>
             <SummaryItem>
               <SummaryItemText>Subtotal</SummaryItemText>
-              <SummaryItemPrice>$ {totalPrice}</SummaryItemPrice>
+              <SummaryItemPrice>{formatPrice(summary.subtotal)}</SummaryItemPrice>
             </SummaryItem>
             <SummaryItem>
               <SummaryItemText>Tax</SummaryItemText>
-              <SummaryItemPrice>$ 30</SummaryItemPrice>
+              <SummaryItemPrice>{formatPrice(summary.tax)}</SummaryItemPrice>
             </SummaryItem>
             <SummaryItem>
               <SummaryItemText>Delivery Charges</SummaryItemText>
-              <SummaryItemPrice>$ 20</SummaryItemPrice>
+              <SummaryItemPrice>{formatPrice(summary.shipping)}</SummaryItemPrice>
             </SummaryItem>
             <SummaryItem type='total'>
               <SummaryItemText>Total</SummaryItemText>
-              <SummaryItemPrice>$ {totalPrice}</SummaryItemPrice>
+              <SummaryItemPrice>{formatPrice(summary.total)}</SummaryItemPrice>
             </SummaryItem>
-            <Button>CHECKOUT NOW</Button>
+            <Button onClick={goToCheckout} disabled={!canCheckout}>
+              CHECKOUT NOW
+            </Button>
           </Summary>
         </Bottom>
       </Wrapper>
@@ -371,10 +448,22 @@ const Actions = styled.div`
   }
 `;
 
-const CartItemActions = ({ initialQuantity, onChange, onRemove, onSaveForLater }) => {
+const ActionLink = styled.button`
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
+const CartItemActions = ({ initialQuantity, maxQuantity = 20, onChange, onRemove, onSaveForLater }) => {
   const [quantity, setQuantity] = useState(initialQuantity || 1);
 
   const handleIncrement = () => {
+    if (quantity >= maxQuantity) return;
     const newQuantity = quantity + 1;
     setQuantity(newQuantity);
     onChange(newQuantity);
@@ -391,16 +480,22 @@ const CartItemActions = ({ initialQuantity, onChange, onRemove, onSaveForLater }
   return (
     <ContainerWrapper>
       <Controls>
-        <IconButton onClick={handleDecrement} disabled={quantity <= 1}>
+        <IconButton onClick={handleDecrement} disabled={quantity <= 1} aria-label='Decrease quantity'>
           –
         </IconButton>
-        <Text>{quantity}</Text>
-        <IconButton onClick={handleIncrement}>+</IconButton>
+        <Text aria-label='Quantity'>{quantity}</Text>
+        <IconButton onClick={handleIncrement} disabled={quantity >= maxQuantity} aria-label='Increase quantity'>
+          +
+        </IconButton>
       </Controls>
       <Actions>
-        <span onClick={onRemove}>Remove</span>
+        <ActionLink type='button' onClick={onRemove}>
+          Remove
+        </ActionLink>
         <LeftDivider />
-        <span onClick={onSaveForLater}>Save for Later</span>
+        <ActionLink type='button' onClick={onSaveForLater}>
+          Save for Later
+        </ActionLink>
       </Actions>
     </ContainerWrapper>
   );

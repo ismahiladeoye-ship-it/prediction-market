@@ -2,7 +2,8 @@ import styled from 'styled-components';
 import Product from './Product';
 import { listProductsAPI } from '../services/products/productService';
 import { useEffect, useState } from 'react';
-import { Box, Spinner, Text } from '@chakra-ui/react';
+import { Box, Button, Spinner, Text } from '@chakra-ui/react';
+import { getErrorMessage } from '../api/client';
 
 const Container = styled.div`
   padding: 20px;
@@ -17,9 +18,11 @@ const Products = () => {
   const [error, setError] = useState(null);
 
   const fetchPopularProducts = async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const response = await listProductsAPI(1, 10);
-      setProducts(response?.products);
+      const response = await listProductsAPI({ page: 1, limit: 10, sort: 'rating' });
+      setProducts(response?.products || []);
     } catch (error) {
       setError(error);
     } finally {
@@ -43,7 +46,10 @@ const Products = () => {
   if (error) {
     return (
       <Box textAlign='center' mt={5}>
-        <Text color='red.500'>Error fetching products: {error.message}</Text>
+        <Text color='red.500'>Error fetching products: {getErrorMessage(error)}</Text>
+        <Button mt={3} size='sm' onClick={fetchPopularProducts}>
+          Try again
+        </Button>
       </Box>
     );
   }

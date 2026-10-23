@@ -73,8 +73,11 @@ const orderSchema = new Schema(
     reservationExpiresAt: { type: Date, index: true },
     payment: {
       provider: { type: String, enum: ['stripe', 'mock'] },
+      // What the shopper chose at checkout (the provider records what was actually used).
+      method: { type: String, enum: ['apple_pay', 'google_pay', 'card', 'paypal', 'klarna'] },
       status: { type: String, enum: ['pending', 'paid', 'failed', 'refunded'], default: 'pending' },
       sessionId: { type: String, index: true },
+      attempts: { type: Number, default: 0 },
       reference: String,
       paidAt: Date,
     },

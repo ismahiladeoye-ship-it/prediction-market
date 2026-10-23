@@ -36,6 +36,28 @@ describe('checkout (mock provider)', () => {
     expect(badCountry.status).toBe(400);
   });
 
+  it('lists the enabled payment methods and rejects disabled ones', async () => {
+    const methods = await request(ctx.app).get('/api/payments/methods');
+    expect(methods.body).toEqual({ provider: 'mock', testMode: true, methods: ['apple_pay', 'card', 'paypal', 'klarna', 'google_pay'] });
+
+    process.env.PAYMENT_METHODS = 'card,paypal';
+    resetConfig();
+    try {
+      expect((await request(ctx.app).get('/api/payments/methods')).body.methods).toEqual(['card', 'paypal']);
+      const product = await createProduct({ sizes: [] });
+      const { agent } = await signedInAgent(ctx.app);
+      await fillCart(agent, product, 1);
+      const res = await agent.post('/api/orders').send({ shippingAddress: address, paymentMethod: 'klarna' });
+      expect(res.status).toBe(400);
+      expect(res.body.message).toMatch(/not available/);
+      expect((await agent.post('/api/orders').send({ shippingAddress: address, paymentMethod: 'skrill' })).status).toBe(400);
+      expect((await Product.findById(product.id)).stock).toBe(10);
+    } finally {
+      delete process.env.PAYMENT_METHODS;
+      resetConfig();
+    }
+  });
+
   it('refuses to check out an empty cart', async () => {
     const { agent } = await signedInAgent(ctx.app);
     const res = await agent.post('/api/orders').send({ shippingAddress: address });
@@ -273,6 +295,31 @@ describe('checkout (Stripe provider, test mode)', () => {
     expect(res.status).toBe(502);
     expect((await Product.findById(product.id)).stock).toBe(3);
     expect((await Order.findOne()).status).toBe('cancelled');
+  });
+
+  it.each([
+    ['paypal', ['paypal']],
+    ['klarna', ['klarna']],
+    ['apple_pay', ['card']],
+    ['google_pay', ['card']],
+    ['card', ['card']],
+  ])('opens Checkout restricted to the chosen method (%s)', async (method, types) => {
+    const product = await createProduct({ sizes: [], stock: 5 });
+    const { agent } = await signedInAgent(ctx.app);
+    await fillCart(agent, product, 1);
+    const res = await agent.post('/api/orders').send({ shippingAddress: address, paymentMethod: method });
+    expect(res.status).toBe(201);
+    expect(res.body.order.payment.method).toBe(method);
+    expect(created[0].payment_method_types).toEqual(types);
+  });
+
+  it('lets the shopper switch method when resuming payment', async () => {
+    const { order, agent } = await placeOrder();
+    const res = await agent.post(`/api/orders/${order.id}/pay`).send({ paymentMethod: 'paypal' });
+    expect(res.status).toBe(200);
+    expect(res.body.order.payment.method).toBe('paypal');
+    expect(created[1].payment_method_types).toEqual(['paypal']);
+    expect((await agent.post(`/api/orders/${order.id}/pay`).send({ paymentMethod: 'bitcoin' })).status).toBe(400);
   });
 
   it('disables the mock payment endpoint', async () => {

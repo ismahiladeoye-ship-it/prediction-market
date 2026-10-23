@@ -35,7 +35,15 @@ exports.stripeWebhook = async (req, res) => {
   res.json({ received: true });
 };
 
+// Which payment methods the storefront should offer.
+exports.listMethods = async (req, res) => {
+  const config = getConfig();
+  const testMode = config.PAYMENT_PROVIDER === 'mock' || !String(config.STRIPE_SECRET_KEY || '').startsWith('sk_live_');
+  res.json({ provider: config.PAYMENT_PROVIDER, testMode, methods: config.paymentMethods });
+};
+
 // Development/test only: completes a mock payment for the shopper's own order.
+// Card numbers are never sent here; the mock page validates them in the browser.
 exports.completeMockPayment = async (req, res) => {
   if (getConfig().PAYMENT_PROVIDER !== 'mock') throw notFound();
   const order = await Order.findById(req.params.orderId);

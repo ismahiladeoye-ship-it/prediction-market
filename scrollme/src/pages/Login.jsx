@@ -1,13 +1,13 @@
 import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { changeAuthenticated, userSignIn } from '../store/slices/userSlice';
+import { Link as RouterLink, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { useState } from 'react';
+import { userSignIn } from '../store/slices/userSlice';
+import { startSession } from '../store/session';
 import { mobile, tablet } from '../responsive';
 import { useToast } from '@chakra-ui/react';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { auth } from '../context/Firebase';
-import { FaGoogle } from 'react-icons/fa';
 import Logo from '../components/Logo';
+import GoogleSignInButton from '../components/GoogleSignInButton';
 
 const Container = styled.div`
   width: 100vw;
@@ -63,9 +63,14 @@ const Button = styled.button`
   &:hover {
     transform: scale(1.05);
   }
+  &:disabled {
+    opacity: 0.7;
+    cursor: wait;
+    transform: none;
+  }
 `;
 
-const Link = styled.a`
+const Link = styled(RouterLink)`
   margin: 5px 0px;
   font-size: 12px;
   text-decoration: underline;
@@ -75,81 +80,56 @@ const Link = styled.a`
   }
 `;
 
-const GoogleButton = styled(Button)`
-  background-color: #4285f4; /* Google blue color */
-  width: 100%; /* Full width */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px;
-  transition: transform 0.3s ease;
-
-  &:hover {
-    transform: scale(1.05);
-  }
+const ErrorText = styled.p`
+  color: #c53030;
+  font-size: 14px;
+  margin-bottom: 10px;
 `;
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const toast = useToast();
-  const googleProvider = new GoogleAuthProvider();
+  const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  // Return to the page that required sign-in.
+  const from = location.state?.from;
+  const redirectTo = from ? `${from.pathname}${from.search || ''}` : '/';
+
+  if (isAuthenticated && !submitting) return <Navigate to={redirectTo} replace />;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setSubmitting(true);
     const loginData = {
-      username: e.target.username.value,
+      username: e.target.username.value.trim(),
       password: e.target.password.value,
     };
-    // const response = await UserSignInAPI(loginData);
-    dispatch(userSignIn(loginData))
-      .unwrap()
-      .then((response) => {
-        toast({
-          title: 'Login Successful',
-          description: response?.message || 'You have successfully logged in. Welcome back!',
-          status: 'success',
-          duration: 5000,
-          isClosable: true,
-        });
-        dispatch(changeAuthenticated(true));
-        console.log('Redirecting to /');
-        navigate('/');
-      })
-      .catch((error) => {
-        toast({
-          title: 'Login Failed!',
-          description: 'Invalid credentials, please try again.',
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
-        console.log(error);
-      });
-  };
-
-  const handleGoogleLogin = async () => {
     try {
-      const result = await signInWithPopup(auth, googleProvider); // Use auth from Firebase context
-      const user = result.user;
+      const response = await dispatch(userSignIn(loginData)).unwrap();
+      await dispatch(startSession(response.user));
       toast({
-        title: 'Google Login Successful',
-        description: `Welcome ${user.displayName}!`,
+        title: 'Login Successful',
+        description: response?.message || 'You have successfully logged in. Welcome back!',
         status: 'success',
         duration: 5000,
         isClosable: true,
       });
-      dispatch(changeAuthenticated(true));
-      navigate('/');
-    } catch (error) {
+      navigate(redirectTo, { replace: true });
+    } catch (message) {
+      setError(typeof message === 'string' ? message : 'Invalid credentials, please try again.');
       toast({
-        title: 'Google Login Failed!',
-        description: 'Please try again later.',
+        title: 'Login Failed!',
+        description: typeof message === 'string' ? message : 'Invalid credentials, please try again.',
         status: 'error',
         duration: 5000,
         isClosable: true,
       });
-      console.log(error);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -162,15 +142,18 @@ const Login = () => {
         <br />
         <Title>SIGN IN</Title>
         <Form onSubmit={(e) => handleSubmit(e)}>
-          <Input placeholder='username' name='username' type='text' required />
-          <Input placeholder='password' name='password' type='password' required />
-          <Button type='submit'>LOGIN</Button>
-          <Link href='/forgot-password'>DO NOT YOU REMEMBER THE PASSWORD?</Link>
-          <Link href='/register'>CREATE A NEW ACCOUNT</Link>
+          <Input placeholder='username or email' name='username' type='text' autoComplete='username' aria-label='Username or email' required />
+          <Input placeholder='password' name='password' type='password' autoComplete='current-password' aria-label='Password' required />
+          {error && <ErrorText role='alert'>{error}</ErrorText>}
+          <Button type='submit' disabled={submitting}>
+            {submitting ? 'SIGNING IN…' : 'LOGIN'}
+          </Button>
+          <Link to='/forgot-password'>DO NOT YOU REMEMBER THE PASSWORD?</Link>
+          <Link to='/register' state={location.state}>
+            CREATE A NEW ACCOUNT
+          </Link>
         </Form>
-        <GoogleButton onClick={handleGoogleLogin}>
-          <FaGoogle style={{ marginRight: '8px' }} /> Sign in with Google
-        </GoogleButton>
+        <GoogleSignInButton onSuccess={() => navigate(redirectTo, { replace: true })} />
       </Wrapper>
     </Container>
   );

@@ -1,16 +1,8 @@
-import { AUTH_STATUS } from '../../api/endPoints';
-import { createFetchOptions } from '../../utils/apiConfig';
-import axios from 'axios';
+import client from '../../api/client';
+import { AUTH_ENDPOINTS, AUTH_STATUS } from '../../api/endPoints';
 
-export const checkAuthStatusAPI = async () => {
-  const config = createFetchOptions('GET', true);
-  return await axios
-    .get(AUTH_STATUS.AUTH_STATUS, config)
-    .then((response) => {
-      return Promise.resolve(response.data);
-    })
-    .catch((error) => {
-      console.error(error.message);
-      return Promise.reject(error.data);
-    });
-};
+export const checkAuthStatusAPI = async () => (await client.get(AUTH_STATUS.AUTH_STATUS)).data;
+export const getMeAPI = async () => (await client.get(AUTH_ENDPOINTS.ME)).data.user;
+export const forgotPasswordAPI = async (email) => (await client.post(AUTH_ENDPOINTS.FORGOT_PASSWORD, { email })).data;
+export const resetPasswordAPI = async ({ token, password }) => (await client.post(AUTH_ENDPOINTS.RESET_PASSWORD, { token, password })).data;
+export const googleSignInAPI = async (idToken) => (await client.post(AUTH_ENDPOINTS.GOOGLE, { idToken })).data;

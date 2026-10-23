@@ -1,64 +1,54 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { UserSignInAPI } from '../../services/userAPI/signInAPI';
+import { getErrorMessage } from '../../api/client';
 
 const initialState = {
   id: null,
   firstName: '',
   lastName: '',
   email: '',
+  username: '',
   name: '',
   isAuthenticated: false,
   roles: [],
   isFetching: false,
   error: null,
+  // True once the session has been checked with the server on this page load.
+  authChecked: false,
 };
 
 // Thunk for userSignIn
 export const userSignIn = createAsyncThunk('user/signIn', async (loginData, { rejectWithValue }) => {
   try {
-    const response = await UserSignInAPI(loginData);
-    return response;
+    return await UserSignInAPI(loginData);
   } catch (error) {
-    return rejectWithValue(error.response.data);
+    return rejectWithValue(getErrorMessage(error, 'Invalid credentials, please try again.'));
   }
 });
+
+const applyUser = (state, user) => {
+  state.id = user.id;
+  state.firstName = user.firstName;
+  state.lastName = user.lastName;
+  state.email = user.email;
+  state.username = user.username;
+  state.name = `${user.firstName} ${user.lastName}`;
+  state.roles = user.roles || [];
+  state.isAuthenticated = true;
+  state.lastLogin = new Date().toISOString();
+};
 
 const UserSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    // Handle login success
-    loginSuccess: (state, action) => {
-      const { user, token, refreshToken } = action.payload;
-      state.id = user.id;
-      state.firstName = user.firstName;
-      state.lastName = user.lastName;
-      state.email = user.email;
-      state.name = user.name;
-      state.token = token;
-      state.refreshToken = refreshToken;
-      state.lastLogin = new Date().toISOString();
-      state.isAuthenticated = user.isAuthenticated;
+    setUser: (state, action) => {
+      applyUser(state, action.payload);
+      state.authChecked = true;
     },
-    logOut: (state) => {
-      state.id = null;
-      state.firstName = '';
-      state.lastName = '';
-      state.email = '';
-      state.name = '';
-      state.roles = [];
-      state.isAuthenticated = false;
-      state.token = null;
-      state.refreshToken = null;
-      state.error = null;
-      state.lastLogin = null;
-    },
-    // Update user profile information
-    updateProfile: (state, action) => {
-      const { name, avatar, bio } = action.payload;
-      state.name = name;
-      state.avatar = avatar;
-      state.bio = bio;
+    logOut: () => ({ ...initialState, authChecked: true }),
+    setAuthChecked: (state, action) => {
+      state.authChecked = action.payload;
     },
     // Set the fetching state
     setFetching: (state, action) => {
@@ -79,32 +69,16 @@ const UserSlice = createSlice({
         state.error = null;
       })
       .addCase(userSignIn.fulfilled, (state, action) => {
-        const payload = action.payload;
-        state.id = payload.user.id;
-        const firstName = payload.user.firstName;
-        const lastName = payload.user.lastName;
-        state.firstName = firstName;
-        state.lastName = lastName;
-        state.email = payload.user.email;
-        state.name = `${firstName} ${lastName}`;
-        state.roles = payload.user.roles;
-        state.isAuthenticated = true;
+        applyUser(state, action.payload.user);
         state.isFetching = false;
+        state.authChecked = true;
       })
-      .addCase(userSignIn.rejected, (state, action) => {
-        state.isFetching = false;
-        state.isAuthenticated = false;
-        state.id = null;
-        state.firstName = '';
-        state.lastName = '';
-        state.email = '';
-        state.name = '';
-        state.roles = [];
-        state.error = action.payload;
-      });
+      .addCase(userSignIn.rejected, (state, action) => ({ ...initialState, authChecked: true, error: action.payload }));
   },
 });
 
-export const { loginSuccess, logOut, updateProfile, setFetching, setError, changeAuthenticated } = UserSlice.actions;
+export const selectIsAdmin = (state) => state.user.roles?.some((r) => r === 'admin' || r === 'super_admin');
+
+export const { setUser, logOut, setAuthChecked, setFetching, setError, changeAuthenticated } = UserSlice.actions;
 
 export default UserSlice.reducer;

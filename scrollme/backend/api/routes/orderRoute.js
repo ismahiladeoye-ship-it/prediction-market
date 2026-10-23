@@ -14,6 +14,6 @@ router.post('/', checkoutLimiter, validate({ body: s.checkout }), asyncHandler(o
 router.get('/', validate({ query: s.pageQuery }), asyncHandler(orders.listMyOrders));
 router.get('/:orderId', idParams, asyncHandler(orders.getOrder));
 router.post('/:orderId/cancel', idParams, asyncHandler(orders.cancelOrder));
-router.post('/:orderId/pay', checkoutLimiter, idParams, asyncHandler(orders.resumePayment));
+router.post('/:orderId/pay', checkoutLimiter, idParams, validate({ body: s.resumePayment }), asyncHandler(orders.resumePayment));
 
 module.exports = router;

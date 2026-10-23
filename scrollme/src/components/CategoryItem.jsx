@@ -94,12 +94,12 @@ const CategoryItem = ({ item }) => {
   return (
     <ContainerHover>
       <LazyLoad height={200} offset={100} once>
-        <Image src={item.img} />
+        <Image src={item.img} alt={item.title} />
       </LazyLoad>
       <Info>
         <Title>{item.title}</Title>
         <CustomButtonWrapper>
-          <CustomBackgroundButton link='/item.title' text='SHOP NOW' backgroundcolor='white' />
+          <CustomBackgroundButton link={`/${item.category}`} text='SHOP NOW' backgroundcolor='white' />
         </CustomButtonWrapper>
       </Info>
     </ContainerHover>

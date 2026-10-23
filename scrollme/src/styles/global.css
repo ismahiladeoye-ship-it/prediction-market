@@ -1,0 +1,32 @@
+/*
+ * Tailwind v3 colours used by the contributors page. The original loaded the
+ * Tailwind Play CDN script (development-only) to get them; the production
+ * stylesheet (Tailwind 2.2.19, still loaded in index.html) has no teal.
+ */
+.bg-teal-100 {
+  background-color: #ccfbf1;
+}
+.border-teal-500 {
+  border-color: #14b8a6;
+}
+.text-teal-500 {
+  color: #14b8a6;
+}
+.text-teal-600 {
+  color: #0d9488;
+}
+.text-teal-800 {
+  color: #115e59;
+}
+.hover\:text-teal-800:hover {
+  color: #115e59;
+}
+.focus\:ring-teal-500:focus {
+  --tw-ring-color: #14b8a6;
+}
+
+/* Visible keyboard focus everywhere (the CSS resets removed it). */
+:focus-visible {
+  outline: 2px solid teal;
+  outline-offset: 2px;
+}

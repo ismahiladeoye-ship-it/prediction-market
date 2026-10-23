@@ -1,12 +1,15 @@
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
-import { removeFromWishlist } from '../store/slices/wishlistSlice';
+import { fetchWishlist, removeWishlistItem } from '../store/slices/wishlistSlice';
 import Navbar from '../components/Navbar';
 import Announcement from '../components/Announcement';
 import Footer from '../components/Footer';
-import { getProductByIdAPI } from '../services/products/productService';
 import { useToast } from '@chakra-ui/react';
 import { addToCart } from '../store/slices/cartSlice';
+import { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { formatPrice } from '../utils/format';
+import { imageSrc, onImageError } from '../utils/imageFallback';
 
 const Container = styled.div`
   margin-top: 100px;
@@ -81,39 +84,38 @@ const EmptyWishlist = styled.p`
 
 const Wishlist = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const toast = useToast();
   const wishlistItems = useSelector((state) => state.wishlist?.items);
 
+  useEffect(() => {
+    dispatch(fetchWishlist());
+  }, [dispatch]);
+
   const handleRemoveFromWishlist = (_id) => {
-    dispatch(removeFromWishlist(_id));
+    dispatch(removeWishlistItem(_id));
   };
 
-  const handleAddToCart = async (_id) => {
+  const handleAddToCart = async (product) => {
+    // A size has to be chosen on the product page first.
+    if (product.sizes?.length) {
+      navigate(`/${product.category || 'product'}/${product._id}`);
+      return;
+    }
     try {
-      const product = await getProductByIdAPI(_id);
-      const itemToAdd = {
-        productId: product._id,
-        name: product.name,
-        price: product.price,
-        image: product.imageUrl,
-        brand: product.brand,
-        category: product.category,
-        quantity: 1,
-      };
-      const result = await dispatch(addToCart(itemToAdd)).unwrap();
-      if (result.response) {
-        toast({
-          title: 'Product added to cart.',
-          description: 'You can view your cart to proceed.',
-          status: 'success',
-          duration: 3000,
-          isClosable: true,
-        });
-      }
+      await dispatch(addToCart({ productId: product._id, quantity: 1 })).unwrap();
+      dispatch(removeWishlistItem(product._id));
+      toast({
+        title: 'Product moved to cart.',
+        description: 'You can view your cart to proceed.',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
     } catch (err) {
       toast({
         title: 'Error adding product to cart.',
-        description: err?.message || 'Something went wrong.',
+        description: typeof err === 'string' ? err : 'Something went wrong.',
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -129,11 +131,19 @@ const Wishlist = () => {
         {wishlistItems?.length > 0 ? (
           wishlistItems?.map((product) => (
             <ProductCard key={product?._id}>
-              <RemoveButton onClick={() => handleRemoveFromWishlist(product?._id)}>X</RemoveButton>
-              <Image src={product?.imageUrl} alt={product?.name} />
+              <RemoveButton onClick={() => handleRemoveFromWishlist(product?._id)} aria-label={`Remove ${product?.name} from wishlist`}>
+                X
+              </RemoveButton>
+              <Link to={`/${product?.category || 'product'}/${product?._id}`}>
+                <Image src={imageSrc(product?.imageUrl)} alt={product?.name} onError={onImageError} />
+              </Link>
               <Title>{product?.name}</Title>
-              <Price>{product?.price}</Price>
-              <MoveToBagButton onClick={() => handleAddToCart(product._id)}>Move to Cart</MoveToBagButton>
+              <Price>{formatPrice(product?.price)}</Price>
+              {product?.isActive === false || product?.stock === 0 ? (
+                <Unavailable>Currently unavailable</Unavailable>
+              ) : (
+                <MoveToBagButton onClick={() => handleAddToCart(product)}>{product?.sizes?.length ? 'Choose Size' : 'Move to Cart'}</MoveToBagButton>
+              )}
             </ProductCard>
           ))
         ) : (
@@ -144,5 +154,11 @@ const Wishlist = () => {
     </>
   );
 };
+
+const Unavailable = styled.p`
+  margin-top: auto;
+  color: #999;
+  font-size: 14px;
+`;
 
 export default Wishlist;

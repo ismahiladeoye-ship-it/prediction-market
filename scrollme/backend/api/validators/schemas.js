@@ -95,10 +95,15 @@ const address = z.object({
     .regex(/^\+?[0-9 ()-]{7,20}$/, 'Phone number is invalid'),
 });
 
+const paymentMethod = z.enum(['apple_pay', 'google_pay', 'card', 'paypal', 'klarna'], { message: 'Choose a payment method' });
+
 const checkout = z.object({
   shippingAddress: address,
   deliveryMethod: z.enum(['standard', 'express']).default('standard'),
+  paymentMethod: paymentMethod.default('card'),
 });
+
+const resumePayment = z.object({ paymentMethod: paymentMethod.optional() });
 
 const productFields = {
   name: z.string().trim().min(2).max(200),
@@ -152,6 +157,8 @@ module.exports = {
   cartUpdate,
   cartRemove,
   checkout,
+  paymentMethod,
+  resumePayment,
   productCreate,
   productUpdate,
   orderStatusUpdate,

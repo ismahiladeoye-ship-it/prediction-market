@@ -5,64 +5,70 @@ import Register from './pages/Register';
 import Login from './pages/Login';
 import Cart from './pages/Cart';
 import Wishlist from './pages/Wishlist';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Link } from 'react-router-dom';
 import ProtectedRoute from './utils/ProtectedRoute';
 import ContributorsPage from './pages/ContributorsPage';
 import { lazy, Suspense } from 'react';
 import ContactUsPage from './pages/ContactUsPage';
 import ComingSoon from './pages/ComingSoon';
 import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import useAuthCheck from './hooks/useAuthCheck';
 const LazyAllProducts = lazy(() => import('./pages/AllProducts'));
 const LazyCategoryProducts = lazy(() => import('./pages/CategoryProducts'));
+const LazyCheckout = lazy(() => import('./pages/Checkout'));
+const LazyMockPayment = lazy(() => import('./pages/MockPayment'));
+const LazyOrderDetail = lazy(() => import('./pages/OrderDetail'));
+const LazyAccount = lazy(() => import('./pages/Account'));
+const LazyAdminLayout = lazy(() => import('./pages/admin/AdminLayout'));
+const LazyAdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const LazyAdminProducts = lazy(() => import('./pages/admin/AdminProducts'));
+const LazyAdminOrders = lazy(() => import('./pages/admin/AdminOrders'));
+
+const protect = (element, adminOnly = false) => <ProtectedRoute adminOnly={adminOnly}>{element}</ProtectedRoute>;
+
+const NotFound = () => (
+  <div style={{ padding: '60px 20px', textAlign: 'center' }}>
+    <h1>404 Not Found</h1>
+    <p style={{ marginTop: 12 }}>
+      <Link to='/' style={{ color: 'teal', textDecoration: 'underline' }}>
+        Back to the store
+      </Link>
+    </p>
+  </div>
+);
 
 function App() {
   useAuthCheck();
   return (
     <div className='App'>
-      <Routes>
-        <Route path='/' element={<Home />} />
-        <Route
-          path='/cart'
-          element={
-            <ProtectedRoute>
-              <Cart />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path='/wishlist'
-          element={
-            <ProtectedRoute>
-              <Wishlist />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path='/products'
-          element={
-            <Suspense fallback='Loading...'>
-              <LazyAllProducts />
-            </Suspense>
-          }
-        />
-        <Route
-          path='/:categorySlug'
-          element={
-            <Suspense fallback='Loading...'>
-              <LazyCategoryProducts />
-            </Suspense>
-          }
-        />
-        <Route path='/contributors' element={<ContributorsPage />} />
-        <Route path='/:categorySlug/:productId' element={<Product />} />
-        <Route path='/login' element={<Login />} />
-        <Route path='/forgot-password' element={<ForgotPassword />} />
-        <Route path='/register' element={<Register />} />
-        <Route path='/contact-us' element={<ContactUsPage />} />
-        <Route path='/comingsoon' element={<ComingSoon />} />
-        <Route path='*' element={<h1>404 Not Found</h1>} />
-      </Routes>
+      <Suspense fallback='Loading...'>
+        <Routes>
+          <Route path='/' element={<Home />} />
+          <Route path='/cart' element={protect(<Cart />)} />
+          <Route path='/wishlist' element={protect(<Wishlist />)} />
+          <Route path='/checkout' element={protect(<LazyCheckout />)} />
+          <Route path='/checkout/mock' element={protect(<LazyMockPayment />)} />
+          <Route path='/account' element={protect(<LazyAccount />)} />
+          <Route path='/orders/:orderId' element={protect(<LazyOrderDetail />)} />
+          <Route path='/admin' element={protect(<LazyAdminLayout />, true)}>
+            <Route index element={<LazyAdminDashboard />} />
+            <Route path='products' element={<LazyAdminProducts />} />
+            <Route path='orders' element={<LazyAdminOrders />} />
+          </Route>
+          <Route path='/products' element={<LazyAllProducts />} />
+          <Route path='/contributors' element={<ContributorsPage />} />
+          <Route path='/login' element={<Login />} />
+          <Route path='/forgot-password' element={<ForgotPassword />} />
+          <Route path='/reset-password' element={<ResetPassword />} />
+          <Route path='/register' element={<Register />} />
+          <Route path='/contact-us' element={<ContactUsPage />} />
+          <Route path='/comingsoon' element={<ComingSoon />} />
+          <Route path='/:categorySlug' element={<LazyCategoryProducts />} />
+          <Route path='/:categorySlug/:productId' element={<Product />} />
+          <Route path='*' element={<NotFound />} />
+        </Routes>
+      </Suspense>
     </div>
   );
 }

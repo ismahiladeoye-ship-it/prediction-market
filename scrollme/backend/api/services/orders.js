@@ -13,8 +13,9 @@ const newOrderNumber = () => `SM-${Date.now().toString(36).toUpperCase()}-${cryp
 
 // Creates an order from the shopper's server-side cart, reserves its stock and
 // opens a payment session. Nothing the client sends is used for prices.
-const createOrderFromCart = async (user, { shippingAddress, deliveryMethod }) => {
+const createOrderFromCart = async (user, { shippingAddress, deliveryMethod, paymentMethod = 'card' }) => {
   const config = getConfig();
+  if (!config.paymentMethods.includes(paymentMethod)) throw badRequest('That payment method is not available');
   const cart = await Cart.findOne({ userId: user._id });
   const view = await buildCartView(cart, deliveryMethod);
   if (!view.lines.length) throw badRequest('Your cart is empty');
@@ -50,7 +51,7 @@ const createOrderFromCart = async (user, { shippingAddress, deliveryMethod }) =>
       statusHistory: [{ status: 'pending_payment', by: user._id }],
       stockReserved: true,
       reservationExpiresAt: new Date(Date.now() + config.RESERVATION_MINUTES * 60 * 1000),
-      payment: { provider: provider.name, status: 'pending' },
+      payment: { provider: provider.name, method: paymentMethod, status: 'pending' },
     });
     const session = await provider.createCheckout(order);
     order.payment.sessionId = session.sessionId;

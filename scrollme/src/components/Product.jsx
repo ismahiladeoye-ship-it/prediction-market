@@ -1,15 +1,14 @@
 import { SearchOutlined, ShoppingCartOutlined } from '@mui/icons-material';
 import styled from 'styled-components';
-import { Link, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import LazyLoad from 'react-lazyload';
 import { useDispatch, useSelector } from 'react-redux';
-import { addToWishlist, removeFromWishlist } from '../store/slices/wishlistSlice';
+import { toggleWishlist } from '../store/slices/wishlistSlice';
 import { Box, useToast } from '@chakra-ui/react';
-import { useState } from 'react';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import { getProductByIdAPI } from '../services/products/productService';
 import { addToCart } from '../store/slices/cartSlice';
+import { imageSrc, onImageError } from '../utils/imageFallback';
 
 const Info = styled.div`
   opacity: 0;
@@ -67,7 +66,9 @@ const Image = styled.img`
   z-index: 2;
 `;
 
-const Icon = styled.div`
+const Icon = styled.button`
+  border: none;
+  padding: 0;
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -90,79 +91,49 @@ const Placeholder = styled.div`
   width: 100%;
   background-color: #f0f0f0;
 `;
+const toastBox = (bg, text) => () => (
+  <Box color='white' p={3} bg={bg} borderRadius={4}>
+    {text}
+  </Box>
+);
+
 const Product = ({ item }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const toast = useToast();
-  const wishlist = useSelector((state) => state.wishlist?.items);
-  const isInWishlist = wishlist?.some((item) => item._id === item?._id);
-  const [isProductInWishlist, setIsProductInWishlist] = useState(isInWishlist);
+  const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
+  const isProductInWishlist = useSelector((state) => state.wishlist.items.some((w) => w._id === item?._id));
+  const productPath = `/${item?.category || 'product'}/${item?._id}`;
 
-  const handleProductSearch = (id) => {
-    navigate(`/product/${id}`);
+  const handleProductSearch = () => {
+    navigate(productPath);
   };
 
-  const handleAddToCart = async (_id) => {
+  const handleAddToCart = async () => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: location } });
+      return;
+    }
+    // Products sold in sizes need a size, which is chosen on the product page.
+    if (item?.sizes?.length) {
+      navigate(productPath);
+      return;
+    }
     try {
-      const product = await getProductByIdAPI(_id);
-      const itemToAdd = {
-        productId: product._id,
-        name: product.name,
-        price: product.price,
-        image: product.imageUrl,
-        brand: product.brand,
-        category: product.category,
-        quantity: 1,
-      };
-      const result = await dispatch(addToCart(itemToAdd)).unwrap();
-      if (result.response) {
-        toast({
-          position: 'bottom-right',
-          status: 'success',
-          render: () => (
-            <Box color='white' p={3} bg='teal' borderRadius={4}>
-              Product added to cart.
-            </Box>
-          ),
-        });
-      }
+      await dispatch(addToCart({ productId: item._id, quantity: 1 })).unwrap();
+      toast({ position: 'bottom-right', status: 'success', render: toastBox('teal', 'Product added to cart.') });
     } catch (err) {
-      toast({
-        position: 'bottom-right',
-        status: 'error',
-        render: () => (
-          <Box color='white' p={3} bg='red' borderRadius={4}>
-            Error adding product to cart.
-          </Box>
-        ),
-      });
+      toast({ position: 'bottom-right', status: 'error', render: toastBox('red', typeof err === 'string' ? err : 'Error adding product to cart.') });
     }
   };
 
-  const handleAddToWishlist = (item) => {
-    if (isProductInWishlist) {
-      setIsProductInWishlist(false);
-      dispatch(removeFromWishlist(item._id));
-      toast({
-        position: 'bottom-right',
-        render: () => (
-          <Box color='white' p={3} bg='teal' borderRadius={4}>
-            Product removed from wishlist!
-          </Box>
-        ),
-      });
-    } else {
-      dispatch(addToWishlist(item));
-      setIsProductInWishlist(true);
-      toast({
-        position: 'bottom-right',
-        render: () => (
-          <Box color='white' p={3} bg='teal' borderRadius={4}>
-            Product added to wishlist!
-          </Box>
-        ),
-      });
-    }
+  const handleAddToWishlist = () => {
+    dispatch(toggleWishlist(item));
+    toast({
+      position: 'bottom-right',
+      render: toastBox('teal', isProductInWishlist ? 'Product removed from wishlist!' : 'Product added to wishlist!'),
+    });
   };
 
   return (
@@ -170,20 +141,17 @@ const Product = ({ item }) => {
       <Circle />
       <ImageContainer>
         <LazyLoad height={200.5} offset={10} once placeholder={<Placeholder />}>
-          <Image src={item?.imageUrl} />
+          <Image src={imageSrc(item?.imageUrl)} alt={item?.name || 'Product'} onError={onImageError} />
         </LazyLoad>
       </ImageContainer>
       <Info>
-        <Link to='/cart'>
-          <Icon onClick={() => handleAddToCart(item?._id)}>
-            <ShoppingCartOutlined />
-          </Icon>
-        </Link>
-
-        <Icon onClick={() => handleProductSearch(item?._id)}>
+        <Icon type='button' aria-label='Add to cart' onClick={handleAddToCart}>
+          <ShoppingCartOutlined />
+        </Icon>
+        <Icon type='button' aria-label='View product' onClick={handleProductSearch}>
           <SearchOutlined />
         </Icon>
-        <Icon onClick={() => handleAddToWishlist(item)}>
+        <Icon type='button' aria-label={isProductInWishlist ? 'Remove from wishlist' : 'Add to wishlist'} onClick={handleAddToWishlist}>
           {!isProductInWishlist ? <FavoriteBorderIcon style={{ color: 'teal' }} /> : <FavoriteIcon style={{ color: 'teal' }} />}
         </Icon>
       </Info>

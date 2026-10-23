@@ -3,7 +3,7 @@ import Navbar from '../components/Navbar';
 import Announcement from '../components/Announcement';
 import Newsletter from '../components/Newsletter';
 import { mobile, tablet } from '../responsive';
-import { useParams } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import Footer from '../components/Footer';
@@ -17,65 +17,88 @@ import { useDispatch } from 'react-redux';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useSelector } from 'react-redux';
-import { addToWishlist, removeFromWishlist } from '../store/slices/wishlistSlice';
+import { toggleWishlist } from '../store/slices/wishlistSlice';
+import { getErrorMessage } from '../api/client';
+import { formatPrice, humanize } from '../utils/format';
+import { imageSrc, onImageError } from '../utils/imageFallback';
 
 const Product = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [size, setSize] = useState('');
+  const [adding, setAdding] = useState(false);
   const { productId } = useParams();
   const toast = useToast();
   const dispatch = useDispatch();
-  const wishlist = useSelector((state) => state.wishlist?.items);
-  const isInWishlist = wishlist?.some((item) => item._id === product?._id);
-  const [isProductInWishlist, setIsProductInWishlist] = useState(isInWishlist);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
+  const isProductInWishlist = useSelector((state) => state.wishlist.items.some((item) => item._id === productId));
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
+        setError(null);
+        setSize('');
         const selectedProduct = await getProductByIdAPI(productId);
         setProduct(selectedProduct);
-        setLoading(false);
       } catch (err) {
-        setError(err.message);
+        setError(err.response?.status === 404 || err.response?.status === 400 ? 'not_found' : getErrorMessage(err));
+      } finally {
         setLoading(false);
       }
     };
     fetchProduct();
   }, [productId]);
 
-  const handleAddToCart = async () => {
+  const outOfStock = product && product.stock <= 0;
+  const needsSize = Boolean(product?.sizes?.length);
+
+  const addCurrentToCart = async () => {
+    if (!isAuthenticated) {
+      toast({ title: 'Please sign in to add items to your cart.', status: 'info', duration: 3000, isClosable: true });
+      navigate('/login', { state: { from: location } });
+      return false;
+    }
+    if (needsSize && !size) {
+      toast({ title: 'Please choose a size.', status: 'warning', duration: 3000, isClosable: true });
+      return false;
+    }
+    setAdding(true);
     try {
-      const itemToAdd = {
-        productId: product._id,
-        name: product.name,
-        price: product.price,
-        image: product.imageUrl,
-        brand: product.brand,
-        category: product.category,
-        quantity: 1,
-      };
-      const result = await dispatch(addToCart(itemToAdd)).unwrap();
-      if (result.response) {
-        toast({
-          title: 'Product added to cart.',
-          description: 'You can view your cart to proceed.',
-          status: 'success',
-          duration: 3000,
-          isClosable: true,
-        });
-      }
+      await dispatch(addToCart({ productId: product._id, quantity: 1, size })).unwrap();
+      return true;
     } catch (err) {
       toast({
         title: 'Error adding product to cart.',
-        description: err.message || 'Something went wrong.',
+        description: typeof err === 'string' ? err : 'Something went wrong.',
         status: 'error',
         duration: 3000,
         isClosable: true,
       });
+      return false;
+    } finally {
+      setAdding(false);
     }
+  };
+
+  const handleAddToCart = async () => {
+    if (await addCurrentToCart()) {
+      toast({
+        title: 'Product added to cart.',
+        description: 'You can view your cart to proceed.',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const handleBuyNow = async () => {
+    if (await addCurrentToCart()) navigate('/checkout');
   };
 
   const getDetailHeading = (detailItem) => {
@@ -96,25 +119,21 @@ const Product = () => {
   const renderProductDetails = () => {
     const productDetailItems = ['material', 'brand', 'weight', 'category'];
 
-    return productDetailItems.map((d) => {
-      return (
-        <DetailContainer key={d}>
-          {' '}
-          <ProductDetailInfo>{getDetailHeading(d)}</ProductDetailInfo>
-          <ProductDetailInfo>{product?.[d]}</ProductDetailInfo>
-        </DetailContainer>
-      );
-    });
+    return productDetailItems
+      .filter((d) => product?.[d] !== undefined && product?.[d] !== '' && product?.[d] !== 0)
+      .map((d) => {
+        return (
+          <DetailContainer key={d}>
+            {' '}
+            <ProductDetailInfo>{getDetailHeading(d)}</ProductDetailInfo>
+            <ProductDetailInfo>{d === 'category' ? humanize(product[d]) : product[d]}</ProductDetailInfo>
+          </DetailContainer>
+        );
+      });
   };
 
   const handleWishlistToggle = () => {
-    if (isProductInWishlist) {
-      setIsProductInWishlist(false);
-      dispatch(removeFromWishlist(product._id));
-    } else {
-      dispatch(addToWishlist(product));
-      setIsProductInWishlist(true);
-    }
+    dispatch(toggleWishlist(product));
   };
 
   const handleImageClick = () => {
@@ -131,23 +150,37 @@ const Product = () => {
     } else {
       document.body.style.overflow = 'auto';
     }
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
   }, [modalOpen]);
 
-  if (loading) {
+  if (loading || error) {
     return (
-      <Box display='flex' justifyContent='center' alignItems='center' height='100vh'>
-        <ButtonSpinner size='xl' />
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Box display='flex' justifyContent='center' alignItems='center' height='100vh'>
-        <Text color='red.500' fontSize='xl'>
-          {error}
-        </Text>
-      </Box>
+      <Container>
+        <Navbar />
+        <Announcement />
+        <Box display='flex' flexDirection='column' justifyContent='center' alignItems='center' minHeight='60vh' gap={4} px={4} textAlign='center'>
+          {loading ? (
+            <ButtonSpinner size='xl' />
+          ) : error === 'not_found' ? (
+            <>
+              <Text fontSize='2xl' fontWeight={300}>
+                Product not found
+              </Text>
+              <Text color='gray.600'>It may have been removed or is no longer available.</Text>
+              <RouterLink to='/products' style={{ color: 'teal', textDecoration: 'underline' }}>
+                Browse all products
+              </RouterLink>
+            </>
+          ) : (
+            <Text color='red.500' fontSize='xl' role='alert'>
+              {error}
+            </Text>
+          )}
+        </Box>
+        <Footer />
+      </Container>
     );
   }
   return (
@@ -155,43 +188,60 @@ const Product = () => {
       <Navbar />
       <Announcement />
       <Wrapper>
-        <ImgContainer>{product && <Image src={product?.imageUrl} onClick={handleImageClick} />}</ImgContainer>
+        <ImgContainer>
+          {product && <Image src={imageSrc(product?.imageUrl)} alt={product?.name} onClick={handleImageClick} onError={onImageError} />}
+        </ImgContainer>
         <InfoContainer>
           <Flex>
             <Title>{product?.name}</Title>
-            <HeartIcon isInWishlist={isProductInWishlist} onClick={handleWishlistToggle}>
+            <HeartIcon
+              as='button'
+              type='button'
+              aria-label={isProductInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+              isInWishlist={isProductInWishlist}
+              onClick={handleWishlistToggle}
+            >
               {!isProductInWishlist ? <FavoriteBorderIcon style={{ color: 'teal' }} /> : <FavoriteIcon style={{ color: 'teal' }} />}
             </HeartIcon>
           </Flex>
           <ProductRating>
             <AverageRating>{product?.ratings?.averageRating}</AverageRating>
-            <ProductStar>{renderStars(product?.ratings.averageRating)}</ProductStar>
-            <ProductReview>{product?.ratings.numberOfReviews} reviews</ProductReview>
+            <ProductStar>{renderStars(product?.ratings?.averageRating)}</ProductStar>
+            <ProductReview>{product?.ratings?.numberOfReviews || 0} reviews</ProductReview>
           </ProductRating>
           <Desc>{product?.description}</Desc>
-          <Price>$ {product?.price}</Price>
+          <Price>{formatPrice(product?.price)}</Price>
+          <StockInfo low={product.stock < 10}>{outOfStock ? 'Out of stock' : product.stock < 10 ? `Only ${product.stock} left in stock` : 'In stock'}</StockInfo>
           <FilterContainer>
-            <Filter>
-              <FilterTitle>Color</FilterTitle>
-              <FilterColor color='black' />
-              <FilterColor color='darkblue' />
-              <FilterColor color='gray' />
-            </Filter>
-            <Filter>
-              <FilterTitle>Size</FilterTitle>
-              <FilterSize>
-                <FilterSizeOption>XS</FilterSizeOption>
-                <FilterSizeOption>S</FilterSizeOption>
-                <FilterSizeOption>M</FilterSizeOption>
-                <FilterSizeOption>L</FilterSizeOption>
-                <FilterSizeOption>XL</FilterSizeOption>
-              </FilterSize>
-            </Filter>
+            {product?.color && (
+              <Filter>
+                <FilterTitle>Color</FilterTitle>
+                <FilterColor color={product.color.toLowerCase()} title={product.color} aria-label={`Colour: ${product.color}`} />
+                <ColorName>{product.color}</ColorName>
+              </Filter>
+            )}
+            {needsSize && (
+              <Filter>
+                <FilterTitle>Size</FilterTitle>
+                <FilterSize value={size} onChange={(e) => setSize(e.target.value)} aria-label='Size'>
+                  <FilterSizeOption value=''>Select</FilterSizeOption>
+                  {product.sizes.map((s) => (
+                    <FilterSizeOption key={s} value={s}>
+                      {s}
+                    </FilterSizeOption>
+                  ))}
+                </FilterSize>
+              </Filter>
+            )}
           </FilterContainer>
           <AddContainer>
             <ActionButtons>
-              <Button onClick={handleAddToCart}>ADD TO CART</Button>
-              <Button>BUY NOW</Button>
+              <Button onClick={handleAddToCart} disabled={outOfStock || adding}>
+                {outOfStock ? 'OUT OF STOCK' : 'ADD TO CART'}
+              </Button>
+              <Button onClick={handleBuyNow} disabled={outOfStock || adding}>
+                BUY NOW
+              </Button>
             </ActionButtons>
           </AddContainer>
           <ProductDetails>
@@ -203,10 +253,12 @@ const Product = () => {
       <Newsletter />
       <Footer />
       {modalOpen && (
-        <Modal>
-          <ModalContent>
-            <CloseButton onClick={closeModal}>✖</CloseButton>
-            <ModalImage src={product?.imageUrl} alt={product.title} />
+        <Modal onClick={closeModal}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <CloseButton onClick={closeModal} aria-label='Close image'>
+              ✖
+            </CloseButton>
+            <ModalImage src={imageSrc(product?.imageUrl)} alt={product?.name} onError={onImageError} />
           </ModalContent>
         </Modal>
       )}
@@ -305,6 +357,7 @@ const Price = styled.span`
 
 const FilterContainer = styled.div`
   width: 50%;
+  ${mobile({ width: '100%' })}
   margin: 30px 0px;
   display: flex;
   flex-direction: column;
@@ -326,6 +379,7 @@ const FilterColor = styled.div`
   width: 20px;
   height: 20px;
   border-radius: 50%;
+  border: 1px solid #ddd;
   background-color: ${(props) => props.color};
   margin: 0px 5px;
   cursor: pointer;
@@ -340,6 +394,7 @@ const FilterSizeOption = styled.option``;
 
 const AddContainer = styled.div`
   width: 80%;
+  ${mobile({ width: '100%' })}
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -352,10 +407,12 @@ const ActionButtons = styled.div`
   justify-content: space-between;
   align-items: center;
   gap: 12px;
+  ${mobile({ width: '100%' })}
 `;
 
 const Button = styled.button`
   width: 200px;
+  ${mobile({ width: 'auto', flex: 1, minWidth: 0 })}
   padding: 15px;
   border: 2px solid teal;
   background-color: white;
@@ -364,10 +421,29 @@ const Button = styled.button`
   &:hover {
     background-color: #f8f4f4;
   }
+  &:disabled {
+    border-color: #ccc;
+    color: #999;
+    cursor: not-allowed;
+    background-color: white;
+  }
+`;
+
+const StockInfo = styled.p`
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: ${({ low }) => (low ? 'red' : 'teal')};
+`;
+
+const ColorName = styled.span`
+  font-size: 14px;
+  margin-left: 4px;
 `;
 
 const ProductDetails = styled.div`
   width: 320px;
+  max-width: 100%;
   margin-block-start: 30px;
   display: flex;
   flex-direction: column;
@@ -397,6 +473,8 @@ const ProductDetailInfo = styled.p`
 `;
 
 const HeartIcon = styled.div`
+  background: none;
+  border: none;
   cursor: pointer;
   margin-left: 10px;
   color: ${({ isInWishlist }) => (isInWishlist ? 'white' : 'gray')};

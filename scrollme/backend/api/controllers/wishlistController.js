@@ -3,7 +3,7 @@ const Product = require('../models/productModel');
 const { notFound } = require('../utils/httpError');
 
 const MAX_ITEMS = 200;
-const FIELDS = 'name imageUrl price color category brand stock isActive';
+const FIELDS = 'name imageUrl price color category brand stock sizes isActive';
 
 const view = async (userId) => {
   const user = await User.findById(userId).populate({ path: 'wishlist', select: FIELDS }).lean();

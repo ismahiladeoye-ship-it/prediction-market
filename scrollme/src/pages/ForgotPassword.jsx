@@ -1,8 +1,9 @@
 import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
+import { useState } from 'react';
 import { useToast } from '@chakra-ui/react';
-import { sendPasswordResetEmail } from 'firebase/auth';
-import { auth } from '../context/Firebase';
+import { forgotPasswordAPI } from '../services/auth/authService';
+import { getErrorMessage } from '../api/client';
 import { mobile, tablet } from '../responsive';
 import Logo from '../components/Logo';
 
@@ -55,7 +56,7 @@ const Button = styled.button`
   margin-bottom: 10px;
 `;
 
-const Link = styled.a`
+const Link = styled(RouterLink)`
   margin: 5px 0px;
   font-size: 12px;
   text-decoration: underline;
@@ -65,17 +66,23 @@ const Link = styled.a`
   }
 `;
 
+const Message = styled.p`
+  font-size: 14px;
+  margin: 10px 0;
+`;
+
 const ForgotPassword = () => {
-  const navigate = useNavigate();
   const toast = useToast();
+  const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const email = e.target.email.value;
-
+    const email = e.target.email.value.trim();
+    setSubmitting(true);
     try {
-      // !TODO: Need to add support for mongodb, to change the password.
-      await sendPasswordResetEmail(auth, email);
+      await forgotPasswordAPI(email);
+      setSent(true);
       toast({
         title: 'Password Reset Email Sent',
         description: 'Check your email for further instructions.',
@@ -83,16 +90,16 @@ const ForgotPassword = () => {
         duration: 5000,
         isClosable: true,
       });
-      navigate('/login');
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to send password reset email. Please try again.',
+        description: getErrorMessage(error, 'Failed to send password reset email. Please try again.'),
         status: 'error',
         duration: 5000,
         isClosable: true,
       });
-      console.log(error);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -104,11 +111,20 @@ const ForgotPassword = () => {
         </div>
         <br />
         <Title>RESET PASSWORD</Title>
-        <Form onSubmit={handleSubmit}>
-          <Input placeholder='email' name='email' type='email' required />
-          <Button type='submit'>SEND RESET LINK</Button>
-          <Link href='/login'>Back to Login</Link>
-        </Form>
+        {sent ? (
+          <>
+            <Message role='status'>If an account exists for that email address, we have sent a link to reset the password. The link is valid for 30 minutes.</Message>
+            <Link to='/login'>Back to Login</Link>
+          </>
+        ) : (
+          <Form onSubmit={handleSubmit}>
+            <Input placeholder='email' name='email' type='email' aria-label='Email' autoComplete='email' required />
+            <Button type='submit' disabled={submitting}>
+              SEND RESET LINK
+            </Button>
+            <Link to='/login'>Back to Login</Link>
+          </Form>
+        )}
       </Wrapper>
     </Container>
   );

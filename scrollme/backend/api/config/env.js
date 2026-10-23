@@ -36,11 +36,15 @@ const schema = z.object({
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
   STRIPE_ALLOW_LIVE: bool(false),
+  // Methods offered at checkout, in display order. Each must be enabled in the Stripe dashboard.
+  PAYMENT_METHODS: z.string().default('apple_pay,card,paypal,klarna,google_pay'),
   FIREBASE_PROJECT_ID: z.string().optional(),
   SMTP_URL: z.string().optional(),
   MAIL_FROM: z.string().default('ScrollMe <no-reply@scrollme.local>'),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error', 'silent']).default('info'),
 });
+
+const PAYMENT_METHOD_IDS = ['apple_pay', 'google_pay', 'card', 'paypal', 'klarna'];
 
 const WEAK_SECRETS = new Set(['someone', 'SCROLLME_SECRET', 'changeme', 'secret']);
 
@@ -76,6 +80,7 @@ function loadConfig(source = process.env) {
     ...env,
     isProd,
     isTest: env.NODE_ENV === 'test',
+    paymentMethods: [...new Set(env.PAYMENT_METHODS.split(',').map((m) => m.trim()))].filter((m) => PAYMENT_METHOD_IDS.includes(m)),
     clientOrigins: env.CLIENT_ORIGINS.split(',')
       .map((o) => o.trim())
       .filter(Boolean),
@@ -94,4 +99,4 @@ const resetConfig = () => {
   cached = undefined;
 };
 
-module.exports = { loadConfig, getConfig, resetConfig };
+module.exports = { loadConfig, getConfig, resetConfig, PAYMENT_METHOD_IDS };

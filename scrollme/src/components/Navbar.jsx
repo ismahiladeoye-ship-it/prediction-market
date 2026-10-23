@@ -2,13 +2,14 @@ import styled from 'styled-components';
 import SearchIcon from '@mui/icons-material/Search';
 import { ShoppingCartOutlined, FavoriteBorderOutlined } from '@mui/icons-material';
 import { mobile } from '../responsive';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Box, useToast } from '@chakra-ui/react';
-import { logOut } from '../store/slices/userSlice';
+import { selectIsAdmin } from '../store/slices/userSlice';
 import { Badge } from '@chakra-ui/react';
 import Logo from '../components/Logo';
-import { UserSingOutAPI } from '../services/userAPI/userService';
+import { signOut } from '../store/session';
+import { useEffect, useState } from 'react';
 
 const Container = styled.div`
   height: 60px;
@@ -43,7 +44,7 @@ const Language = styled.span`
   ${mobile({ display: 'none;' })}
 `;
 
-const SearchContainer = styled.div`
+const SearchContainer = styled.form`
   border: 1px solid lightgray;
   display: flex;
   align-items: center;
@@ -53,7 +54,18 @@ const SearchContainer = styled.div`
 
 const Input = styled.input`
   border: none;
-  margin: 'auto' ${mobile({ width: '200px;', margin: '0 auto' })};
+  outline: none;
+  min-width: 0;
+  ${mobile({ width: '200px', margin: '0 auto' })}
+`;
+
+const SearchButton = styled.button`
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
 `;
 const Center = styled.div`
   flex: 1;
@@ -65,7 +77,7 @@ const Right = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  ${mobile({ flex: 2, justifyContent: 'center' })}
+  ${mobile({ flex: 2, justifyContent: 'center', flexWrap: 'wrap' })}
 `;
 
 const MenuItem = styled.div`
@@ -77,37 +89,46 @@ const MenuItem = styled.div`
 
 const Navbar = () => {
   const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
-  const cartItems = useSelector((state) => state.cart.items);
-  const totalQuantity = cartItems.reduce((total, item) => total + item.quantity, 0);
+  const isAdmin = useSelector(selectIsAdmin);
+  const totalQuantity = useSelector((state) => state.cart.totalQuantity);
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const toast = useToast();
+  const [search, setSearch] = useState('');
+
+  // Keep the box in sync with the current search (e.g. after Back).
+  useEffect(() => {
+    setSearch(location.pathname === '/products' ? new URLSearchParams(location.search).get('q') || '' : '');
+  }, [location.pathname, location.search]);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const q = search.trim();
+    navigate(q ? `/products?q=${encodeURIComponent(q)}` : '/products');
+  };
 
   const handleLogout = async () => {
     try {
-      const res = await UserSingOutAPI();
-
-      if (res?.status === 200) {
-        toast({
-          title: 'Logout Successfully!',
-          description: res?.data?.message || 'You have successfully logged out!',
-          status: 'success',
-          duration: 5000,
-          isClosable: true,
-        });
-        dispatch(logOut());
-        navigate('/');
-      }
-    } catch (error) {
-      console.error('Logout failed:', error);
+      await dispatch(signOut());
       toast({
-        title: 'Logout Failed!',
-        description: error || 'Something went wrong logging out!',
-        status: 'error',
+        title: 'Logout Successfully!',
+        description: 'You have successfully logged out!',
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch {
+      // Local session data is cleared even if the server could not be reached.
+      toast({
+        title: 'Logged out on this device',
+        description: 'We could not reach the server; your session will expire on its own.',
+        status: 'warning',
         duration: 5000,
         isClosable: true,
       });
     }
+    navigate('/');
   };
 
   return (
@@ -115,9 +136,11 @@ const Navbar = () => {
       <Wrapper>
         <Left>
           <Language>EN</Language>
-          <SearchContainer>
-            <Input placeholder='Search' />
-            <SearchIcon style={{ color: 'gray', fontSize: 16 }} />
+          <SearchContainer role='search' onSubmit={handleSearch}>
+            <Input placeholder='Search' aria-label='Search products' value={search} onChange={(e) => setSearch(e.target.value)} maxLength={100} />
+            <SearchButton type='submit' aria-label='Search'>
+              <SearchIcon style={{ color: 'gray', fontSize: 16 }} />
+            </SearchButton>
           </SearchContainer>
         </Left>
         <Center>
@@ -140,9 +163,23 @@ const Navbar = () => {
               <Link to='/login'>SIGN IN</Link>
             </MenuItem>
           )}
-          {isAuthenticated && <MenuItem onClick={handleLogout}>LOG OUT</MenuItem>}
+          {isAuthenticated && isAdmin && (
+            <MenuItem>
+              <Link to='/admin'>ADMIN</Link>
+            </MenuItem>
+          )}
+          {isAuthenticated && (
+            <MenuItem>
+              <Link to='/account'>ACCOUNT</Link>
+            </MenuItem>
+          )}
+          {isAuthenticated && (
+            <MenuItem as='button' type='button' onClick={handleLogout}>
+              LOG OUT
+            </MenuItem>
+          )}
           <MenuItem>
-            <Link to='/cart'>
+            <Link to='/cart' aria-label='Cart'>
               <Box position='relative'>
                 <ShoppingCartOutlined />
                 {totalQuantity > 0 && (
@@ -154,7 +191,7 @@ const Navbar = () => {
             </Link>
           </MenuItem>
           <MenuItem>
-            <Link to='/wishlist'>
+            <Link to='/wishlist' aria-label='Wishlist'>
               <FavoriteBorderOutlined />
             </Link>
           </MenuItem>

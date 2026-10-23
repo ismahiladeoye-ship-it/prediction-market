@@ -133,10 +133,10 @@ const Footer = () => {
             <Link to={'/comingsoon'}>Accessories</Link>
           </ListItem>
           <ListItem>
-            <Link to={'/comingsoon'}>My Account</Link>
+            <Link to={'/account'}>My Account</Link>
           </ListItem>
           <ListItem>
-            <Link to={'/comingsoon'}>Order Tracking</Link>
+            <Link to={'/account'}>Order Tracking</Link>
           </ListItem>
           <ListItem>
             <Link to={'/wishlist'}>Wishlist</Link>
@@ -188,7 +188,7 @@ const Footer = () => {
           </a>
         </ContactItem>
 
-        <Payment src='https://i.ibb.co/Qfvn4z6/payment.png' />
+        <Payment src='https://i.ibb.co/Qfvn4z6/payment.png' alt='Accepted payment methods' />
       </Right>
     </Container>
   );

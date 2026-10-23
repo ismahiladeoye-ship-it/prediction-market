@@ -1,16 +1,5 @@
-import axios from 'axios';
+import client from '../../api/client';
 import { AUTH_ENDPOINTS } from '../../api/endPoints';
-import { createFetchOptions, HttpMethod } from '../../utils/apiConfig';
 
-export const UserSingOutAPI = async () => {
-  const config = createFetchOptions(HttpMethod.POST, true);
-  return await axios
-    .post(`${AUTH_ENDPOINTS.LOGOUT}`, config)
-    .then((response) => {
-      return Promise.resolve(response);
-    })
-    .catch((error) => {
-      console.error(error);
-      return Promise.reject(error?.response?.data);
-    });
-};
+// Returns the axios response so callers can read `status` (original contract).
+export const UserSingOutAPI = async () => client.post(AUTH_ENDPOINTS.LOGOUT);

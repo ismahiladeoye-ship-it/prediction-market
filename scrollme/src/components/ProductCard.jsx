@@ -1,10 +1,13 @@
 import styled from 'styled-components';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
+import { formatPrice } from '../utils/format';
+import { imageSrc, onImageError } from '../utils/imageFallback';
 
 export const renderStars = (rating) => {
   const stars = [];
-  const fullStars = Math.floor(rating);
-  const hasHalfStar = rating % 1 >= 0.5;
+  const value = Math.min(Math.max(Number(rating) || 0, 0), 5);
+  const fullStars = Math.floor(value);
+  const hasHalfStar = value % 1 >= 0.5;
 
   // Full stars
   for (let i = 0; i < fullStars; i++) {
@@ -25,33 +28,41 @@ export const renderStars = (rating) => {
 };
 
 const ProductCard = (props) => {
+  const { product } = props;
+  const description = product.description || '';
+  const ratings = product.ratings || {};
+
+  // Original behaviour: product pages open in a new tab from the gallery.
   const handleProductClick = (id, category) => {
-    window.open(`/${category}/${id}`, '_blank');
+    window.open(`/${category || 'product'}/${id}`, '_blank', 'noopener');
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') handleProductClick(product._id, product.category);
   };
 
   return (
-    <Container onClick={() => handleProductClick(props.product._id, props.product.category)}>
+    <Container role='link' tabIndex={0} aria-label={product.name} onClick={() => handleProductClick(product._id, product.category)} onKeyDown={handleKeyDown}>
       <LazyLoadImage
-        src={props.product.imageUrl}
+        src={imageSrc(product.imageUrl)}
         width={'100%'}
         height={'100%'}
-        alt={props.product.name}
-        placeholderSrc={<Placeholder />}
+        alt={product.name}
+        placeholder={<Placeholder />}
+        onError={onImageError}
       />
       <Info>
-        <ProductBrand>{props.product.brand}</ProductBrand>
-        <ProductTitle>{props.product.name}</ProductTitle>
-        <ProductDescription>{props.product.description.substring(0, 100)}...</ProductDescription>
+        <ProductBrand>{product.brand}</ProductBrand>
+        <ProductTitle>{product.name}</ProductTitle>
+        <ProductDescription>{description.length > 100 ? `${description.substring(0, 100)}...` : description}</ProductDescription>
         <ProductRating>
-          <div>{renderStars(props.product.ratings.averageRating)}</div>
-          <p>({props.product.ratings.numberOfReviews} reviews)</p>
+          <div>{renderStars(ratings.averageRating)}</div>
+          <p>({ratings.numberOfReviews || 0} reviews)</p>
         </ProductRating>
-        <ProductPrice>$ {props.product.price.toFixed(2)}</ProductPrice>
-        {props.product.stock < 10 ? (
+        <ProductPrice>{formatPrice(product.price)}</ProductPrice>
+        {product.stock < 10 ? (
           <ProductStock>
-            <ProductStockInfo stock={props.product.stock}>
-              {props.product.stock > 0 ? `Only ${props.product.stock} left in stock.` : 'Out of Stock'}
-            </ProductStockInfo>
+            <ProductStockInfo stock={product.stock}>{product.stock > 0 ? `Only ${product.stock} left in stock.` : 'Out of Stock'}</ProductStockInfo>
           </ProductStock>
         ) : null}
       </Info>
@@ -73,6 +84,8 @@ const Container = styled.div`
   justify-content: flex-start;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
   transition:
     transform 0.2s,
     box-shadow 0.2s;
@@ -152,7 +165,7 @@ const ProductTitle = styled.h2`
 
 const ProductDescription = styled.p`
   font-size: 18px;
-  font-weight: 400px;
+  font-weight: 400;
 `;
 
 const Star = styled.span`

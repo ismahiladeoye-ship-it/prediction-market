@@ -1,18 +1,23 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth'; // Import GoogleAuthProvider and signInWithPopup
-
+// Google sign-in through Firebase Authentication. Disabled unless the
+// REACT_APP_FIREBASE_* variables are set; the API verifies the ID token
+// (FIREBASE_PROJECT_ID) and opens a normal ScrollMe session.
 const firebaseConfig = {
-  apiKey: 'AIzaSyCZjGQb8lWxKdPf94ipmk-xleQbuSAe-xU',
-  authDomain: 'scrollme-40ba6.firebaseapp.com',
-  projectId: 'scrollme-40ba6',
-  storageBucket: 'scrollme-40ba6.appspot.com',
-  messagingSenderId: '748771881750',
-  appId: '1:748771881750:web:2cb97bb2c7b7468a7c1637',
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app); // Initialize Auth
+export const isGoogleSignInEnabled = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId);
 
-// Export app, auth, GoogleAuthProvider, and signInWithPopup
-export { app, auth, GoogleAuthProvider, signInWithPopup };
+// Loaded on demand so the Firebase SDK is not part of the main bundle.
+export const getGoogleIdToken = async () => {
+  if (!isGoogleSignInEnabled) throw new Error('Google sign-in is not configured');
+  const [{ initializeApp, getApps }, { getAuth, GoogleAuthProvider, signInWithPopup }] = await Promise.all([
+    import('firebase/app'),
+    import('firebase/auth'),
+  ]);
+  const app = getApps()[0] || initializeApp(firebaseConfig);
+  const result = await signInWithPopup(getAuth(app), new GoogleAuthProvider());
+  return result.user.getIdToken();
+};

@@ -15,6 +15,16 @@ const setClient = (c) => {
   client = c;
 };
 
+// Apple Pay and Google Pay are wallets of Stripe's "card" method: Checkout shows
+// them automatically on supported devices/browsers.
+const STRIPE_METHOD_TYPES = {
+  apple_pay: ['card'],
+  google_pay: ['card'],
+  card: ['card'],
+  paypal: ['paypal'],
+  klarna: ['klarna'],
+};
+
 // Uses Stripe Checkout (hosted page): card data never touches this server.
 const createCheckout = async (order) => {
   const config = getConfig();
@@ -41,6 +51,7 @@ const createCheckout = async (order) => {
   const session = await getClient().checkout.sessions.create(
     {
       mode: 'payment',
+      payment_method_types: STRIPE_METHOD_TYPES[order.payment?.method] || ['card'],
       customer_email: order.email,
       client_reference_id: order._id.toString(),
       metadata: { orderId: order._id.toString(), orderNumber: order.orderNumber },
@@ -49,7 +60,7 @@ const createCheckout = async (order) => {
       success_url: `${config.APP_URL}/orders/${order._id}?checkout=success`,
       cancel_url: `${config.APP_URL}/orders/${order._id}?checkout=cancelled`,
     },
-    { idempotencyKey: `checkout-${order._id}` }
+    { idempotencyKey: `checkout-${order._id}-${order.payment?.method || 'card'}-${order.payment?.attempts || 0}` }
   );
   return { sessionId: session.id, url: session.url };
 };

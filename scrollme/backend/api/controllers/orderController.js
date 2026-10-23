@@ -2,7 +2,8 @@ const Order = require('../models/orderModel');
 const { createOrderFromCart, markOrderPaid, changeStatus } = require('../services/orders');
 const { getProvider } = require('../services/payments');
 const { fromCents } = require('../utils/money');
-const { notFound, forbidden, conflict } = require('../utils/httpError');
+const { getConfig } = require('../config/env');
+const { notFound, forbidden, conflict, badRequest } = require('../utils/httpError');
 const logger = require('../utils/logger');
 
 const serializeOrder = (order) => {
@@ -35,7 +36,7 @@ const serializeOrder = (order) => {
       total: fromCents(o.amounts.totalCents),
       currency: o.currency,
     },
-    payment: { provider: o.payment?.provider, status: o.payment?.status, paidAt: o.payment?.paidAt },
+    payment: { provider: o.payment?.provider, method: o.payment?.method, status: o.payment?.status, paidAt: o.payment?.paidAt },
     reservationExpiresAt: o.reservationExpiresAt,
     trackingNumber: o.trackingNumber,
     attention: o.attention,
@@ -106,6 +107,12 @@ exports.resumePayment = async (req, res) => {
       return res.json({ order: serializeOrder(paid), checkoutUrl: null });
     }
   }
+  // The shopper may switch method (e.g. from PayPal to card) before paying.
+  if (req.body?.paymentMethod) {
+    if (!getConfig().paymentMethods.includes(req.body.paymentMethod)) throw badRequest('That payment method is not available');
+    order.payment.method = req.body.paymentMethod;
+  }
+  order.payment.attempts = (order.payment.attempts || 0) + 1;
   const session = await provider.createCheckout(order);
   order.payment.sessionId = session.sessionId;
   await order.save();
