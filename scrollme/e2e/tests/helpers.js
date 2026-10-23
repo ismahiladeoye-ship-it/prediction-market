@@ -32,7 +32,15 @@ const fillAddress = async (page) => {
   await expect(page.getByLabel('Country')).toHaveValue('United Kingdom');
 };
 
+// Adds a product through the admin API (the request context signs in as the admin).
+const createProduct = async (request, fields) => {
+  expect((await request.post('/api/auth/login', { data: ADMIN })).ok()).toBeTruthy();
+  const res = await request.post('/api/admin/products', { data: { category: 'tshirts', stock: 20, sizes: [], ...fields } });
+  expect(res.status()).toBe(201);
+  return (await res.json()).product;
+};
+
 // Matches the storefront's price format, e.g. £1,699.00.
 const money = (n) => `£${n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-module.exports = { SEEDED, ADMIN, login, chooseSize, findProduct, fillAddress, money };
+module.exports = { SEEDED, ADMIN, login, chooseSize, findProduct, createProduct, fillAddress, money };

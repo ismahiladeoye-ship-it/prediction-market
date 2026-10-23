@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { login, chooseSize, findProduct, fillAddress, money } = require('./helpers');
+const { login, chooseSize, findProduct, createProduct, fillAddress, money } = require('./helpers');
 
 const addToCart = async (page, product) => {
   await page.goto(`/${product.category}/${product._id}`);
@@ -23,7 +23,7 @@ test.describe('cart and checkout', () => {
     await expect(page.getByText(money(subtotal)).first()).toBeVisible();
     await page.getByRole('button', { name: 'Increase quantity' }).click();
     await expect(page.getByLabel('Quantity', { exact: true })).toHaveText('2');
-    // subtotal x2, 10% tax (set for the tests), free delivery
+    // subtotal x2, 10% tax (set for the tests), free delivery from £100
     const total = subtotal * 2 + Math.round(subtotal * 2 * 0.1 * 100) / 100;
     await expect(page.getByText(money(total))).toBeVisible();
     await expect(page.getByText('Free', { exact: true })).toBeVisible();
@@ -89,13 +89,22 @@ test.describe('cart and checkout', () => {
   });
 
   test('pays with PayPal and can cancel an unpaid order', async ({ page, request }) => {
-    const product = await findProduct(request, 'inStock=true&sort=price_asc');
+    // The sample catalogue has nothing under £100, so add a cheap item.
+    const product = await createProduct(request, { name: `E2E Basic Tee ${Date.now()}`, price: 35.5 });
     await login(page);
+    await page.goto('/cart');
+    for (const btn of await page.getByRole('button', { name: 'Remove' }).all()) await btn.click();
     await addToCart(page, product);
+
+    // Under £100: £4.99 delivery and a nudge towards free delivery.
+    await page.goto('/cart');
+    await expect(page.getByText(`Spend ${money(100 - product.price)} more for free UK delivery`)).toBeVisible();
+    await expect(page.getByText(money(4.99), { exact: true })).toBeVisible();
+
     await page.goto('/checkout');
     await fillAddress(page);
-    // Only free standard delivery is offered by default.
-    await expect(page.getByRole('radio', { name: /Standard delivery.*Free/ })).toBeChecked();
+    // Standard delivery only (express is not offered by default).
+    await expect(page.getByRole('radio', { name: /Standard delivery.*£4\.99/ })).toBeChecked();
     await expect(page.getByRole('radio', { name: /Express/ })).toHaveCount(0);
     await page.getByRole('button', { name: 'PLACE ORDER' }).click();
     const sheet = page.getByRole('dialog', { name: 'Secure Payment' });

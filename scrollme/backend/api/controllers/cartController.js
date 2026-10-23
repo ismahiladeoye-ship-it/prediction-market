@@ -63,6 +63,8 @@ const buildCartView = async (cart, deliveryMethod = 'standard') => {
     summary: totalsToJSON(totals),
     deliveryMethod,
     deliveryOptions: deliveryOptions(totals.subtotalCents),
+    // Order value from which standard delivery is free (null when there is none).
+    freeShippingThreshold: getConfig().FREE_SHIPPING_THRESHOLD || null,
     shipToCountries: getConfig().shipToCountries,
     issues,
     lines, // internal, removed before sending

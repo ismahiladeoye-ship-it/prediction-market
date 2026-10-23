@@ -39,7 +39,7 @@ const About = () => (
         in one place, so you do not have to search for them yourself.
       </p>
       <p>
-        We deliver across the UK, free on every order, and you have 30 days to return anything that is not right. Every order is paid
+        We deliver across the UK, free on orders over £100, and you have 30 days to return anything that is not right. Every order is paid
         through a secure checkout, and you can follow it from payment to delivery in your account.
       </p>
       <p>

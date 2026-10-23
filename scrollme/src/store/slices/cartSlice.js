@@ -11,6 +11,7 @@ const initialState = {
   deliveryOptions: [],
   deliveryMethod: 'standard',
   shipToCountries: [],
+  freeShippingThreshold: null,
   issues: [],
   status: 'idle',
   error: null,
@@ -40,6 +41,7 @@ const applyCart = (state, cart) => {
   state.deliveryOptions = cart.deliveryOptions || [];
   state.deliveryMethod = cart.deliveryMethod || 'standard';
   state.shipToCountries = cart.shipToCountries || [];
+  state.freeShippingThreshold = cart.freeShippingThreshold ?? null;
   state.issues = cart.issues || [];
   state.status = 'succeeded';
   state.error = null;

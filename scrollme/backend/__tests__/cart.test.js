@@ -50,23 +50,46 @@ describe('cart', () => {
     expect(res.body.deliveryOptions.map((o) => o.method)).toEqual(['standard', 'express']);
   });
 
-  it('offers only free standard delivery when express is not priced', async () => {
-    const saved = { standard: process.env.SHIPPING_STANDARD, express: process.env.SHIPPING_EXPRESS };
-    delete process.env.SHIPPING_STANDARD;
-    delete process.env.SHIPPING_EXPRESS;
+  it('uses the store defaults: £4.99 standard delivery, free from £100, no express', async () => {
+    const keys = ['SHIPPING_STANDARD', 'SHIPPING_EXPRESS', 'FREE_SHIPPING_THRESHOLD', 'TAX_RATE'];
+    const saved = Object.fromEntries(keys.map((k) => [k, process.env[k]]));
+    keys.forEach((k) => delete process.env[k]);
     resetConfig();
     try {
-      const product = await createProduct({ price: 10, sizes: [] });
+      const product = await createProduct({ price: 49.99, sizes: [] });
       const { agent } = await signedInAgent(ctx.app);
       await agent.post('/api/cart/add').send({ productId: product.id });
       const res = await agent.get('/api/cart?delivery=express');
       expect(res.body.deliveryMethod).toBe('standard');
-      expect(res.body.summary.shipping).toBe(0);
-      expect(res.body.deliveryOptions).toEqual([{ method: 'standard', label: 'Standard delivery (3-5 working days)', price: 0 }]);
+      expect(res.body.summary).toEqual({ subtotal: 49.99, tax: 0, shipping: 4.99, total: 54.98, currency: 'gbp' });
+      expect(res.body.deliveryOptions).toEqual([{ method: 'standard', label: 'Standard delivery (3-5 working days)', price: 4.99 }]);
+      expect(res.body.freeShippingThreshold).toBe(100);
       expect(res.body.shipToCountries).toEqual(['GB']);
+
+      // £99.98 still pays for delivery; £149.97 (and anything from £100) does not.
+      const two = await agent.put('/api/cart/update').send({ productId: product.id, quantity: 2 });
+      expect(two.body.summary.shipping).toBe(4.99);
+      const three = await agent.put('/api/cart/update').send({ productId: product.id, quantity: 3 });
+      expect(three.body.summary).toEqual({ subtotal: 149.97, tax: 0, shipping: 0, total: 149.97, currency: 'gbp' });
+      expect(three.body.deliveryOptions[0].price).toBe(0);
     } finally {
-      process.env.SHIPPING_STANDARD = saved.standard;
-      process.env.SHIPPING_EXPRESS = saved.express;
+      keys.forEach((k) => (saved[k] === undefined ? delete process.env[k] : (process.env[k] = saved[k])));
+      resetConfig();
+    }
+  });
+
+  it('makes delivery free from exactly the threshold', async () => {
+    process.env.FREE_SHIPPING_THRESHOLD = '100';
+    resetConfig();
+    try {
+      const product = await createProduct({ price: 50, sizes: [] });
+      const { agent } = await signedInAgent(ctx.app);
+      await agent.post('/api/cart/add').send({ productId: product.id, quantity: 2 });
+      expect((await agent.get('/api/cart')).body.summary.shipping).toBe(0);
+      // Express is never covered by free delivery.
+      expect((await agent.get('/api/cart?delivery=express')).body.summary.shipping).toBe(40);
+    } finally {
+      process.env.FREE_SHIPPING_THRESHOLD = '0';
       resetConfig();
     }
   });

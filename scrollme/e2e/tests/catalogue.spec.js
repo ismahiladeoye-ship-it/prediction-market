@@ -4,7 +4,7 @@ const { findProduct } = require('./helpers');
 test.describe('catalogue', () => {
   test('home page shows the store sections and real products @phone', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByText('FREE UK DELIVERY ON ALL ORDERS')).toBeVisible();
+    await expect(page.getByText('FREE UK DELIVERY ON ORDERS OVER £100')).toBeVisible();
     await expect(page.getByRole('heading', { level: 1, name: 'Footwear, sourced' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Shop by collection' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Top rated' })).toBeVisible();

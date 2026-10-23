@@ -19,10 +19,11 @@ describe('configuration', () => {
     );
   });
 
-  it('defaults to a UK store: pounds, free standard delivery, no express, UK addresses', () => {
+  it('defaults to a UK store: pounds, free delivery from £100, no express, UK addresses', () => {
     const c = loadConfig(base);
     expect(c.CURRENCY).toBe('gbp');
-    expect(c.SHIPPING_STANDARD).toBe(0);
+    expect(c.SHIPPING_STANDARD).toBe(4.99);
+    expect(c.FREE_SHIPPING_THRESHOLD).toBe(100);
     expect(c.SHIPPING_EXPRESS).toBeUndefined();
     expect(c.shipToCountries).toEqual(['GB']);
     expect(loadConfig({ ...base, SHIPPING_EXPRESS: '' }).SHIPPING_EXPRESS).toBeUndefined();

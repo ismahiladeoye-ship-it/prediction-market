@@ -4,11 +4,11 @@ const pexels = (id, w = 1600) => `https://images.pexels.com/photos/${id}/pexels-
 export const storeConfig = {
   name: 'Get It Sourced',
   // Rotating messages in the bar above the header. Only state what is true:
-  // free delivery matches SHIPPING_STANDARD=0 and UK-only SHIP_TO_COUNTRIES in the API.
-  announcements: ['FREE UK DELIVERY ON ALL ORDERS', '30-DAY RETURNS', 'PAY WITH CARD, APPLE PAY, PAYPAL OR KLARNA'],
+  // keep the delivery wording in line with FREE_SHIPPING_THRESHOLD and SHIP_TO_COUNTRIES in the API.
+  announcements: ['FREE UK DELIVERY ON ORDERS OVER £100', '30-DAY RETURNS', 'PAY WITH CARD, APPLE PAY, PAYPAL OR KLARNA'],
   // Shown under "Add to cart" on product pages (icon: delivery, returns or check).
   perks: [
-    { icon: 'delivery', text: 'Free UK delivery' },
+    { icon: 'delivery', text: 'Free UK delivery over £100' },
     { icon: 'returns', text: '30-day returns' },
   ],
   // Home page hero. Photos: Pexels licence (free for commercial use), no visible brand logos.

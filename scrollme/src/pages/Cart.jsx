@@ -209,6 +209,14 @@ const SummaryItem = styled.div`
 
 const SummaryItemText = styled.span``;
 
+const DeliveryNote = styled.p`
+  margin: -18px 0 24px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--soft);
+  font-size: 14px;
+`;
+
 const SummaryItemPrice = styled.span``;
 
 const Button = styled.button`
@@ -252,7 +260,9 @@ const LineTotal = styled.span`
 `;
 
 const Cart = () => {
-  const { items: cartItems, summary, issues, status } = useSelector((state) => state.cart);
+  const { items: cartItems, summary, issues, status, freeShippingThreshold } = useSelector((state) => state.cart);
+  // How much more to spend for free standard delivery (the API decides the actual charge).
+  const toFreeDelivery = freeShippingThreshold && summary.shipping > 0 ? freeShippingThreshold - summary.subtotal : 0;
   const wishListItems = useSelector((state) => state.wishlist?.items);
   const toast = useToast();
   const dispatch = useDispatch();
@@ -417,6 +427,7 @@ const Cart = () => {
               <SummaryItemText>Delivery</SummaryItemText>
               <SummaryItemPrice>{summary.shipping > 0 ? formatPrice(summary.shipping) : 'Free'}</SummaryItemPrice>
             </SummaryItem>
+            {toFreeDelivery > 0 && <DeliveryNote role='status'>Spend {formatPrice(toFreeDelivery)} more for free UK delivery</DeliveryNote>}
             <SummaryItem type='total'>
               <SummaryItemText>Total</SummaryItemText>
               <SummaryItemPrice>{formatPrice(summary.total)}</SummaryItemPrice>

@@ -12,7 +12,7 @@ const faqData = [
   {
     question: 'Where do you deliver, and how much does it cost?',
     answer:
-      'We deliver across the UK, and delivery is free on every order. We do not ship outside the UK at the moment. Standard delivery takes 3–5 working days.',
+      'We deliver across the UK, and delivery is free on orders over £100. On smaller orders the delivery charge is shown in your bag before you pay. We do not ship outside the UK at the moment. Standard delivery takes 3–5 working days.',
   },
   {
     question: 'How do I track my order?',
