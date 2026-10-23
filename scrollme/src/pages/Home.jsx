@@ -3,7 +3,8 @@ import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
 import Products from '../components/Products';
 import Hero from '../components/home/Hero';
-import CollectionGrid from '../components/home/CollectionGrid';
+import CollectionCarousels from '../components/home/CollectionCarousels';
+import FeatureSplit from '../components/home/FeatureSplit';
 import FAQ from '../components/FAQ';
 import BackToTopButton from '../components/BackToTopButton';
 
@@ -14,8 +15,9 @@ const Home = () => {
       <Navbar />
       <main>
         <Hero />
-        <CollectionGrid />
+        <CollectionCarousels />
         <Products />
+        <FeatureSplit />
         <FAQ />
       </main>
       <BackToTopButton />

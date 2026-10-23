@@ -22,12 +22,21 @@ export const storeConfig = {
       position: 'center 60%',
     },
     {
-      id: 'clothing',
-      title: 'New in clothing',
-      subtitle: 'Shirts, tees and outerwear',
+      id: 'outerwear',
+      title: 'Built for the cold',
+      subtitle: 'Puffers, jackets and layers',
       cta: 'Shop',
-      link: '/collections/clothing',
-      img: pexels(5886041),
+      link: '/collections/clothing?category=jackets',
+      img: pexels(19426409),
+      position: 'center 35%',
+    },
+    {
+      id: 'hoodies',
+      title: 'Hoodies & sweats',
+      subtitle: 'Everyday staples',
+      cta: 'Shop',
+      link: '/collections/clothing?category=sweatshirts',
+      img: pexels(7026775),
       position: 'center 30%',
     },
     {
@@ -40,10 +49,42 @@ export const storeConfig = {
       position: 'center 25%',
     },
   ],
-  // Fallback cover images for "Shop by collection" (the API supplies product photos).
-  collectionImages: {
-    clothing: pexels(2983464, 900),
-    footwear: pexels(7193634, 900),
+  // "Shop by collection" carousels. Each card opens a collection, optionally
+  // narrowed to one category; cards with no products are hidden.
+  collectionRows: [
+    {
+      label: 'Clothing',
+      items: [
+        { id: 'hoodies', title: 'Hoodies & sweats', collection: 'clothing', category: 'sweatshirts', img: pexels(9594679, 900) },
+        {
+          id: 'jackets',
+          title: 'Jackets',
+          collection: 'clothing',
+          category: 'jackets',
+          img: pexels(19426409, 900),
+          position: 'center 30%',
+        },
+        { id: 'clothing', title: 'All clothing', collection: 'clothing', img: pexels(3812433, 900) },
+        { id: 'tshirts', title: 'T-shirts', collection: 'clothing', category: 'tshirts', img: pexels(5698851, 900) },
+        { id: 'knitwear', title: 'Knitwear', collection: 'clothing', category: 'sweaters', img: pexels(1937336, 900) },
+      ],
+    },
+    {
+      label: 'Footwear, fragrances and accessories',
+      items: [
+        { id: 'footwear', title: 'Footwear', collection: 'footwear', img: pexels(7193634, 900) },
+        { id: 'fragrances', title: 'Fragrances', collection: 'fragrances', img: pexels(34036480, 900) },
+        { id: 'accessories', title: 'Accessories', collection: 'accessories', img: pexels(11817096, 900) },
+      ],
+    },
+  ],
+  // Split image-and-text section on the home page. Edit or set to null to hide.
+  feature: {
+    title: "Can't find it? We'll source it",
+    text: "Tell us the piece, size and budget you're after and we'll look for it for you.",
+    cta: 'Send a request',
+    link: '/contact-us',
+    img: pexels(7679444, 1400),
   },
   location: 'United Kingdom',
   contactEmail: '',

@@ -15,8 +15,11 @@ const Card = styled.div`
   position: relative;
   overflow: hidden;
   border-radius: var(--radius);
-  height: clamp(460px, 78vh, 760px);
+  height: clamp(440px, 72vh, 600px);
   background: #1a1a1a;
+  @media (min-width: 900px) {
+    height: clamp(420px, 58vh, 540px);
+  }
   color: white;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
 `;
@@ -36,10 +39,12 @@ const Content = styled.div`
   position: absolute;
   left: 0;
   right: 0;
-  top: 18%;
+  top: 16%;
   padding: 0 28px;
   max-width: 900px;
   @media (min-width: 900px) {
+    top: 50%;
+    transform: translateY(-58%);
     padding: 0 64px;
   }
 `;
@@ -48,7 +53,7 @@ const Title = styled.h1`
   font-family: var(--font-display);
   font-weight: 400;
   text-transform: uppercase;
-  font-size: clamp(52px, 11vw, 128px);
+  font-size: clamp(52px, 11vw, 88px);
   line-height: 0.92;
   letter-spacing: 0.01em;
 `;
@@ -64,14 +69,14 @@ const Cta = styled(Link)`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 150px;
-  height: 64px;
-  padding: 0 34px;
-  border-radius: 22px;
+  min-width: 130px;
+  height: 54px;
+  padding: 0 30px;
+  border-radius: 16px;
   background: white;
   color: var(--ink);
   font-weight: 700;
-  font-size: 18px;
+  font-size: 16px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   transition: transform 0.2s ease;
@@ -82,7 +87,7 @@ const Cta = styled(Link)`
 
 const Controls = styled.div`
   position: absolute;
-  bottom: 28px;
+  bottom: 24px;
   left: 0;
   right: 0;
   display: flex;
@@ -91,9 +96,9 @@ const Controls = styled.div`
 `;
 
 const Control = styled.button`
-  width: 64px;
-  height: 64px;
-  border-radius: 14px;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
   border: none;
   background: white;
   color: var(--ink);
@@ -139,10 +144,10 @@ const Hero = () => {
         {slides.length > 1 && (
           <Controls>
             <Control type='button' aria-label='Previous slide' onClick={() => go(-1)}>
-              <HiOutlineChevronLeft size={26} />
+              <HiOutlineChevronLeft size={22} />
             </Control>
             <Control type='button' aria-label='Next slide' onClick={() => go(1)}>
-              <HiOutlineChevronRight size={26} />
+              <HiOutlineChevronRight size={22} />
             </Control>
           </Controls>
         )}

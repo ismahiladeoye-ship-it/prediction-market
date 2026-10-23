@@ -11,6 +11,8 @@ const scroll = keyframes`
   to { transform: translateX(-50%); }
 `;
 
+const DESKTOP = '@media (min-width: 900px)';
+
 const FooterEl = styled.footer`
   margin-top: 72px;
   background: var(--paper);
@@ -18,11 +20,28 @@ const FooterEl = styled.footer`
   text-align: center;
 `;
 
+const Top = styled.div`
+  ${DESKTOP} {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 48px;
+    padding: 40px 32px 0;
+  }
+`;
+
+const BrandBlock = styled.div`
+  min-width: 0;
+`;
+
 const Marquee = styled.div`
   overflow: hidden;
   padding: 36px 0 10px;
   -webkit-mask-image: linear-gradient(90deg, transparent, black 12%, black 88%, transparent);
   mask-image: linear-gradient(90deg, transparent, black 12%, black 88%, transparent);
+  ${DESKTOP} {
+    padding-top: 0;
+  }
 `;
 
 const Track = styled.div`
@@ -38,6 +57,9 @@ const Track = styled.div`
     font-size: clamp(64px, 16vw, 140px);
     line-height: 1;
     white-space: nowrap;
+    ${DESKTOP} {
+      font-size: 96px;
+    }
   }
   i {
     display: inline-block;
@@ -53,6 +75,10 @@ const Location = styled.p`
   margin: 18px 0 40px;
   font-size: 17px;
   letter-spacing: 0.04em;
+  ${DESKTOP} {
+    margin-bottom: 0;
+    font-size: 15px;
+  }
 `;
 
 const Signup = styled.form`
@@ -71,6 +97,7 @@ const Signup = styled.form`
     margin-bottom: 14px;
   }
   input {
+    min-width: 0;
     height: 56px;
     padding: 0 20px;
     border-radius: 10px;
@@ -84,6 +111,7 @@ const Signup = styled.form`
   }
   button {
     height: 56px;
+    padding: 0 22px;
     border-radius: 10px;
     border: 1.5px solid var(--ink);
     background: white;
@@ -94,6 +122,33 @@ const Signup = styled.form`
   }
   button:hover {
     background: var(--soft);
+  }
+  ${DESKTOP} {
+    padding: 0;
+    h2 {
+      font-size: 20px;
+      letter-spacing: 0.04em;
+      margin-bottom: 4px;
+    }
+  }
+`;
+
+const Fields = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  ${DESKTOP} {
+    flex-direction: row;
+    gap: 10px;
+    input {
+      flex: 1;
+      height: 48px;
+      font-size: 15px;
+    }
+    button {
+      height: 48px;
+      font-size: 15px;
+    }
   }
 `;
 
@@ -110,46 +165,42 @@ const Socials = styled.div`
   a {
     color: var(--ink);
   }
-`;
-
-const Columns = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 28px;
-  max-width: 900px;
-  margin: 48px auto 0;
-  padding: 0 24px;
-  text-align: left;
-  @media (min-width: 700px) {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-  h3 {
-    font-family: var(--font-display);
-    font-weight: 400;
-    font-size: 22px;
-    letter-spacing: 0.06em;
-    margin-bottom: 10px;
-  }
-  li {
-    list-style: none;
-    margin-bottom: 8px;
-    font-size: 15px;
-  }
-  a:hover {
-    text-decoration: underline;
+  ${DESKTOP} {
+    margin-top: 24px;
   }
 `;
 
 const Bottom = styled.div`
-  margin-top: 40px;
+  margin-top: 48px;
   padding: 22px 24px 28px;
   border-top: 1px solid var(--line);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   font-size: 13px;
   color: var(--muted);
+  ${DESKTOP} {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 22px 32px 28px;
+  }
+`;
+
+const Links = styled.nav`
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 20px;
+    list-style: none;
+  }
+  a {
+    color: var(--ink);
+  }
+  a:hover {
+    text-decoration: underline;
+  }
 `;
 
 const Payments = styled.div`
@@ -187,77 +238,85 @@ const Footer = () => {
 
   return (
     <FooterEl>
-      <Marquee aria-hidden='true'>
-        <Track>
-          {[0, 1].map((half) => (
-            <span key={half}>
-              {[0, 1, 2].map((n) => (
-                <span key={n}>
-                  {brand} <i />
+      <Top>
+        <BrandBlock>
+          <Marquee aria-hidden='true'>
+            <Track>
+              {[0, 1].map((half) => (
+                <span key={half}>
+                  {[0, 1, 2].map((n) => (
+                    <span key={n}>
+                      {brand} <i />
+                    </span>
+                  ))}
                 </span>
               ))}
-            </span>
-          ))}
-        </Track>
-      </Marquee>
-      {storeConfig.location && <Location>{storeConfig.location}</Location>}
+            </Track>
+          </Marquee>
+          {storeConfig.location && <Location>{storeConfig.location}</Location>}
+        </BrandBlock>
 
-      <Signup onSubmit={subscribe} aria-labelledby='newsletter-title'>
-        <h2 id='newsletter-title'>Sign up for new drops, restocks and exclusive deals</h2>
-        <input
-          type='email'
-          placeholder='Email'
-          aria-label='Email'
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete='email'
-        />
-        <button type='submit' disabled={busy}>
-          {busy ? 'Subscribing…' : 'Subscribe'}
-        </button>
-        {status && (
-          <Notice role='status' $error={!status.ok}>
-            {status.message}
-          </Notice>
-        )}
-      </Signup>
+        <div>
+          <Signup onSubmit={subscribe} aria-labelledby='newsletter-title'>
+            <h2 id='newsletter-title'>Sign up for new drops and restocks</h2>
+            <Fields>
+              <input
+                type='email'
+                placeholder='Email'
+                aria-label='Email'
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete='email'
+              />
+              <button type='submit' disabled={busy}>
+                {busy ? 'Subscribing…' : 'Subscribe'}
+              </button>
+            </Fields>
+            {status && (
+              <Notice role='status' $error={!status.ok}>
+                {status.message}
+              </Notice>
+            )}
+          </Signup>
 
-      {socials.length > 0 && (
-        <Socials>
-          {socials.map(([key, label, Icon]) => (
-            <a key={key} href={storeConfig.socials[key]} target='_blank' rel='noopener noreferrer' aria-label={label}>
-              <Icon size={36} />
-            </a>
-          ))}
-        </Socials>
-      )}
+          {socials.length > 0 && (
+            <Socials>
+              {socials.map(([key, label, Icon]) => (
+                <a key={key} href={storeConfig.socials[key]} target='_blank' rel='noopener noreferrer' aria-label={label}>
+                  <Icon size={30} />
+                </a>
+              ))}
+            </Socials>
+          )}
+        </div>
+      </Top>
 
-      <Columns>
-        <nav aria-label='Shop'>
-          <h3>Shop</h3>
+      <Bottom>
+        <p>
+          © {new Date().getFullYear()} {storeConfig.name}
+        </p>
+        <Links aria-label='Footer'>
           <ul>
+            <li>
+              <Link to='/products'>Shop all</Link>
+            </li>
             {collections.map((c) => (
               <li key={c.slug}>
                 <Link to={`/collections/${c.slug}`}>{c.title}</Link>
               </li>
             ))}
             <li>
-              <Link to='/products'>All products</Link>
+              <Link to='/about'>About us</Link>
             </li>
-          </ul>
-        </nav>
-        <nav aria-label='Help'>
-          <h3>Help</h3>
-          <ul>
             <li>
               <Link to='/contact-us'>Contact</Link>
             </li>
             <li>
-              <Link to='/about'>About us</Link>
+              <Link to='/account'>Orders</Link>
             </li>
             <li>
-              <Link to='/account'>Order tracking</Link>
+              <Link to='/wishlist'>Wishlist</Link>
             </li>
             <li>
               <a href='/#faq'>FAQ</a>
@@ -268,35 +327,15 @@ const Footer = () => {
               </li>
             )}
           </ul>
-        </nav>
-        <nav aria-label='Your account'>
-          <h3>Account</h3>
-          <ul>
-            <li>
-              <Link to='/account'>My account</Link>
-            </li>
-            <li>
-              <Link to='/wishlist'>Wishlist</Link>
-            </li>
-            <li>
-              <Link to='/cart'>Bag</Link>
-            </li>
-          </ul>
-        </nav>
-      </Columns>
-
-      <Bottom>
+        </Links>
         <Payments aria-label='Accepted payment methods: Visa, Mastercard, American Express, PayPal, Apple Pay, Google Pay'>
-          <FaCcVisa size={30} />
-          <FaCcMastercard size={30} />
-          <FaCcAmex size={30} />
-          <FaCcPaypal size={30} />
-          <FaApplePay size={34} />
-          <FaGooglePay size={34} />
+          <FaCcVisa size={28} />
+          <FaCcMastercard size={28} />
+          <FaCcAmex size={28} />
+          <FaCcPaypal size={28} />
+          <FaApplePay size={32} />
+          <FaGooglePay size={32} />
         </Payments>
-        <p>
-          © {new Date().getFullYear()} {storeConfig.name}
-        </p>
       </Bottom>
     </FooterEl>
   );
