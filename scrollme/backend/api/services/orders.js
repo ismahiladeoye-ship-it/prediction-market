@@ -3,7 +3,7 @@ const Order = require('../models/orderModel');
 const Cart = require('../models/cartModel');
 const { getConfig } = require('../config/env');
 const { buildCartView } = require('../controllers/cartController');
-const { computeTotals } = require('./pricing');
+const { computeTotals, deliveryMethods } = require('./pricing');
 const { reserveStock, releaseStock } = require('./inventory');
 const { getProvider } = require('./payments');
 const { badRequest, conflict, HttpError } = require('../utils/httpError');
@@ -17,6 +17,13 @@ const newOrderNumber = () => `GIS-${Date.now().toString(36).toUpperCase()}-${cry
 const createOrderFromCart = async (user, { shippingAddress, deliveryMethod, paymentMethod = 'card' }) => {
   const config = getConfig();
   if (!config.paymentMethods.includes(paymentMethod)) throw badRequest('That payment method is not available');
+  if (!deliveryMethods().includes(deliveryMethod)) {
+    throw badRequest('That delivery method is not available', [{ field: 'deliveryMethod', message: 'That delivery method is not available' }]);
+  }
+  if (!config.shipToCountries.includes(shippingAddress.country)) {
+    const message = config.shipToCountries.join() === 'GB' ? 'We deliver to UK addresses only' : 'We do not deliver to that country';
+    throw badRequest(message, [{ field: 'shippingAddress.country', message }]);
+  }
   const cart = await Cart.findOne({ userId: user._id });
   const view = await buildCartView(cart, deliveryMethod);
   if (!view.lines.length) throw badRequest('Your cart is empty');

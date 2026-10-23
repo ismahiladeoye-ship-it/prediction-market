@@ -74,28 +74,38 @@ const cartAdd = z.object({ productId: objectId, quantity: quantity.default(1), s
 const cartUpdate = z.object({ productId: objectId, quantity, size });
 const cartRemove = z.object({ productId: objectId, size });
 
-const address = z.object({
-  fullName: z.string().trim().min(2, 'Full name is required').max(100),
-  line1: z.string().trim().min(3, 'Address line 1 is required').max(200),
-  line2: z.string().trim().max(200).optional().default(''),
-  city: z.string().trim().min(2, 'City is required').max(100),
-  state: z.string().trim().max(100).optional().default(''),
-  postalCode: z
-    .string()
-    .trim()
-    .min(3, 'Postal code is required')
-    .max(12)
-    .regex(/^[A-Za-z0-9 -]+$/, 'Postal code is invalid'),
-  country: z
-    .string()
-    .trim()
-    .toUpperCase()
-    .regex(/^[A-Z]{2}$/, 'Country must be a 2-letter code, e.g. US'),
-  phone: z
-    .string()
-    .trim()
-    .regex(/^\+?[0-9 ()-]{7,20}$/, 'Phone number is invalid'),
-});
+const UK_POSTCODE = /^[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}$/i;
+
+const address = z
+  .object({
+    fullName: z.string().trim().min(2, 'Full name is required').max(100),
+    line1: z.string().trim().min(3, 'Address line 1 is required').max(200),
+    line2: z.string().trim().max(200).optional().default(''),
+    city: z.string().trim().min(2, 'City is required').max(100),
+    state: z.string().trim().max(100).optional().default(''),
+    postalCode: z
+      .string()
+      .trim()
+      .min(3, 'Postal code is required')
+      .max(12)
+      .regex(/^[A-Za-z0-9 -]+$/, 'Postal code is invalid'),
+    country: z
+      .string()
+      .trim()
+      .toUpperCase()
+      .regex(/^[A-Z]{2}$/, 'Country must be a 2-letter code, e.g. US'),
+    phone: z
+      .string()
+      .trim()
+      .regex(/^\+?[0-9 ()-]{7,20}$/, 'Phone number is invalid'),
+  })
+  // UK postcodes are checked properly and stored in capitals with single spaces.
+  .transform((a) => (a.country === 'GB' ? { ...a, postalCode: a.postalCode.toUpperCase().replace(/\s+/g, ' ') } : a))
+  .superRefine((a, ctx) => {
+    if (a.country === 'GB' && !UK_POSTCODE.test(a.postalCode)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['postalCode'], message: 'Enter a valid UK postcode' });
+    }
+  });
 
 const paymentMethod = z.enum(['apple_pay', 'google_pay', 'card', 'paypal', 'klarna'], { message: 'Choose a payment method' });
 

@@ -33,13 +33,15 @@ const OrderSummary = ({ summary, title = 'ORDER SUMMARY', compact = false, child
       <span>Subtotal</span>
       <span>{formatPrice(summary?.subtotal)}</span>
     </SummaryItem>
+    {summary?.tax > 0 && (
+      <SummaryItem compact={compact}>
+        <span>Tax</span>
+        <span>{formatPrice(summary.tax)}</span>
+      </SummaryItem>
+    )}
     <SummaryItem compact={compact}>
-      <span>Tax</span>
-      <span>{formatPrice(summary?.tax)}</span>
-    </SummaryItem>
-    <SummaryItem compact={compact}>
-      <span>Delivery Charges</span>
-      <span>{formatPrice(summary?.shipping)}</span>
+      <span>Delivery</span>
+      <span>{summary?.shipping > 0 ? formatPrice(summary.shipping) : 'Free'}</span>
     </SummaryItem>
     <SummaryItem compact={compact} type='total'>
       <span>Total</span>

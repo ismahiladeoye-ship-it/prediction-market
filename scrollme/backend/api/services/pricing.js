@@ -1,7 +1,8 @@
 const { getConfig } = require('../config/env');
 const { toCents, fromCents } = require('../utils/money');
 
-const DELIVERY_METHODS = ['standard', 'express'];
+// Express is offered only when it has a price (SHIPPING_EXPRESS).
+const deliveryMethods = () => (getConfig().SHIPPING_EXPRESS === undefined ? ['standard'] : ['standard', 'express']);
 
 // The single source of truth for what a product costs. The storefront shows
 // `price`, so that is what is charged.
@@ -38,10 +39,10 @@ const totalsToJSON = (totals) => ({
 });
 
 const deliveryOptions = (subtotalCents) =>
-  DELIVERY_METHODS.map((method) => ({
+  deliveryMethods().map((method) => ({
     method,
-    label: method === 'express' ? 'Express (1-2 business days)' : 'Standard (3-5 business days)',
+    label: method === 'express' ? 'Express delivery (1-2 working days)' : 'Standard delivery (3-5 working days)',
     price: fromCents(shippingCents(subtotalCents || 1, method)),
   }));
 
-module.exports = { DELIVERY_METHODS, unitPriceCents, computeTotals, totalsToJSON, deliveryOptions };
+module.exports = { deliveryMethods, unitPriceCents, computeTotals, totalsToJSON, deliveryOptions };

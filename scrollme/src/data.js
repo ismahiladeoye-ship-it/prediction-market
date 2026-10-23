@@ -3,12 +3,13 @@ const pexels = (id, w = 1600) => `https://images.pexels.com/photos/${id}/pexels-
 // Everything a shop owner is likely to edit, in one place.
 export const storeConfig = {
   name: 'Get It Sourced',
-  // Rotating messages in the bar above the header. Only state what is true
-  // (e.g. add 'FREE SHIPPING ON ALL ORDERS' if FREE_SHIPPING_THRESHOLD makes it so).
-  announcements: [
-    'SOURCED FASHION, FOOTWEAR & ACCESSORIES',
-    'PAY WITH CARD, APPLE PAY, PAYPAL OR KLARNA',
-    'SIGN UP FOR NEW DROPS & RESTOCKS',
+  // Rotating messages in the bar above the header. Only state what is true:
+  // free delivery matches SHIPPING_STANDARD=0 and UK-only SHIP_TO_COUNTRIES in the API.
+  announcements: ['FREE UK DELIVERY ON ALL ORDERS', '30-DAY RETURNS', 'PAY WITH CARD, APPLE PAY, PAYPAL OR KLARNA'],
+  // Shown under "Add to cart" on product pages (icon: delivery, returns or check).
+  perks: [
+    { icon: 'delivery', text: 'Free UK delivery' },
+    { icon: 'returns', text: '30-day returns' },
   ],
   // Home page hero. Photos: Pexels licence (free for commercial use), no visible brand logos.
   heroSlides: [

@@ -14,7 +14,7 @@ const address = {
   fullName: 'Ada Lovelace',
   line1: '12 Analytical Street',
   city: 'London',
-  postalCode: 'N1 9GU',
+  postalCode: 'n1  9gu',
   country: 'gb',
   phone: '+44 20 7946 0958',
 };
@@ -34,6 +34,34 @@ describe('checkout (mock provider)', () => {
     expect(res.body.message).toMatch(/Postal code/);
     const badCountry = await agent.post('/api/orders').send({ shippingAddress: { ...address, country: 'Britain' } });
     expect(badCountry.status).toBe(400);
+    const badPostcode = await agent.post('/api/orders').send({ shippingAddress: { ...address, postalCode: '12345' } });
+    expect(badPostcode.status).toBe(400);
+    expect(badPostcode.body.details).toEqual([{ field: 'shippingAddress.postalCode', message: 'Enter a valid UK postcode' }]);
+    expect((await Product.findById(product.id)).stock).toBe(10);
+  });
+
+  it('delivers to UK addresses only and rejects unavailable delivery methods', async () => {
+    const product = await createProduct();
+    const { agent } = await signedInAgent(ctx.app);
+    await fillCart(agent, product);
+    const abroad = { ...address, city: 'Arlington', postalCode: '22202', country: 'US', phone: '+1 555 0100' };
+    const res = await agent.post('/api/orders').send({ shippingAddress: abroad });
+    expect(res.status).toBe(400);
+    expect(res.body.message).toBe('We deliver to UK addresses only');
+    expect(res.body.details).toEqual([{ field: 'shippingAddress.country', message: 'We deliver to UK addresses only' }]);
+
+    const saved = process.env.SHIPPING_EXPRESS;
+    delete process.env.SHIPPING_EXPRESS;
+    resetConfig();
+    try {
+      const express = await agent.post('/api/orders').send({ shippingAddress: address, deliveryMethod: 'express' });
+      expect(express.status).toBe(400);
+      expect(express.body.message).toMatch(/delivery method is not available/);
+    } finally {
+      process.env.SHIPPING_EXPRESS = saved;
+      resetConfig();
+    }
+    expect((await Product.findById(product.id)).stock).toBe(10);
   });
 
   it('lists the enabled payment methods and rejects disabled ones', async () => {
@@ -76,8 +104,9 @@ describe('checkout (mock provider)', () => {
     const order = res.body.order;
     expect(order.status).toBe('pending_payment');
     // subtotal 50, tax 10% = 5, express 40
-    expect(order.summary).toEqual({ subtotal: 50, tax: 5, shipping: 40, total: 95, currency: 'usd' });
+    expect(order.summary).toEqual({ subtotal: 50, tax: 5, shipping: 40, total: 95, currency: 'gbp' });
     expect(order.shippingAddress.country).toBe('GB');
+    expect(order.shippingAddress.postalCode).toBe('N1 9GU');
     expect((await Product.findById(product.id)).stock).toBe(3);
 
     // The cart is kept until payment succeeds.

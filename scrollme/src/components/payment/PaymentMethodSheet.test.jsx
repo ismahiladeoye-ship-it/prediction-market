@@ -34,7 +34,7 @@ describe('PaymentMethodSheet', () => {
     expect(screen.getByText('Add a new card')).toBeInTheDocument();
     expect(screen.getByText('PayPal')).toBeInTheDocument();
     expect(screen.getByLabelText(/Visa, Mastercard/)).toBeInTheDocument();
-    expect(screen.getByText('$ 95.00')).toBeInTheDocument();
+    expect(screen.getByText('£95.00')).toBeInTheDocument();
     // Google Pay is behind "View more".
     expect(screen.queryByText('Google Pay')).not.toBeInTheDocument();
     fireEvent.click(screen.getByText('View more'));

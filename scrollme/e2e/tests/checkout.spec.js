@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { login, chooseSize, findProduct, fillAddress } = require('./helpers');
+const { login, chooseSize, findProduct, fillAddress, money } = require('./helpers');
 
 const addToCart = async (page, product) => {
   await page.goto(`/${product.category}/${product._id}`);
@@ -20,12 +20,13 @@ test.describe('cart and checkout', () => {
     await page.goto('/cart');
     await expect(page.getByText(product.name)).toBeVisible();
     const subtotal = product.price;
-    await expect(page.getByText(`$ ${subtotal.toFixed(2)}`).first()).toBeVisible();
+    await expect(page.getByText(money(subtotal)).first()).toBeVisible();
     await page.getByRole('button', { name: 'Increase quantity' }).click();
     await expect(page.getByLabel('Quantity', { exact: true })).toHaveText('2');
-    // subtotal x2, 10% tax, $20 delivery
-    const total = subtotal * 2 + Math.round(subtotal * 2 * 0.1 * 100) / 100 + 20;
-    await expect(page.getByText(`$ ${total.toFixed(2)}`)).toBeVisible();
+    // subtotal x2, 10% tax (set for the tests), free delivery
+    const total = subtotal * 2 + Math.round(subtotal * 2 * 0.1 * 100) / 100;
+    await expect(page.getByText(money(total))).toBeVisible();
+    await expect(page.getByText('Free', { exact: true })).toBeVisible();
   });
 
   test('requires a size and sign-in before adding to the cart', async ({ page, request }) => {
@@ -93,7 +94,9 @@ test.describe('cart and checkout', () => {
     await addToCart(page, product);
     await page.goto('/checkout');
     await fillAddress(page);
-    await page.getByRole('radio', { name: /Express/ }).check();
+    // Only free standard delivery is offered by default.
+    await expect(page.getByRole('radio', { name: /Standard delivery.*Free/ })).toBeChecked();
+    await expect(page.getByRole('radio', { name: /Express/ })).toHaveCount(0);
     await page.getByRole('button', { name: 'PLACE ORDER' }).click();
     const sheet = page.getByRole('dialog', { name: 'Secure Payment' });
     await sheet.getByTestId('pay-option-paypal').click();

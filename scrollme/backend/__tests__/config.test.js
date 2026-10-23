@@ -19,6 +19,18 @@ describe('configuration', () => {
     );
   });
 
+  it('defaults to a UK store: pounds, free standard delivery, no express, UK addresses', () => {
+    const c = loadConfig(base);
+    expect(c.CURRENCY).toBe('gbp');
+    expect(c.SHIPPING_STANDARD).toBe(0);
+    expect(c.SHIPPING_EXPRESS).toBeUndefined();
+    expect(c.shipToCountries).toEqual(['GB']);
+    expect(loadConfig({ ...base, SHIPPING_EXPRESS: '' }).SHIPPING_EXPRESS).toBeUndefined();
+    expect(loadConfig({ ...base, SHIPPING_EXPRESS: '4.99' }).SHIPPING_EXPRESS).toBe(4.99);
+    expect(loadConfig({ ...base, SHIP_TO_COUNTRIES: 'gb, ie' }).shipToCountries).toEqual(['GB', 'IE']);
+    expect(() => loadConfig({ ...base, SHIP_TO_COUNTRIES: 'United Kingdom' })).toThrow(/SHIP_TO_COUNTRIES/);
+  });
+
   it('refuses live Stripe keys unless explicitly allowed', () => {
     expect(() => loadConfig({ ...base, STRIPE_SECRET_KEY: 'sk_live_123' })).toThrow(/live key/);
     expect(loadConfig({ ...base, STRIPE_SECRET_KEY: 'sk_live_123', STRIPE_ALLOW_LIVE: 'true' }).STRIPE_ALLOW_LIVE).toBe(true);

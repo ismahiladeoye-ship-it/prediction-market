@@ -26,11 +26,18 @@ const schema = z.object({
   CURRENCY: z
     .string()
     .regex(/^[a-z]{3}$/)
-    .default('usd'),
+    .default('gbp'),
   TAX_RATE: z.coerce.number().min(0).max(1).default(0),
-  SHIPPING_STANDARD: z.coerce.number().min(0).default(20),
-  SHIPPING_EXPRESS: z.coerce.number().min(0).default(40),
+  // Delivery prices in CURRENCY. Standard delivery is free unless priced;
+  // express is offered only when SHIPPING_EXPRESS is set.
+  SHIPPING_STANDARD: z.coerce.number().min(0).default(0),
+  SHIPPING_EXPRESS: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().min(0).optional()),
   FREE_SHIPPING_THRESHOLD: z.coerce.number().min(0).default(0),
+  // Countries the store delivers to (2-letter codes, comma-separated).
+  SHIP_TO_COUNTRIES: z
+    .string()
+    .regex(/^[A-Za-z]{2}(\s*,\s*[A-Za-z]{2})*$/, 'SHIP_TO_COUNTRIES must be 2-letter country codes, e.g. GB')
+    .default('GB'),
   RESERVATION_MINUTES: z.coerce.number().int().min(31).max(1440).default(35),
   PAYMENT_PROVIDER: z.enum(['stripe', 'mock']).default('stripe'),
   STRIPE_SECRET_KEY: z.string().optional(),
@@ -81,6 +88,7 @@ function loadConfig(source = process.env) {
     isProd,
     isTest: env.NODE_ENV === 'test',
     paymentMethods: [...new Set(env.PAYMENT_METHODS.split(',').map((m) => m.trim()))].filter((m) => PAYMENT_METHOD_IDS.includes(m)),
+    shipToCountries: [...new Set(env.SHIP_TO_COUNTRIES.split(',').map((c) => c.trim().toUpperCase()))],
     clientOrigins: env.CLIENT_ORIGINS.split(',')
       .map((o) => o.trim())
       .filter(Boolean),

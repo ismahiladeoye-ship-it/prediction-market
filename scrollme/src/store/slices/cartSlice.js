@@ -10,6 +10,7 @@ const initialState = {
   summary: { subtotal: 0, tax: 0, shipping: 0, total: 0 },
   deliveryOptions: [],
   deliveryMethod: 'standard',
+  shipToCountries: [],
   issues: [],
   status: 'idle',
   error: null,
@@ -38,6 +39,7 @@ const applyCart = (state, cart) => {
   state.summary = cart.summary || initialState.summary;
   state.deliveryOptions = cart.deliveryOptions || [];
   state.deliveryMethod = cart.deliveryMethod || 'standard';
+  state.shipToCountries = cart.shipToCountries || [];
   state.issues = cart.issues || [];
   state.status = 'succeeded';
   state.error = null;

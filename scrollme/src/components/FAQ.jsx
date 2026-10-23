@@ -10,6 +10,11 @@ const faqData = [
       'Get It Sourced is an online store where we source fashion, footwear and accessories for you, so you can shop a wide range of products from the comfort of your home.',
   },
   {
+    question: 'Where do you deliver, and how much does it cost?',
+    answer:
+      'We deliver across the UK, and delivery is free on every order. We do not ship outside the UK at the moment. Standard delivery takes 3–5 working days.',
+  },
+  {
     question: 'How do I track my order?',
     answer:
       "Sign in and open 'Account'. Your order history lists every order; open one to see its status, tracking number and full history.",
@@ -22,7 +27,7 @@ const faqData = [
   {
     question: "What if I'm not happy with my order?",
     answer:
-      'You can return items within 30 days of delivery, provided they are in original condition. Contact us with your order number to arrange a return.',
+      'You have 30 days from delivery to return an item, as long as it is unused and in its original condition. Contact us with your order number to arrange a return.',
   },
 ];
 

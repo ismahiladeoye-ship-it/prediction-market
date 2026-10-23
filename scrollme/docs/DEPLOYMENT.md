@@ -30,7 +30,8 @@ API (`backend/.env`, from `backend/.env.example`):
 | `APP_URL` | public storefront URL, e.g. `https://shop.example.com` (payment return links, emails) |
 | `CLIENT_ORIGINS` | same origin, e.g. `https://shop.example.com` |
 | `TRUST_PROXY` | number of proxies in front of the API (`1` for nginx only, `2` with a load balancer in front of nginx) |
-| `CURRENCY`, `TAX_RATE`, `SHIPPING_STANDARD`, `SHIPPING_EXPRESS`, `FREE_SHIPPING_THRESHOLD` | your pricing (see note below) |
+| `CURRENCY`, `TAX_RATE`, `SHIPPING_STANDARD`, `SHIPPING_EXPRESS`, `FREE_SHIPPING_THRESHOLD` | your pricing (see note below). Defaults: `gbp`, prices include VAT, free standard delivery, no express |
+| `SHIP_TO_COUNTRIES` | countries you deliver to; default `GB` (checkout accepts UK addresses only and checks the postcode) |
 | `PAYMENT_PROVIDER` | `stripe` |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | test-mode keys first (`sk_test_…`, `whsec_…`) |
 | `PAYMENT_METHODS` | e.g. `apple_pay,card,paypal,klarna,google_pay` — only methods enabled in Stripe |
@@ -39,7 +40,9 @@ API (`backend/.env`, from `backend/.env.example`):
 
 Storefront build arguments (`docker compose build` / `Dockerfile` `ARG`s): `REACT_APP_API_URL` (default `/api`), `REACT_APP_CURRENCY_SYMBOL`, and the four `REACT_APP_FIREBASE_*` values for Google sign-in.
 
-> **Prices.** The bundled catalogue was scraped with Indian-rupee prices (e.g. "Rs. 1699"). The storefront shows them with `REACT_APP_CURRENCY_SYMBOL` (default `$`) and the API charges them in `CURRENCY` (default `usd`). Set both to the real currency and re-price the catalogue before taking real payments.
+> **Prices.** The bundled catalogue was scraped with Indian-rupee prices (e.g. "Rs. 1699"). The storefront shows them with `REACT_APP_CURRENCY_SYMBOL` (default `£`) and the API charges them in `CURRENCY` (default `gbp`), so they must be re-priced (or replaced with your own stock) before taking real payments. If you change currency, change both settings.
+>
+> **Delivery.** The storefront says "Free UK delivery" and "30-day returns" (announcement bar, product pages, FAQ, About). If you start charging for delivery or ship abroad, update `announcements` and `perks` in `src/data.js` and the FAQ to match.
 
 ## 3. Payments (Stripe test mode)
 

@@ -1,6 +1,7 @@
 const Cart = require('../models/cartModel');
 const Product = require('../models/productModel');
-const { unitPriceCents, computeTotals, totalsToJSON, deliveryOptions } = require('../services/pricing');
+const { unitPriceCents, computeTotals, totalsToJSON, deliveryOptions, deliveryMethods } = require('../services/pricing');
+const { getConfig } = require('../config/env');
 const { fromCents } = require('../utils/money');
 const { badRequest, notFound, conflict } = require('../utils/httpError');
 
@@ -62,6 +63,7 @@ const buildCartView = async (cart, deliveryMethod = 'standard') => {
     summary: totalsToJSON(totals),
     deliveryMethod,
     deliveryOptions: deliveryOptions(totals.subtotalCents),
+    shipToCountries: getConfig().shipToCountries,
     issues,
     lines, // internal, removed before sending
   };
@@ -75,7 +77,7 @@ const send = async (res, cart, status = 200, message, deliveryMethod) => {
 const getOrCreateCart = async (userId) => (await Cart.findOne({ userId })) || new Cart({ userId, items: [] });
 
 exports.viewCart = async (req, res) => {
-  const delivery = req.query.delivery === 'express' ? 'express' : 'standard';
+  const delivery = req.query.delivery === 'express' && deliveryMethods().includes('express') ? 'express' : 'standard';
   const cart = await Cart.findOne({ userId: req.user._id });
   await send(res, cart, 200, undefined, delivery);
 };

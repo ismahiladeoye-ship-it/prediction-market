@@ -52,4 +52,6 @@ try {
   names = null;
 }
 
-export const COUNTRIES = CODES.map((code) => ({ code, name: names?.of(code) || code })).sort((a, b) => a.name.localeCompare(b.name));
+export const countryName = (code) => names?.of(code) || code;
+
+export const COUNTRIES = CODES.map((code) => ({ code, name: countryName(code) })).sort((a, b) => a.name.localeCompare(b.name));

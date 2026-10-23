@@ -7,7 +7,7 @@ Branch `claude/scrollme-ecommerce-phases-cwocsl`. Baseline: the original code im
 | Check | Result |
 | --- | --- |
 | API lint (ESLint + Prettier) | ✅ clean |
-| API tests (Jest + Supertest, real MongoDB) | ✅ **91 / 91** — in-memory MongoDB and an external MongoDB (as CI uses) |
+| API tests (Jest + Supertest, real MongoDB) | ✅ **94 / 94** — in-memory MongoDB and an external MongoDB (as CI uses) |
 | Storefront lint + Prettier check | ✅ clean (the original failed Prettier in 28 files) |
 | Storefront unit tests | ✅ **24 / 24** (the original suite could not run) |
 | Storefront production build | ✅ compiles; no inline scripts (CSP-safe) |
@@ -71,7 +71,8 @@ New screens (checkout, payment sheet, orders, account, admin) reuse the original
 
 - **Payment methods** offered: Apple Pay, card, PayPal, Klarna, Google Pay — all through Stripe Checkout. Skrill (shown in the reference image) is not supported by Stripe and is not offered. Apple Pay is greyed out on devices that cannot use it. PayPal/Klarna must be enabled on the Stripe account; disable them with `PAYMENT_METHODS` otherwise.
 - **Stripe sandbox not exercised end-to-end here**: no Stripe keys in this environment. The Stripe integration is covered by tests that verify the session parameters, real webhook signature verification (Stripe's own signing helper), amount mismatch flagging and return-page confirmation. Do the test-mode purchase in [DEPLOYMENT.md §3](DEPLOYMENT.md#3-payments-stripe-test-mode) before going live.
-- **Currency**: the catalogue's prices come from an Indian-rupee source but display/charge in `$`/`usd` by default, as the original UI did. Configure currency and re-price before real sales.
+- **UK store**: prices are shown in pounds and charged in GBP; standard delivery is free on every order; checkout accepts UK addresses only (postcode checked by the API); 30-day returns. Express delivery appears only if `SHIPPING_EXPRESS` is set. The "3–5 working days" delivery estimate is a placeholder to confirm.
+- **Currency of the sample catalogue**: its prices come from an Indian-rupee source, so they read as large pound amounts. Re-price or replace with the store's own stock before real sales.
 - **Duplicate products**: the scraped catalogue contains some duplicated items (same name and image). Hide duplicates in Admin → Products if needed.
 - **Storefront build tooling**: Create React App (`react-scripts`) is unmaintained, and `npm audit` flags its build-time dependencies. They are not shipped to browsers. The remaining runtime-tree finding is `@grpc/grpc-js` under Firebase's Firestore, which the app does not import and which is Node-only. A move to Vite would clear these; it was left out as it is a tooling change beyond this scope.
 - **Email**: password-reset emails need `SMTP_URL`; order-confirmation emails are not implemented.

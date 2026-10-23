@@ -4,7 +4,7 @@ const { findProduct } = require('./helpers');
 test.describe('catalogue', () => {
   test('home page shows the store sections and real products @phone', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByText('SOURCED FASHION, FOOTWEAR & ACCESSORIES')).toBeVisible();
+    await expect(page.getByText('FREE UK DELIVERY ON ALL ORDERS')).toBeVisible();
     await expect(page.getByRole('heading', { level: 1, name: 'Footwear, sourced' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Shop by collection' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Top rated' })).toBeVisible();
@@ -27,8 +27,8 @@ test.describe('catalogue', () => {
 
     await page.getByLabel('Sort products').selectOption('price_asc');
     await expect(page).toHaveURL(/sort=price_asc/);
-    await expect(page.getByText(/^\$ \d/).first()).toBeVisible();
-    const prices = await page.getByText(/^\$ \d/).allTextContents();
+    await expect(page.getByText(/^£\d/).first()).toBeVisible();
+    const prices = await page.getByText(/^£\d/).allTextContents();
     const values = prices.map((t) => Number(t.replace(/[^\d.]/g, '')));
     expect(values).toEqual([...values].sort((a, b) => a - b));
   });

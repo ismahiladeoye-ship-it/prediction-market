@@ -38,7 +38,10 @@ const About = () => (
         {storeConfig.name} finds the pieces you are looking for — clothing, footwear, accessories and fragrances — and brings them together
         in one place, so you do not have to search for them yourself.
       </p>
-      <p>Every order is paid through a secure checkout, and you can follow it from payment to delivery in your account.</p>
+      <p>
+        We deliver across the UK, free on every order, and you have 30 days to return anything that is not right. Every order is paid
+        through a secure checkout, and you can follow it from payment to delivery in your account.
+      </p>
       <p>
         Questions about an item or an order? <Link to='/contact-us'>Get in touch</Link> — we are happy to help.
       </p>

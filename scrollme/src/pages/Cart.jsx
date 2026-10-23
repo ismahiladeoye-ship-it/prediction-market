@@ -407,13 +407,15 @@ const Cart = () => {
               <SummaryItemText>Subtotal</SummaryItemText>
               <SummaryItemPrice>{formatPrice(summary.subtotal)}</SummaryItemPrice>
             </SummaryItem>
+            {summary.tax > 0 && (
+              <SummaryItem>
+                <SummaryItemText>Tax</SummaryItemText>
+                <SummaryItemPrice>{formatPrice(summary.tax)}</SummaryItemPrice>
+              </SummaryItem>
+            )}
             <SummaryItem>
-              <SummaryItemText>Tax</SummaryItemText>
-              <SummaryItemPrice>{formatPrice(summary.tax)}</SummaryItemPrice>
-            </SummaryItem>
-            <SummaryItem>
-              <SummaryItemText>Delivery Charges</SummaryItemText>
-              <SummaryItemPrice>{formatPrice(summary.shipping)}</SummaryItemPrice>
+              <SummaryItemText>Delivery</SummaryItemText>
+              <SummaryItemPrice>{summary.shipping > 0 ? formatPrice(summary.shipping) : 'Free'}</SummaryItemPrice>
             </SummaryItem>
             <SummaryItem type='total'>
               <SummaryItemText>Total</SummaryItemText>

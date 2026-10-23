@@ -1,5 +1,6 @@
 const request = require('supertest');
 const Cart = require('../api/models/cartModel');
+const { resetConfig } = require('../api/config/env');
 const { useTestApp, signedInAgent, createProduct } = require('./helpers/setup');
 
 const ctx = useTestApp();
@@ -25,7 +26,7 @@ describe('cart', () => {
     expect(res.status).toBe(200);
     expect(res.body.items[0]).toMatchObject({ price: 49.99, quantity: 2, lineTotal: 99.98, size: 'M' });
     // TAX_RATE=0.1, SHIPPING_STANDARD=20 in the test environment
-    expect(res.body.summary).toEqual({ subtotal: 99.98, tax: 10, shipping: 20, total: 129.98, currency: 'usd' });
+    expect(res.body.summary).toEqual({ subtotal: 99.98, tax: 10, shipping: 20, total: 129.98, currency: 'gbp' });
     const stored = await Cart.findOne({}).lean();
     expect(stored.items[0].price).toBeUndefined();
   });
@@ -47,6 +48,27 @@ describe('cart', () => {
     const res = await agent.get('/api/cart?delivery=express');
     expect(res.body.summary.shipping).toBe(40);
     expect(res.body.deliveryOptions.map((o) => o.method)).toEqual(['standard', 'express']);
+  });
+
+  it('offers only free standard delivery when express is not priced', async () => {
+    const saved = { standard: process.env.SHIPPING_STANDARD, express: process.env.SHIPPING_EXPRESS };
+    delete process.env.SHIPPING_STANDARD;
+    delete process.env.SHIPPING_EXPRESS;
+    resetConfig();
+    try {
+      const product = await createProduct({ price: 10, sizes: [] });
+      const { agent } = await signedInAgent(ctx.app);
+      await agent.post('/api/cart/add').send({ productId: product.id });
+      const res = await agent.get('/api/cart?delivery=express');
+      expect(res.body.deliveryMethod).toBe('standard');
+      expect(res.body.summary.shipping).toBe(0);
+      expect(res.body.deliveryOptions).toEqual([{ method: 'standard', label: 'Standard delivery (3-5 working days)', price: 0 }]);
+      expect(res.body.shipToCountries).toEqual(['GB']);
+    } finally {
+      process.env.SHIPPING_STANDARD = saved.standard;
+      process.env.SHIPPING_EXPRESS = saved.express;
+      resetConfig();
+    }
   });
 
   it('validates size, quantity and stock', async () => {

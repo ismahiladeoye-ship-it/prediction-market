@@ -8,7 +8,7 @@ COPY src ./src
 COPY .env.production .prettierrc.cjs eslint.config.mjs jsonconfig.json ./
 # Optional build-time settings (see .env.example)
 ARG REACT_APP_API_URL=/api
-ARG REACT_APP_CURRENCY_SYMBOL=$
+ARG REACT_APP_CURRENCY_SYMBOL=£
 ARG REACT_APP_FIREBASE_API_KEY=
 ARG REACT_APP_FIREBASE_AUTH_DOMAIN=
 ARG REACT_APP_FIREBASE_PROJECT_ID=

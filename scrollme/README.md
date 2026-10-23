@@ -63,7 +63,7 @@ With `PAYMENT_PROVIDER=mock` the payment step opens a local **test-mode** page f
 
 | Suite | Command | What it covers |
 | --- | --- | --- |
-| API | `cd backend && npm test` | 91 tests on a real MongoDB: auth, permissions, catalogue and collections, cart pricing, checkout, stock, payments/webhooks, admin, wishlist, newsletter, HTTP hardening |
+| API | `cd backend && npm test` | 94 tests on a real MongoDB: auth, permissions, catalogue and collections, cart pricing, UK delivery, checkout, stock, payments/webhooks, admin, wishlist, newsletter, HTTP hardening |
 | Storefront unit | `npm run test:ci` | 24 tests: route guards, payment sheet, gallery states, cart/wishlist state, validation |
 | End-to-end | `npm run build && cd e2e && npm install && npx playwright test` | 19 browser tests (desktop + phone) against the real API, database and production build |
 | Lint/format | `npm run lint && npm run lint-check`, `cd backend && npm run lint` | |

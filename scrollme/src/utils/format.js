@@ -1,7 +1,8 @@
-const SYMBOL = process.env.REACT_APP_CURRENCY_SYMBOL || '$';
+const SYMBOL = process.env.REACT_APP_CURRENCY_SYMBOL || '£';
 
-// Matches the original "$ 1699.00" presentation.
-export const formatPrice = (amount) => `${SYMBOL} ${Number(amount || 0).toFixed(2)}`;
+// e.g. £1,699.00
+export const formatPrice = (amount) =>
+  `${SYMBOL}${Number(amount || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 export const humanize = (slug = '') =>
   slug

@@ -12,24 +12,28 @@ import { placeOrderAPI } from '../services/orders/orderService';
 import { getErrorMessage } from '../api/client';
 import { formatPrice } from '../utils/format';
 import { imageSrc, onImageError } from '../utils/imageFallback';
-import { COUNTRIES } from '../utils/countries';
+import { countryName } from '../utils/countries';
 import PaymentMethodSheet, { isMethodSupported } from '../components/payment/PaymentMethodSheet';
 import { MethodLogo } from '../components/payment/PaymentLogos';
 import { getPaymentMethodsAPI } from '../services/payments/paymentService';
 import { FaChevronRight, FaLock } from 'react-icons/fa';
 import { PAYMENT_METHOD_LABELS } from '../utils/format';
 
-const EMPTY_ADDRESS = { fullName: '', phone: '', line1: '', line2: '', city: '', state: '', postalCode: '', country: 'US' };
+const EMPTY_ADDRESS = { fullName: '', phone: '', line1: '', line2: '', city: '', state: '', postalCode: '', country: 'GB' };
+const DEFAULT_COUNTRIES = ['GB'];
+const UK_POSTCODE = /^[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}$/i;
 
 // Mirrors the API's checks so mistakes are shown before submitting.
-const validate = (a) => {
+const validate = (a, countries) => {
   const errors = {};
   if (a.fullName.trim().length < 2) errors.fullName = 'Full name is required';
   if (!/^\+?[0-9 ()-]{7,20}$/.test(a.phone.trim())) errors.phone = 'Enter a valid phone number';
   if (a.line1.trim().length < 3) errors.line1 = 'Address line 1 is required';
   if (a.city.trim().length < 2) errors.city = 'City is required';
-  if (!/^[A-Za-z0-9 -]{3,12}$/.test(a.postalCode.trim())) errors.postalCode = 'Enter a valid postal code';
-  if (!/^[A-Z]{2}$/.test(a.country)) errors.country = 'Choose a country';
+  if (a.country === 'GB') {
+    if (!UK_POSTCODE.test(a.postalCode.trim().replace(/\s+/g, ' '))) errors.postalCode = 'Enter a valid UK postcode';
+  } else if (!/^[A-Za-z0-9 -]{3,12}$/.test(a.postalCode.trim())) errors.postalCode = 'Enter a valid postal code';
+  if (!countries.includes(a.country)) errors.country = 'We do not deliver to that country';
   return errors;
 };
 
@@ -47,6 +51,9 @@ const Checkout = () => {
   const [payment, setPayment] = useState({ methods: ['card'], testMode: false });
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [sheet, setSheet] = useState(null); // null | 'choose' | 'pay'
+  // Countries the store delivers to (from the API).
+  const countries = cart.shipToCountries.length ? cart.shipToCountries : DEFAULT_COUNTRIES;
+  const uk = address.country === 'GB';
 
   useEffect(() => {
     getPaymentMethodsAPI()
@@ -62,6 +69,10 @@ const Checkout = () => {
     dispatch(viewCart(deliveryMethod)).finally(() => setLoaded(true));
   }, [dispatch, deliveryMethod]);
 
+  useEffect(() => {
+    if (!countries.includes(address.country)) setAddress((a) => ({ ...a, country: countries[0] }));
+  }, [countries, address.country]);
+
   const setField = (field) => (e) => {
     setAddress((a) => ({ ...a, [field]: e.target.value }));
     setErrors((errs) => ({ ...errs, [field]: undefined }));
@@ -70,7 +81,7 @@ const Checkout = () => {
   // Step 1: check the address, then ask how the shopper wants to pay.
   const handleSubmit = (e) => {
     e.preventDefault();
-    const found = validate(address);
+    const found = validate(address, countries);
     setErrors(found);
     if (Object.keys(found).length) {
       document.getElementById(`checkout-${Object.keys(found)[0]}`)?.focus();
@@ -160,17 +171,26 @@ const Checkout = () => {
               {field('line1', 'Address line 1', { autoComplete: 'address-line1', maxLength: 200, wide: true })}
               {field('line2', 'Address line 2 (optional)', { autoComplete: 'address-line2', maxLength: 200, wide: true })}
               {field('city', 'City', { autoComplete: 'address-level2', maxLength: 100 })}
-              {field('state', 'State / Region (optional)', { autoComplete: 'address-level1', maxLength: 100 })}
-              {field('postalCode', 'Postal code', { autoComplete: 'postal-code', maxLength: 12 })}
+              {field('state', uk ? 'County (optional)' : 'State / Region (optional)', { autoComplete: 'address-level1', maxLength: 100 })}
+              {field('postalCode', uk ? 'Postcode' : 'Postal code', { autoComplete: 'postal-code', maxLength: 12 })}
               <Field>
                 <Label htmlFor='checkout-country'>Country</Label>
-                <Select id='checkout-country' value={address.country} onChange={setField('country')} autoComplete='country'>
-                  {COUNTRIES.map((c) => (
-                    <option key={c.code} value={c.code}>
-                      {c.name}
-                    </option>
-                  ))}
-                </Select>
+                {countries.length === 1 ? (
+                  <Input id='checkout-country' value={countryName(countries[0])} readOnly aria-describedby='checkout-country-note' />
+                ) : (
+                  <Select id='checkout-country' value={address.country} onChange={setField('country')} autoComplete='country'>
+                    {countries.map((code) => (
+                      <option key={code} value={code}>
+                        {countryName(code)}
+                      </option>
+                    ))}
+                  </Select>
+                )}
+                {countries.length === 1 && (
+                  <FieldNote id='checkout-country-note'>
+                    We deliver to {countries[0] === 'GB' ? 'UK' : countryName(countries[0])} addresses only.
+                  </FieldNote>
+                )}
                 {errors.country && <FieldError>{errors.country}</FieldError>}
               </Field>
             </Grid>
@@ -331,6 +351,9 @@ const Input = styled.input`
   padding: 10px;
   border: 1px solid ${(props) => (props['aria-invalid'] ? '#c53030' : '#ccc')};
   border-radius: 4px;
+  &[readonly] {
+    background: var(--soft);
+  }
 `;
 
 const Select = styled.select`
@@ -342,6 +365,11 @@ const Select = styled.select`
 
 const FieldError = styled.span`
   color: #c53030;
+  font-size: 12px;
+`;
+
+const FieldNote = styled.span`
+  color: var(--muted);
   font-size: 12px;
 `;
 

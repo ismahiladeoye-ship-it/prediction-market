@@ -20,6 +20,10 @@ import { toggleWishlist } from '../store/slices/wishlistSlice';
 import { getErrorMessage } from '../api/client';
 import { formatPrice, humanize } from '../utils/format';
 import { imageSrc, onImageError } from '../utils/imageFallback';
+import { HiOutlineArrowPath, HiOutlineCheckCircle, HiOutlineTruck } from 'react-icons/hi2';
+import { storeConfig } from '../data';
+
+const PERK_ICONS = { delivery: HiOutlineTruck, returns: HiOutlineArrowPath };
 
 const Product = () => {
   const [product, setProduct] = useState(null);
@@ -263,6 +267,19 @@ const Product = () => {
                 BUY NOW
               </Button>
             </ActionButtons>
+            {storeConfig.perks?.length > 0 && (
+              <Perks>
+                {storeConfig.perks.map(({ icon, text }) => {
+                  const Icon = PERK_ICONS[icon] || HiOutlineCheckCircle;
+                  return (
+                    <li key={text}>
+                      <Icon size={18} aria-hidden='true' />
+                      {text}
+                    </li>
+                  );
+                })}
+              </Perks>
+            )}
           </AddContainer>
           <ProductDetails>
             <ProductDetailTitle>Product details</ProductDetailTitle>
@@ -446,6 +463,19 @@ const AddContainer = styled.div`
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 10px;
+`;
+
+const Perks = styled.ul`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  list-style: none;
+  font-size: 14px;
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
 `;
 
 const ActionButtons = styled.div`

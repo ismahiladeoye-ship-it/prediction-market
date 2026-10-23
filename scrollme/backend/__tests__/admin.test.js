@@ -4,7 +4,7 @@ const { useTestApp, signedInAgent, createProduct } = require('./helpers/setup');
 
 const ctx = useTestApp();
 
-const address = { fullName: 'Grace Hopper', line1: '1 Navy Way', city: 'Arlington', postalCode: '22202', country: 'US', phone: '+1 555 0100' };
+const address = { fullName: 'Grace Hopper', line1: '1 Navy Way', city: 'Leeds', postalCode: 'LS1 4DY', country: 'GB', phone: '+44 113 496 0000' };
 
 const newProduct = { name: 'Admin Jacket', price: 80, category: 'jackets', stock: 7, brand: 'scrollme', sizes: ['M', 'L'] };
 

@@ -13,7 +13,7 @@ import { cancelOrderAPI, getOrderAPI, resumePaymentAPI } from '../services/order
 import { viewCart } from '../store/slices/cartSlice';
 import { getErrorMessage } from '../api/client';
 import { formatDate, ORDER_STATUS_LABELS, PAYMENT_METHOD_LABELS } from '../utils/format';
-import { COUNTRIES } from '../utils/countries';
+import { countryName } from '../utils/countries';
 import PaymentMethodSheet from '../components/payment/PaymentMethodSheet';
 import { getPaymentMethodsAPI } from '../services/payments/paymentService';
 
@@ -102,8 +102,6 @@ const OrderDetail = () => {
       setBusy(false);
     }
   };
-
-  const countryName = (code) => COUNTRIES.find((c) => c.code === code)?.name || code;
 
   return (
     <div>

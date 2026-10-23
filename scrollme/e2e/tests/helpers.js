@@ -28,8 +28,11 @@ const fillAddress = async (page) => {
   await page.getByLabel('Phone').fill('+44 7366 982207');
   await page.getByLabel('Address line 1').fill('16 Benton Street');
   await page.getByLabel('City').fill('Manchester');
-  await page.getByLabel('Postal code').fill('M9 4NG');
-  await page.getByLabel('Country').selectOption('GB');
+  await page.getByLabel('Postcode').fill('m9 4ng');
+  await expect(page.getByLabel('Country')).toHaveValue('United Kingdom');
 };
 
-module.exports = { SEEDED, ADMIN, login, chooseSize, findProduct, fillAddress };
+// Matches the storefront's price format, e.g. £1,699.00.
+const money = (n) => `£${n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+module.exports = { SEEDED, ADMIN, login, chooseSize, findProduct, fillAddress, money };
