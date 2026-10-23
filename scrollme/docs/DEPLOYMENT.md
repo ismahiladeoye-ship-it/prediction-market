@@ -30,7 +30,7 @@ API (`backend/.env`, from `backend/.env.example`):
 | `APP_URL` | public storefront URL, e.g. `https://shop.example.com` (payment return links, emails) |
 | `CLIENT_ORIGINS` | same origin, e.g. `https://shop.example.com` |
 | `TRUST_PROXY` | number of proxies in front of the API (`1` for nginx only, `2` with a load balancer in front of nginx) |
-| `CURRENCY`, `TAX_RATE`, `SHIPPING_STANDARD`, `SHIPPING_EXPRESS`, `FREE_SHIPPING_THRESHOLD` | your pricing (see note below). Defaults: `gbp`, prices include VAT, £4.99 standard delivery that is free from £100, no express |
+| `CURRENCY`, `TAX_RATE`, `SHIPPING_STANDARD`, `SHIPPING_EXPRESS`, `FREE_SHIPPING_THRESHOLD` | your pricing (see note below). Defaults: `gbp`, prices include VAT, £3.99 standard delivery that is free from £100, no express |
 | `SHIP_TO_COUNTRIES` | countries you deliver to; default `GB` (checkout accepts UK addresses only and checks the postcode) |
 | `PAYMENT_PROVIDER` | `stripe` |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | test-mode keys first (`sk_test_…`, `whsec_…`) |

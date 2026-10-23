@@ -22,7 +22,7 @@ describe('configuration', () => {
   it('defaults to a UK store: pounds, free delivery from £100, no express, UK addresses', () => {
     const c = loadConfig(base);
     expect(c.CURRENCY).toBe('gbp');
-    expect(c.SHIPPING_STANDARD).toBe(4.99);
+    expect(c.SHIPPING_STANDARD).toBe(3.99);
     expect(c.FREE_SHIPPING_THRESHOLD).toBe(100);
     expect(c.SHIPPING_EXPRESS).toBeUndefined();
     expect(c.shipToCountries).toEqual(['GB']);

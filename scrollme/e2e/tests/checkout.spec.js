@@ -96,15 +96,15 @@ test.describe('cart and checkout', () => {
     for (const btn of await page.getByRole('button', { name: 'Remove' }).all()) await btn.click();
     await addToCart(page, product);
 
-    // Under £100: £4.99 delivery and a nudge towards free delivery.
+    // Under £100: £3.99 delivery and a nudge towards free delivery.
     await page.goto('/cart');
     await expect(page.getByText(`Spend ${money(100 - product.price)} more for free UK delivery`)).toBeVisible();
-    await expect(page.getByText(money(4.99), { exact: true })).toBeVisible();
+    await expect(page.getByText(money(3.99), { exact: true })).toBeVisible();
 
     await page.goto('/checkout');
     await fillAddress(page);
     // Standard delivery only (express is not offered by default).
-    await expect(page.getByRole('radio', { name: /Standard delivery.*£4\.99/ })).toBeChecked();
+    await expect(page.getByRole('radio', { name: /Standard delivery.*£3\.99/ })).toBeChecked();
     await expect(page.getByRole('radio', { name: /Express/ })).toHaveCount(0);
     await page.getByRole('button', { name: 'PLACE ORDER' }).click();
     const sheet = page.getByRole('dialog', { name: 'Secure Payment' });
