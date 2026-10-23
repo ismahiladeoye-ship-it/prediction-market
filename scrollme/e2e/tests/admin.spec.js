@@ -29,7 +29,7 @@ test.describe('administration', () => {
     await customer.getByLabel('Name on card').fill('John Doe');
     await customer.getByRole('button', { name: /^Pay / }).click();
     await expect(customer.getByTestId('order-status')).toHaveText('Paid');
-    const orderNumber = (await customer.getByRole('heading', { name: /^ORDER SM-/ }).textContent()).replace('ORDER ', '').trim();
+    const orderNumber = (await customer.getByRole('heading', { name: /^ORDER GIS-/ }).textContent()).replace('ORDER ', '').trim();
 
     // The admin ships it with a tracking number.
     await login(page, ADMIN);

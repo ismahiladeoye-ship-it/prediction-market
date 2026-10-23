@@ -1,4 +1,4 @@
-# ScrollMe — release candidate report
+# Get It Sourced (ScrollMe) — release candidate report
 
 Branch `claude/scrollme-ecommerce-phases-cwocsl`. Baseline: the original code imported unmodified in commit `79b736e`; audit in [audit/AUDIT.md](audit/AUDIT.md).
 
@@ -57,7 +57,7 @@ Pixel comparison of original vs. new builds (desktop 1366 px, phone 390 px):
 | Login / register | differ only where intended: "username or email" placeholder, password guidance, Google button hidden until Firebase is configured |
 | Home, catalogue, product, cart | same layout, fonts and colours; real data instead of placeholders; see [screenshots/](screenshots/) |
 
-New screens (checkout, payment sheet, orders, account, admin) reuse the original typography, teal accent, light weights and summary-box style. The payment sheet follows the reference layout supplied (radio list, card brand row, "View more", rounded Confirm) in ScrollMe teal.
+New screens (checkout, payment sheet, orders, account, admin) reuse the original typography, teal accent, light weights and summary-box style. The payment sheet follows the reference layout supplied (radio list, card brand row, "View more", rounded Confirm) in the original teal.
 
 ## Known limitations and decisions
 
@@ -67,6 +67,7 @@ New screens (checkout, payment sheet, orders, account, admin) reuse the original
 - **Duplicate products**: the scraped catalogue contains some duplicated items (same name and image). Hide duplicates in Admin → Products if needed.
 - **Storefront build tooling**: Create React App (`react-scripts`) is unmaintained, and `npm audit` flags its build-time dependencies. They are not shipped to browsers. The remaining runtime-tree finding is `@grpc/grpc-js` under Firebase's Firestore, which the app does not import and which is Node-only. A move to Vite would clear these; it was left out as it is a tooling change beyond this scope.
 - **Email**: password-reset emails need `SMTP_URL`; order-confirmation emails are not implemented.
+- **Renamed to Get It Sourced** at the owner's request: wordmark, page title, footer, FAQ, emails and order numbers (`GIS-…`). Internal identifiers (folder, database name, CI) keep `scrollme`.
 - **Contributors page removed** at the owner's request (page, GitHub data hook, footer link, CSP allowance for api.github.com). `/contributors` now shows the empty category page.
 - **Newsletter / contact forms** still only show a confirmation (as in the original); no backend exists for them.
 - **Main bundle** is ~640 kB gzipped (original: 649 kB). Firebase now loads only when Google sign-in is used; further splitting of Chakra/MUI is possible.

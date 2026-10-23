@@ -1,6 +1,6 @@
-# ScrollMe Ecommerce Website
+# Get It Sourced
 
-ScrollMe is an open-source eCommerce platform built with **React**, **Styled Components**, **Node.js (Express)** and **MongoDB**. This version restores the original ScrollMe storefront design and completes it into a working shop: real catalogue, accounts, server-priced cart, checkout with a secure payment-method sheet, orders, and store administration.
+**Get It Sourced** is an online store for sourced fashion, footwear and accessories. It is built on the open-source **ScrollMe** eCommerce project (MIT licence) with **React**, **Styled Components**, **Node.js (Express)** and **MongoDB**. This version restores the original ScrollMe storefront design under the Get It Sourced name and completes it into a working shop: real catalogue, accounts, server-priced cart, checkout with a secure payment-method sheet, orders, and store administration.
 
 | | |
 | --- | --- |
@@ -13,7 +13,7 @@ ScrollMe is an open-source eCommerce platform built with **React**, **Styled Com
 
 ## Features
 
-- [x] **Original ScrollMe look**: Urbanist type, teal identity, original pages and assets, now responsive on phones, tablets and desktops.
+- [x] **Original ScrollMe look, Get It Sourced name**: Urbanist type, teal identity, two-tone wordmark, original pages and assets, now responsive on phones, tablets and desktops.
 - [x] **Catalogue**: 24k products in 278 real categories; search, category pages, price/stock filters, sorting, pagination.
 - [x] **Accounts**: registration, login, logout, refresh tokens in httpOnly cookies, password reset, optional Google sign-in.
 - [x] **Wishlist**: saved per account (guest wishlists are merged on sign-in).

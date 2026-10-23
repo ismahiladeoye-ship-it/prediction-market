@@ -201,7 +201,7 @@ const Checkout = () => {
               </ViewAll>
             </PaymentCard>
             <SecureNote>
-              <FaLock size={11} /> Card details are entered on our payment provider&apos;s secure page and never stored by ScrollMe.
+              <FaLock size={11} /> Card details are entered on our payment provider&apos;s secure page and never stored by Get It Sourced.
             </SecureNote>
 
             <SectionTitle>Items ({cart.totalQuantity})</SectionTitle>

@@ -1,6 +1,6 @@
 // Google sign-in through Firebase Authentication. Disabled unless the
 // REACT_APP_FIREBASE_* variables are set; the API verifies the ID token
-// (FIREBASE_PROJECT_ID) and opens a normal ScrollMe session.
+// (FIREBASE_PROJECT_ID) and opens a normal store session.
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,

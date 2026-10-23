@@ -74,7 +74,7 @@ test.describe('cart and checkout', () => {
     await expect(page).toHaveURL(/\/orders\/.+checkout=success/);
     await expect(page.getByText('Your payment was received')).toBeVisible();
     await expect(page.getByTestId('order-status')).toHaveText('Paid');
-    const orderNumber = (await page.getByRole('heading', { name: /^ORDER SM-/ }).textContent()).replace('ORDER ', '').trim();
+    const orderNumber = (await page.getByRole('heading', { name: /^ORDER GIS-/ }).textContent()).replace('ORDER ', '').trim();
 
     await page.goto('/account');
     await expect(page.getByText(orderNumber)).toBeVisible();

@@ -9,7 +9,8 @@ const { getProvider } = require('./payments');
 const { badRequest, conflict, HttpError } = require('../utils/httpError');
 const logger = require('../utils/logger');
 
-const newOrderNumber = () => `SM-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
+// Order numbers look like GIS-MH3K2Q1A-4F2C9B (Get It Sourced).
+const newOrderNumber = () => `GIS-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
 
 // Creates an order from the shopper's server-side cart, reserves its stock and
 // opens a payment session. Nothing the client sends is used for prices.

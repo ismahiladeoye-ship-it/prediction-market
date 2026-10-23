@@ -95,7 +95,7 @@ const Footer = () => {
       <Left>
         <Logo size={'3rem'} /> {/* Using Logo component directly */}
         <Desc>
-          Welcome to <span style={{ color: 'teal', fontWeight: 600 }}>ScrollMe</span> Web Store, your ultimate destination for trendy and
+          Welcome to <span style={{ color: 'teal', fontWeight: 600 }}>Get It Sourced</span>, your ultimate destination for trendy and
           fashionable clothing. We pride ourselves on curating a diverse collection of high-quality apparel that caters to your unique style
           and personality.
         </Desc>

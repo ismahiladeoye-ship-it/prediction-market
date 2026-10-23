@@ -1,4 +1,4 @@
-# ScrollMe storefront: serves the React build and proxies /api to the API.
+# Get It Sourced storefront: serves the React build and proxies /api to the API.
 # ${API_UPSTREAM} is substituted at container start (nginx image envsubst).
 
 server {

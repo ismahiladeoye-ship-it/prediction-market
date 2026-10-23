@@ -95,7 +95,7 @@ describe('checkout (mock provider)', () => {
 
     const history = await agent.get('/api/orders');
     expect(history.body.orders).toHaveLength(1);
-    expect(history.body.orders[0].orderNumber).toMatch(/^SM-/);
+    expect(history.body.orders[0].orderNumber).toMatch(/^GIS-[A-Z0-9]+-[A-F0-9]{6}$/);
   });
 
   it('rejects checkout when stock ran out and leaves no partial reservation', async () => {

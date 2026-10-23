@@ -40,7 +40,7 @@ const schema = z.object({
   PAYMENT_METHODS: z.string().default('apple_pay,card,paypal,klarna,google_pay'),
   FIREBASE_PROJECT_ID: z.string().optional(),
   SMTP_URL: z.string().optional(),
-  MAIL_FROM: z.string().default('ScrollMe <no-reply@scrollme.local>'),
+  MAIL_FROM: z.string().default('Get It Sourced <no-reply@getitsourced.com>'),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error', 'silent']).default('info'),
 });
 

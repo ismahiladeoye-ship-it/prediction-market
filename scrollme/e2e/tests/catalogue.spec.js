@@ -2,7 +2,7 @@ const { test, expect } = require('@playwright/test');
 const { findProduct } = require('./helpers');
 
 test.describe('catalogue', () => {
-  test('home page shows the original ScrollMe sections and real products @phone', async ({ page }) => {
+  test('home page shows the original storefront sections and real products @phone', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByText('Super deal hour started')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'SUMMER SALE' })).toBeVisible();

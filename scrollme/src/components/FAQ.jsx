@@ -4,24 +4,24 @@ import styled from 'styled-components';
 // FAQ Data Example
 const faqData = [
   {
-    question: 'What is ScrollMe?',
+    question: 'What is Get It Sourced?',
     answer:
-      'ScrollMe is a dynamic e-commerce platform offering a wide range of products to cater to your shopping needs, all from the comfort of your home.',
+      'Get It Sourced is an online store where we source fashion, footwear and accessories for you, so you can shop a wide range of products from the comfort of your home.',
   },
   {
     question: 'How do I track my order?',
     answer:
-      "You can track your order by logging into your account and visiting the 'My Orders' section. There, you'll find real-time updates on your order status.",
+      "Sign in and open 'Account'. Your order history lists every order; open one to see its status, tracking number and full history.",
   },
   {
     question: 'What payment methods are accepted?',
     answer:
-      'We accept various payment methods, including credit/debit cards, PayPal, and popular UPI services for seamless and secure transactions.',
+      'We accept credit and debit cards (Visa, Mastercard, American Express and more), Apple Pay, Google Pay, PayPal and Klarna. Payments are processed securely by our payment provider; we never store your card details.',
   },
   {
     question: 'What is your return policy?',
     answer:
-      "Our return policy allows you to return items within 30 days of delivery, provided they are in original condition. Visit the 'Returns & Refunds' section for more details.",
+      'Our return policy allows you to return items within 30 days of delivery, provided they are in original condition. Contact us with your order number to arrange a return.',
   },
 ];
 

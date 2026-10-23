@@ -93,7 +93,7 @@ exports.forgotPassword = async (req, res) => {
     await mailer
       .sendMail({
         to: user.email,
-        subject: 'Reset your ScrollMe password',
+        subject: 'Reset your Get It Sourced password',
         text: `Hi ${user.firstName},\n\nUse this link within 30 minutes to choose a new password:\n${link}\n\nIf you did not ask for this, you can ignore this email.`,
       })
       .catch((err) => logger.error('password_reset_mail_failed', { err }));

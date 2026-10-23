@@ -1,6 +1,6 @@
-# ScrollMe API
+# Get It Sourced API
 
-Express + Mongoose REST API for the ScrollMe store. Sessions use httpOnly cookies (`accessToken`, 15 minutes; `refreshToken`, 7 days, sent only to `/api/auth`). Every request body and query is validated with zod; money is computed in integer cents.
+Express + Mongoose REST API for the Get It Sourced store (based on ScrollMe). Sessions use httpOnly cookies (`accessToken`, 15 minutes; `refreshToken`, 7 days, sent only to `/api/auth`). Every request body and query is validated with zod; money is computed in integer cents.
 
 ## Setup
 

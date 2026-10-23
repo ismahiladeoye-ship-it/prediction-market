@@ -1,4 +1,4 @@
-# Deploying ScrollMe
+# Deploying Get It Sourced
 
 The supported layout is three containers behind a TLS-terminating proxy:
 
@@ -52,7 +52,7 @@ Storefront build arguments (`docker compose build` / `Dockerfile` `ARG`s): `REAC
 4. Test a purchase with every method using [Stripe's test cards and wallets](https://docs.stripe.com/testing): `4242 4242 4242 4242` succeeds, `4000 0000 0000 0002` declines. Confirm the order turns **Paid**, the admin can ship it, and a cancelled order returns its stock.
 5. Going live: switch to live keys **and** set `STRIPE_ALLOW_LIVE=true` (the API refuses live keys otherwise), create the live webhook, and repeat step 4 with a small real payment you refund.
 
-Card details are only ever entered on Stripe's hosted page; ScrollMe stores the payment status and Stripe's reference, never card data. The local `mock` provider exists for development and automated tests and is rejected when `NODE_ENV=production`.
+Card details are only ever entered on Stripe's hosted page; Get It Sourced stores the payment status and Stripe's reference, never card data. The local `mock` provider exists for development and automated tests and is rejected when `NODE_ENV=production`.
 
 ## 4. Build and run
 
