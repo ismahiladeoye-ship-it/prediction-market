@@ -94,6 +94,17 @@ describe('cart', () => {
     }
   });
 
+  it('caps the number of different items in a bag', async () => {
+    const products = await Promise.all(Array.from({ length: 51 }, (_, i) => createProduct({ name: `Tee ${i}`, sizes: [] })));
+    const { agent } = await signedInAgent(ctx.app);
+    for (const p of products.slice(0, 50)) expect((await agent.post('/api/cart/add').send({ productId: p.id })).status).toBe(200);
+    const res = await agent.post('/api/cart/add').send({ productId: products[50].id });
+    expect(res.status).toBe(400);
+    expect(res.body.message).toMatch(/up to 50 different items/);
+    // More of an item already in the bag is still fine.
+    expect((await agent.post('/api/cart/add').send({ productId: products[0].id })).status).toBe(200);
+  });
+
   it('validates size, quantity and stock', async () => {
     const product = await createProduct({ stock: 3 });
     const { agent } = await signedInAgent(ctx.app);

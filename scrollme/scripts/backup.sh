@@ -4,6 +4,8 @@
 # Requires mongodump (MongoDB Database Tools). With docker compose:
 #   docker compose exec mongo sh -c 'mongodump --archive=/backups/scrollme-$(date -u +%Y%m%dT%H%M%SZ).archive.gz --gzip --db scrollme'
 set -euo pipefail
+# Backups contain customer data and password hashes: owner-only files.
+umask 077
 
 : "${MONGODB_URI:?Set MONGODB_URI}"
 BACKUP_DIR="${BACKUP_DIR:-./backups}"

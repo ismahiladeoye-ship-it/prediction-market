@@ -63,10 +63,17 @@ const createApp = () => {
   app.use(cookieParser());
 
   // CSRF defence in depth (cookies are also SameSite): state-changing requests
-  // must be JSON, which a cross-site HTML form cannot send.
+  // must come from an allowed origin and, with a body, be JSON, which a
+  // cross-site HTML form cannot send. Browsers always send Origin on such requests.
+  const allowedOrigins = new Set([...config.clientOrigins, new URL(config.APP_URL).origin]);
   app.use('/api', (req, res, next) => {
+    if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) return next();
+    const origin = req.get('origin');
+    if (origin && !allowedOrigins.has(origin)) {
+      return res.status(403).json({ message: 'Cross-site request blocked' });
+    }
     const hasBody = Number(req.headers['content-length'] || 0) > 0 || req.headers['transfer-encoding'] !== undefined;
-    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method) && hasBody && !req.is('application/json')) {
+    if (hasBody && !req.is('application/json')) {
       return res.status(415).json({ message: 'Content-Type must be application/json' });
     }
     next();

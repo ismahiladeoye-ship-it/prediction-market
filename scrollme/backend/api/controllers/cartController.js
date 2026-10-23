@@ -5,6 +5,9 @@ const { getConfig } = require('../config/env');
 const { fromCents } = require('../utils/money');
 const { badRequest, notFound, conflict } = require('../utils/httpError');
 
+// Keeps carts (and every request that prices them) bounded.
+const MAX_CART_LINES = 50;
+
 const sameLine = (item, productId, size) => item.productId.toString() === productId.toString() && (item.size || '') === (size || '');
 
 const checkSize = (product, size) => {
@@ -98,6 +101,7 @@ exports.addToCart = async (req, res) => {
   if (newQty > product.stock) {
     throw conflict(product.stock === 0 ? 'This product is out of stock' : `Only ${product.stock} left in stock`);
   }
+  if (!existing && cart.items.length >= MAX_CART_LINES) throw badRequest(`Your bag can hold up to ${MAX_CART_LINES} different items`);
   if (existing) existing.quantity = newQty;
   else cart.items.push({ productId, size, quantity });
   await cart.save();

@@ -94,16 +94,16 @@ const ComingSoon = () => {
         <NotifyButton onClick={handleNotify}>Notify Me</NotifyButton>
       </div>
       <SocialContainer>
-        <SocialIcon href='https://facebook.com' target='_blank' rel='noopener_noreferrrer' color='3B5999'>
+        <SocialIcon href='https://facebook.com' target='_blank' rel='noopener noreferrer' color='3B5999'>
           <Facebook />
         </SocialIcon>
-        <SocialIcon href='https://instagram.com' target='_blank' rel='noopener_noreferrer' color='E4405F'>
+        <SocialIcon href='https://instagram.com' target='_blank' rel='noopener noreferrer' color='E4405F'>
           <Instagram />
         </SocialIcon>
-        <SocialIcon href='https://twitter.com' target='_blank' rel='noopener_noreferrer' color='55ACEE'>
+        <SocialIcon href='https://twitter.com' target='_blank' rel='noopener noreferrer' color='55ACEE'>
           <XIcon />
         </SocialIcon>
-        <SocialIcon href='https://www.linkedin.com' target='_blank' rel='noopener_noreferrer' color='E60023'>
+        <SocialIcon href='https://www.linkedin.com' target='_blank' rel='noopener noreferrer' color='E60023'>
           <LinkedIn />
         </SocialIcon>
       </SocialContainer>

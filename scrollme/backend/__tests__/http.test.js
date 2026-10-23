@@ -30,6 +30,15 @@ describe('HTTP hardening', () => {
     expect(res.status).toBe(415);
   });
 
+  it('blocks state-changing requests from other origins, even without a body', async () => {
+    const evil = await request(ctx.app).post('/api/auth/logout').set('Origin', 'https://evil.example');
+    expect(evil.status).toBe(403);
+    expect((await request(ctx.app).post('/api/auth/logout').set('Origin', 'null')).status).toBe(403);
+    expect((await request(ctx.app).post('/api/auth/logout').set('Origin', 'http://localhost:3000')).status).toBe(200);
+    // Reads are unaffected (CORS governs them).
+    expect((await request(ctx.app).get('/api/health').set('Origin', 'https://evil.example')).status).toBe(200);
+  });
+
   it('returns JSON errors for malformed bodies and unknown routes', async () => {
     const bad = await request(ctx.app).post('/api/auth/login').set('Content-Type', 'application/json').send('{"username":');
     expect(bad.status).toBe(400);

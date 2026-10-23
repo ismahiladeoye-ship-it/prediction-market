@@ -1,5 +1,5 @@
 # --- Build the React storefront ---
-FROM node:20-bookworm-slim AS build
+FROM node:24-bookworm-slim AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund --ignore-scripts
@@ -16,7 +16,7 @@ ARG REACT_APP_FIREBASE_APP_ID=
 RUN npm run build
 
 # --- Serve with nginx (unprivileged, port 8080) ---
-FROM nginxinc/nginx-unprivileged:1.27-alpine
+FROM nginxinc/nginx-unprivileged:1.28-alpine
 ENV API_UPSTREAM=api:8080
 COPY deploy/nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /app/build /usr/share/nginx/html

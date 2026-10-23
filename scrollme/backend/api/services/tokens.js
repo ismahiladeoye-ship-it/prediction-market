@@ -15,9 +15,13 @@ const baseCookie = () => {
   };
 };
 
+// Tokens are only ever HS256; verification refuses any other algorithm.
+const ALGORITHM = 'HS256';
+
 const signAccessToken = (user) => {
   const config = getConfig();
   return jwt.sign({ id: user._id.toString(), roles: user.roles, v: user.tokenVersion }, config.JWT_SECRET, {
+    algorithm: ALGORITHM,
     expiresIn: config.ACCESS_TOKEN_TTL,
   });
 };
@@ -25,12 +29,13 @@ const signAccessToken = (user) => {
 const signRefreshToken = (user) => {
   const config = getConfig();
   return jwt.sign({ id: user._id.toString(), v: user.tokenVersion }, config.REFRESH_TOKEN_SECRET, {
+    algorithm: ALGORITHM,
     expiresIn: `${config.REFRESH_TOKEN_TTL_DAYS}d`,
   });
 };
 
-const verifyAccessToken = (token) => jwt.verify(token, getConfig().JWT_SECRET);
-const verifyRefreshToken = (token) => jwt.verify(token, getConfig().REFRESH_TOKEN_SECRET);
+const verifyAccessToken = (token) => jwt.verify(token, getConfig().JWT_SECRET, { algorithms: [ALGORITHM] });
+const verifyRefreshToken = (token) => jwt.verify(token, getConfig().REFRESH_TOKEN_SECRET, { algorithms: [ALGORITHM] });
 
 const setAuthCookies = (res, user) => {
   const config = getConfig();

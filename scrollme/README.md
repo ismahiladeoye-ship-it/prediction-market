@@ -5,6 +5,7 @@
 | | |
 | --- | --- |
 | Audit of the original code | [docs/audit/AUDIT.md](docs/audit/AUDIT.md) |
+| Security audit (Oct 2026) | [docs/security/SECURITY_AUDIT.md](docs/security/SECURITY_AUDIT.md) |
 | Release-candidate report (what was fixed and how it was verified) | [docs/RELEASE_CANDIDATE.md](docs/RELEASE_CANDIDATE.md) |
 | Deployment guide | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) |
 | Operations runbook (logs, health, backups, restore) | [docs/OPERATIONS.md](docs/OPERATIONS.md) |
@@ -40,7 +41,7 @@ scrollme/
 
 ## Local development
 
-Requirements: Node.js 20+, and MongoDB 7 (local install, Docker, or Atlas).
+Requirements: Node.js 22+ (24 LTS recommended; Docker and CI use 24), and MongoDB 7 (local install, Docker, or Atlas).
 
 ```bash
 # 1. API
@@ -63,7 +64,7 @@ With `PAYMENT_PROVIDER=mock` the payment step opens a local **test-mode** page f
 
 | Suite | Command | What it covers |
 | --- | --- | --- |
-| API | `cd backend && npm test` | 95 tests on a real MongoDB: auth, permissions, catalogue and collections, cart pricing, UK delivery, checkout, stock, payments/webhooks, admin, wishlist, newsletter, HTTP hardening |
+| API | `cd backend && npm test` | 103 tests on a real MongoDB: auth, permissions, catalogue and collections, cart pricing, UK delivery, checkout, stock, payments/webhooks, admin, wishlist, newsletter, HTTP hardening |
 | Storefront unit | `npm run test:ci` | 24 tests: route guards, payment sheet, gallery states, cart/wishlist state, validation |
 | End-to-end | `npm run build && cd e2e && npm install && npx playwright test` | 19 browser tests (desktop + phone) against the real API, database and production build |
 | Lint/format | `npm run lint && npm run lint-check`, `cd backend && npm run lint` | |

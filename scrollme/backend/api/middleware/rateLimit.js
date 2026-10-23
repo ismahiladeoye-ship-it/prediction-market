@@ -13,7 +13,14 @@ const make = (options) =>
 
 // Brute-force protection for credential endpoints.
 const authLimiter = make({ windowMs: 15 * 60 * 1000, limit: 20, skipSuccessfulRequests: true });
+// Per account, so password guessing spread over many IPs is throttled too.
+const loginAccountLimiter = make({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  skipSuccessfulRequests: true,
+  keyGenerator: (req) => `login:${String(req.body?.username || '').toLowerCase()}`,
+});
 const checkoutLimiter = make({ windowMs: 10 * 60 * 1000, limit: 30 });
 const apiLimiter = make({ windowMs: 60 * 1000, limit: 300 });
 
-module.exports = { authLimiter, checkoutLimiter, apiLimiter };
+module.exports = { authLimiter, loginAccountLimiter, checkoutLimiter, apiLimiter };

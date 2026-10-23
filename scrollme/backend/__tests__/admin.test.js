@@ -58,6 +58,9 @@ describe('admin product management', () => {
     expect((await agent.post('/api/admin/products').send({ ...newProduct, price: -1 })).status).toBe(400);
     expect((await agent.post('/api/admin/products').send({ ...newProduct, ratings: { averageRating: 5 } })).status).toBe(400);
     expect((await agent.patch(`/api/admin/products/${id}`).send({ _id: '507f1f77bcf86cd799439011' })).status).toBe(400);
+    for (const imageUrl of ['javascript:alert(1)', 'data:text/html,<script>alert(1)</script>', 'ftp://example.com/a.jpg']) {
+      expect((await agent.patch(`/api/admin/products/${id}`).send({ imageUrl })).status).toBe(400);
+    }
 
     const updated = await agent.patch(`/api/admin/products/${id}`).send({ price: 75.5, stock: 3 });
     expect(updated.body.product).toMatchObject({ price: 75.5, stock: 3 });

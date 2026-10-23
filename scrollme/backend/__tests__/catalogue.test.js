@@ -29,8 +29,10 @@ describe('product catalogue', () => {
     expect(page2.body.products.map((p) => p.name)).toEqual(['Blue Denim Jeans']);
   });
 
-  it('caps the page size', async () => {
+  it('caps the page size and how deep pages go', async () => {
     expect((await request(ctx.app).get('/api/product/list?limit=100000')).status).toBe(400);
+    expect((await request(ctx.app).get('/api/product/list?page=1001')).status).toBe(400);
+    expect((await request(ctx.app).get('/api/product/list?page=1000')).status).toBe(200);
   });
 
   it('searches across name, brand and category (case-insensitive, all words)', async () => {

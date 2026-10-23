@@ -6,7 +6,8 @@ const { getConfig } = require('../config/env');
 const { notFound, forbidden, conflict, badRequest } = require('../utils/httpError');
 const logger = require('../utils/logger');
 
-const serializeOrder = (order) => {
+// `admin` adds internal notes; customers only learn that the order needs attention.
+const serializeOrder = (order, { admin = false } = {}) => {
   const o = order.toObject ? order.toObject() : order;
   return {
     id: o._id,
@@ -39,7 +40,8 @@ const serializeOrder = (order) => {
     payment: { provider: o.payment?.provider, method: o.payment?.method, status: o.payment?.status, paidAt: o.payment?.paidAt },
     reservationExpiresAt: o.reservationExpiresAt,
     trackingNumber: o.trackingNumber,
-    attention: o.attention,
+    needsAttention: Boolean(o.attention),
+    ...(admin ? { attention: o.attention } : {}),
     createdAt: o.createdAt,
     updatedAt: o.updatedAt,
   };
@@ -68,7 +70,7 @@ exports.listMyOrders = async (req, res) => {
       .limit(limit),
     Order.countDocuments(filter),
   ]);
-  res.json({ page, limit, total, totalPages: Math.ceil(total / limit), orders: orders.map(serializeOrder) });
+  res.json({ page, limit, total, totalPages: Math.ceil(total / limit), orders: orders.map((o) => serializeOrder(o)) });
 };
 
 exports.getOrder = async (req, res) => {
@@ -97,6 +99,8 @@ exports.cancelOrder = async (req, res) => {
 // Resume payment for an unpaid order whose session may have been closed.
 exports.resumePayment = async (req, res) => {
   const order = await loadOwnOrder(req);
+  // Only the customer pays; admins can view the order but not open payments on it.
+  if (!order.userId.equals(req.user._id)) throw forbidden();
   if (order.status !== 'pending_payment') throw conflict('This order is not awaiting payment');
   if (order.reservationExpiresAt && order.reservationExpiresAt <= new Date()) throw conflict('This order has expired. Please check out again.');
   const provider = getProvider();

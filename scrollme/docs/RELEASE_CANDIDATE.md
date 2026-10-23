@@ -7,7 +7,7 @@ Branch `claude/scrollme-ecommerce-phases-cwocsl`. Baseline: the original code im
 | Check | Result |
 | --- | --- |
 | API lint (ESLint + Prettier) | ✅ clean |
-| API tests (Jest + Supertest, real MongoDB) | ✅ **95 / 95** — in-memory MongoDB and an external MongoDB (as CI uses) |
+| API tests (Jest + Supertest, real MongoDB) | ✅ **103 / 103** — in-memory MongoDB and an external MongoDB (as CI uses) |
 | Storefront lint + Prettier check | ✅ clean (the original failed Prettier in 28 files) |
 | Storefront unit tests | ✅ **24 / 24** (the original suite could not run) |
 | Storefront production build | ✅ compiles; no inline scripts (CSP-safe) |
@@ -15,7 +15,8 @@ Branch `claude/scrollme-ecommerce-phases-cwocsl`. Baseline: the original code im
 | Full purchase through nginx with production headers | ✅ 17 steps, 0 CSP violations, 0 console/page errors, 0 px horizontal overflow at 390 px |
 | nginx config (`nginx -t`) and headers | ✅ CSP, HSTS, X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy on pages; `no-store` + API CSP on `/api`; immutable caching on assets |
 | Backup → restore drill | ✅ counts identical after restore into a separate database; tampered archive rejected |
-| Production dependency audit, API | ✅ 0 vulnerabilities (express, mongoose, bcrypt 6, nodemailer upgraded) |
+| Production dependency audit, API | ✅ 0 vulnerabilities (express, mongoose, bcrypt 6, nodemailer, zod 4 upgraded) |
+| Security audit (23 Oct 2026) | ✅ 31 code/configuration findings (0 critical/high, 3 medium, 16 low fixed; 12 informational) and 80 dependency advisories reviewed — see [security/SECURITY_AUDIT.md](security/SECURITY_AUDIT.md) |
 | Production dependency audit, storefront | ⚠️ see *Known limitations* |
 | Docker images | ✅ both images built by the `docker` CI job ([run #1](https://github.com/ismahiladeoye-ship-it/prediction-market/actions/runs/39897792729)) |
 | CI on GitHub | ✅ run #1: API, storefront, end-to-end and Docker jobs all green |
@@ -74,7 +75,7 @@ New screens (checkout, payment sheet, orders, account, admin) reuse the original
 - **UK store**: prices are shown in pounds and charged in GBP; standard delivery is free on orders of £100 or more and £3.99 below that (the bag shows how much more to spend for free delivery); checkout accepts UK addresses only (postcode checked by the API); 30-day returns. Express delivery appears only if `SHIPPING_EXPRESS` is set. The "3–5 working days" delivery estimate is a placeholder to confirm.
 - **Currency of the sample catalogue**: its prices come from an Indian-rupee source, so they read as large pound amounts. Re-price or replace with the store's own stock before real sales.
 - **Duplicate products**: the scraped catalogue contains some duplicated items (same name and image). Hide duplicates in Admin → Products if needed.
-- **Storefront build tooling**: Create React App (`react-scripts`) is unmaintained, and `npm audit` flags its build-time dependencies. They are not shipped to browsers. The remaining runtime-tree finding is `@grpc/grpc-js` under Firebase's Firestore, which the app does not import and which is Node-only. A move to Vite would clear these; it was left out as it is a tooling change beyond this scope.
+- **Storefront build tooling**: Create React App (`react-scripts`) is unmaintained, and `npm audit` flags 38 of its development-server/build-time dependencies (down from 65 after overrides). None are shipped to browsers. A move to Vite would clear these; see [security/SECURITY_AUDIT.md](security/SECURITY_AUDIT.md).
 - **Email**: password-reset emails need `SMTP_URL`; order-confirmation emails are not implemented.
 - **Collections and newsletter**: products are grouped into four collections (`backend/api/config/collections.js`); footer sign-ups are stored and admins can export them from `GET /api/newsletter`.
 - **Placeholder content to replace**: `storeConfig` in `src/data.js` holds the location ("United Kingdom"), empty social links (icons are hidden until set), contact email and the *We'll source it* section (remove it with `feature: null` if the store does not take sourcing requests); the About page copy is a starting point.

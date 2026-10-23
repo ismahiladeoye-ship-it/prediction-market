@@ -149,7 +149,7 @@ const OrderDetail = () => {
                 Payment was not completed. Your items are reserved until {new Date(order.reservationExpiresAt).toLocaleTimeString()}.
               </Alert>
             )}
-            {order.attention && (
+            {order.needsAttention && (
               <Alert status='warning' mb={6} borderRadius='md'>
                 <AlertIcon />
                 There is a problem with this order. Our team has been notified and will contact you.

@@ -3,12 +3,12 @@ const router = express.Router();
 const auth = require('../controllers/authController');
 const authMiddleware = require('../middleware/authMiddleware');
 const validate = require('../middleware/validate');
-const { authLimiter } = require('../middleware/rateLimit');
+const { authLimiter, loginAccountLimiter } = require('../middleware/rateLimit');
 const s = require('../validators/schemas');
 const { asyncHandler } = require('../utils/httpError');
 
 router.post('/register', authLimiter, validate({ body: s.register }), asyncHandler(auth.register));
-router.post('/login', authLimiter, validate({ body: s.login }), asyncHandler(auth.login));
+router.post('/login', authLimiter, validate({ body: s.login }), loginAccountLimiter, asyncHandler(auth.login));
 router.post('/google', authLimiter, validate({ body: s.googleLogin }), asyncHandler(auth.googleLogin));
 router.post('/logout', asyncHandler(auth.logOut));
 router.post('/refresh-token', asyncHandler(auth.refreshToken));

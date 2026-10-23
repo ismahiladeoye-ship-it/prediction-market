@@ -15,6 +15,7 @@ Use a managed MongoDB 7 (e.g. MongoDB Atlas) or the `mongo` service in `docker-c
 - Create a dedicated database user with `readWrite` on the `scrollme` database only.
 - Restrict network access to the API hosts.
 - Enable provider backups **and** schedule `scripts/backup.sh` (see [OPERATIONS.md](OPERATIONS.md)).
+- If you run MongoDB yourself (e.g. the `mongo` service in `docker-compose.yml`), enable authentication and put the credentials in `MONGODB_URI`; see the [security audit](security/SECURITY_AUDIT.md) for other hardening notes.
 - Set `MONGODB_URI=mongodb+srv://USER:PASSWORD@cluster.example.net/scrollme?retryWrites=true&w=majority`.
 - Load the catalogue once: `docker compose run --rm api npm run seed -- --force` (catalogue only; demo users are never created in production). Create the first administrator with `npm run create-admin`.
 

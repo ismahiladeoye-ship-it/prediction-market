@@ -14,6 +14,9 @@ const newOrderNumber = () => `GIS-${Date.now().toString(36).toUpperCase()}-${cry
 
 // Creates an order from the shopper's server-side cart, reserves its stock and
 // opens a payment session. Nothing the client sends is used for prices.
+// Unpaid orders hold stock, so one account cannot tie up more than this many at once.
+const MAX_UNPAID_ORDERS = 3;
+
 const createOrderFromCart = async (user, { shippingAddress, deliveryMethod, paymentMethod = 'card' }) => {
   const config = getConfig();
   if (!config.paymentMethods.includes(paymentMethod)) throw badRequest('That payment method is not available');
@@ -23,6 +26,9 @@ const createOrderFromCart = async (user, { shippingAddress, deliveryMethod, paym
   if (!config.shipToCountries.includes(shippingAddress.country)) {
     const message = config.shipToCountries.join() === 'GB' ? 'We deliver to UK addresses only' : 'We do not deliver to that country';
     throw badRequest(message, [{ field: 'shippingAddress.country', message }]);
+  }
+  if ((await Order.countDocuments({ userId: user._id, status: 'pending_payment' })) >= MAX_UNPAID_ORDERS) {
+    throw conflict('You already have unpaid orders. Pay for or cancel one in your account before placing another.');
   }
   const cart = await Cart.findOne({ userId: user._id });
   const view = await buildCartView(cart, deliveryMethod);
@@ -94,7 +100,15 @@ const removePurchasedFromCart = async (order) => {
 const markOrderPaid = async (orderId, { reference, amountTotal } = {}) => {
   const order = await Order.findById(orderId);
   if (!order) return null;
-  if (order.payment.status === 'paid') return order;
+  if (order.payment.status === 'paid') {
+    // A second, different payment for the same order (e.g. two checkout tabs) must be refunded.
+    if (reference && order.payment.reference && reference !== order.payment.reference && !order.attention) {
+      order.attention = `A second payment (${reference}) was received for this order and needs refunding`;
+      await Order.updateOne({ _id: order._id }, { $set: { attention: order.attention } });
+      logger.error('duplicate_payment', { orderId: String(order._id), reference, first: order.payment.reference });
+    }
+    return order;
+  }
 
   if (amountTotal !== undefined && amountTotal !== null && amountTotal !== order.amounts.totalCents) {
     order.attention = `Amount paid (${amountTotal}) differs from order total (${order.amounts.totalCents})`;

@@ -25,7 +25,7 @@ The API writes one JSON object per line to stdout/stderr:
 
 ## Backups
 
-`scripts/backup.sh` writes a gzip archive plus a SHA-256 checksum, and deletes archives older than `RETENTION_DAYS` (default 14). A partial dump never gets the final file name.
+`scripts/backup.sh` writes a gzip archive plus a SHA-256 checksum, and deletes archives older than `RETENTION_DAYS` (default 14). A partial dump never gets the final file name. Archives are created readable by the owner only (they contain customer details and password hashes); keep them on encrypted storage.
 
 ```bash
 # Host with MongoDB Database Tools installed

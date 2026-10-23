@@ -1,6 +1,9 @@
 const request = require('supertest');
 const User = require('../api/models/userModel');
+const jwt = require('jsonwebtoken');
 const mailer = require('../api/services/mailer');
+const googleAuth = require('../api/services/googleAuth');
+const { resetConfig } = require('../api/config/env');
 const { useTestApp, createUser, STRONG_PASSWORD } = require('./helpers/setup');
 
 const ctx = useTestApp();
@@ -171,5 +174,67 @@ describe('google sign-in', () => {
       .post('/api/auth/google')
       .send({ idToken: 'x'.repeat(40) });
     expect(res.status).toBe(501);
+  });
+
+  it('creates and reuses Google accounts but never signs into a password account', async () => {
+    const spy = jest.spyOn(googleAuth, 'verifyGoogleIdToken');
+    const token = { idToken: 'x'.repeat(40) };
+    try {
+      spy.mockResolvedValue({ email: 'Grace@Example.com', email_verified: true, name: 'Grace Hopper' });
+      const first = await request(ctx.app).post('/api/auth/google').send(token);
+      expect(first.status).toBe(200);
+      expect(first.body.user).toMatchObject({ email: 'grace@example.com', firstName: 'Grace', lastName: 'Hopper' });
+      const again = await request(ctx.app).post('/api/auth/google').send(token);
+      expect(again.body.user.id).toBe(first.body.user.id);
+
+      // An attacker pre-registers the victim's address with a password...
+      await request(ctx.app)
+        .post('/api/auth/register')
+        .send(newUser({ username: 'squatter', email: 'victim@example.com' }));
+      // ...the victim later uses Google: no session in the squatter's account.
+      spy.mockResolvedValue({ email: 'victim@example.com', email_verified: true, name: 'Victim' });
+      const res = await request(ctx.app).post('/api/auth/google').send(token);
+      expect(res.status).toBe(409);
+      expect(cookieNames(res)).not.toContain('accessToken');
+
+      spy.mockResolvedValue({ email: 'unverified@example.com', email_verified: false });
+      expect((await request(ctx.app).post('/api/auth/google').send(token)).status).toBe(401);
+    } finally {
+      spy.mockRestore();
+    }
+  });
+});
+
+describe('token hardening', () => {
+  it('accepts only HS256 tokens signed with the right secret', async () => {
+    const user = await createUser();
+    const claims = { id: user._id.toString(), roles: ['admin'], v: user.tokenVersion };
+    const forged = [
+      jwt.sign(claims, 'test-access-secret', { algorithm: 'HS512' }),
+      jwt.sign(claims, 'wrong-secret', { algorithm: 'HS256' }),
+      `${Buffer.from('{"alg":"none","typ":"JWT"}').toString('base64url')}.${Buffer.from(JSON.stringify(claims)).toString('base64url')}.`,
+    ];
+    for (const token of forged) {
+      expect((await request(ctx.app).get('/api/auth/me').set('Cookie', `accessToken=${token}`)).status).toBe(401);
+    }
+  });
+
+  it('throttles password guessing per account, whatever the source', async () => {
+    const user = await createUser();
+    process.env.RATE_LIMIT_ENABLED = 'true';
+    resetConfig();
+    try {
+      for (let i = 0; i < 10; i += 1) {
+        const res = await request(ctx.app)
+          .post('/api/auth/login')
+          .send({ username: user.username, password: `Wrong!pass${i}` });
+        expect(res.status).toBe(401);
+      }
+      const locked = await request(ctx.app).post('/api/auth/login').send({ username: user.username, password: STRONG_PASSWORD });
+      expect(locked.status).toBe(429);
+    } finally {
+      process.env.RATE_LIMIT_ENABLED = 'false';
+      resetConfig();
+    }
   });
 });

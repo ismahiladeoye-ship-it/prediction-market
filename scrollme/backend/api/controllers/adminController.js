@@ -76,13 +76,13 @@ exports.listOrders = async (req, res) => {
       .limit(limit),
     Order.countDocuments(filter),
   ]);
-  res.json({ page, limit, total, totalPages: Math.ceil(total / limit), orders: orders.map(serializeOrder) });
+  res.json({ page, limit, total, totalPages: Math.ceil(total / limit), orders: orders.map((o) => serializeOrder(o, { admin: true })) });
 };
 
 exports.getOrder = async (req, res) => {
   const order = await Order.findById(req.params.orderId);
   if (!order) throw notFound('Order not found');
-  res.json({ order: serializeOrder(order), allowedTransitions: Order.TRANSITIONS[order.status] });
+  res.json({ order: serializeOrder(order, { admin: true }), allowedTransitions: Order.TRANSITIONS[order.status] });
 };
 
 exports.updateOrderStatus = async (req, res) => {
@@ -91,7 +91,7 @@ exports.updateOrderStatus = async (req, res) => {
   const from = order.status;
   await changeStatus(order, req.body.status, { by: req.user._id, note: req.body.note, trackingNumber: req.body.trackingNumber });
   audit(req, 'order_status', { orderId: String(order._id), from, to: order.status });
-  res.json({ order: serializeOrder(order), allowedTransitions: Order.TRANSITIONS[order.status] });
+  res.json({ order: serializeOrder(order, { admin: true }), allowedTransitions: Order.TRANSITIONS[order.status] });
 };
 
 // ---- Dashboard ----

@@ -1,6 +1,6 @@
 import styled from 'styled-components';
-import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom';
-import { useState } from 'react';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { useToast } from '@chakra-ui/react';
 import { resetPasswordAPI } from '../services/auth/authService';
 import { passwordHint } from '../utils/passwordPolicy';
@@ -80,9 +80,18 @@ const Message = styled.p`
 const ResetPassword = () => {
   const toast = useToast();
   const navigate = useNavigate();
-  const [params] = useSearchParams();
-  const token = params.get('token') || '';
+  const location = useLocation();
+  // The emailed link carries the token in the #fragment (never sent to the
+  // server or in Referer headers); ?token= is still accepted for older links.
+  const [token] = useState(
+    () => new URLSearchParams(location.hash.slice(1)).get('token') || new URLSearchParams(location.search).get('token') || ''
+  );
   const [password, setPassword] = useState('');
+
+  // Drop the token from the address bar and browser history once read.
+  useEffect(() => {
+    if (location.hash || location.search) navigate('/reset-password', { replace: true });
+  }, [location.hash, location.search, navigate]);
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {

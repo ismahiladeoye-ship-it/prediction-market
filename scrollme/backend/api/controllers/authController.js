@@ -3,7 +3,7 @@ const User = require('../models/userModel');
 const { getConfig } = require('../config/env');
 const { REFRESH_COOKIE, setAuthCookies, clearAuthCookies, verifyRefreshToken } = require('../services/tokens');
 const mailer = require('../services/mailer');
-const { verifyGoogleIdToken } = require('../services/googleAuth');
+const googleAuth = require('../services/googleAuth');
 const { badRequest, unauthorized, conflict, HttpError } = require('../utils/httpError');
 const logger = require('../utils/logger');
 
@@ -89,8 +89,11 @@ exports.forgotPassword = async (req, res) => {
     const token = crypto.randomBytes(32).toString('hex');
     user.passwordReset = { tokenHash: hashToken(token), expiresAt: new Date(Date.now() + 30 * 60 * 1000) };
     await user.save();
-    const link = `${getConfig().APP_URL}/reset-password?token=${token}`;
-    await mailer
+    // Fragment, not query string: it never reaches server logs or Referer headers.
+    const link = `${getConfig().APP_URL}/reset-password#token=${token}`;
+    // Not awaited: waiting for the mail server would make the response slower
+    // for registered addresses and reveal which emails have accounts.
+    mailer
       .sendMail({
         to: user.email,
         subject: 'Reset your Get It Sourced password',
@@ -119,10 +122,16 @@ exports.resetPassword = async (req, res) => {
 };
 
 exports.googleLogin = async (req, res) => {
-  const claims = await verifyGoogleIdToken(req.body.idToken);
+  const claims = await googleAuth.verifyGoogleIdToken(req.body.idToken);
   if (!claims.email || !claims.email_verified) throw new HttpError(401, 'Google account email is not verified');
   const email = claims.email.toLowerCase();
   let user = await User.findOne({ email });
+  // Never sign into a password account through Google: sign-up does not verify
+  // email ownership, so whoever registered the address first (possibly not its
+  // owner) would keep access alongside the Google user, or the reverse.
+  if (user && user.authProvider !== 'google') {
+    throw conflict('An account with this email already exists. Sign in with your password, or reset it from the login page.');
+  }
   if (!user) {
     const [first, ...rest] = String(claims.name || email.split('@')[0]).split(' ');
     const base =

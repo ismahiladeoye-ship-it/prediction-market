@@ -5,7 +5,7 @@ const Order = require('../api/models/orderModel');
 const Cart = require('../api/models/cartModel');
 const { resetConfig } = require('../api/config/env');
 const { stripeProvider } = require('../api/services/payments');
-const { releaseExpiredOrders } = require('../api/services/orders');
+const { releaseExpiredOrders, markOrderPaid } = require('../api/services/orders');
 const { useTestApp, signedInAgent, createProduct } = require('./helpers/setup');
 
 const ctx = useTestApp();
@@ -184,6 +184,47 @@ describe('checkout (mock provider)', () => {
     expect((await other.agent.post(`/api/payments/mock/${body.order.id}/complete`)).status).toBe(403);
     expect((await other.agent.get('/api/orders')).body.orders).toHaveLength(0);
     expect((await request(ctx.app).get(`/api/orders/${body.order.id}`)).status).toBe(401);
+  });
+
+  it('limits how many unpaid orders (and so reserved stock) one account can hold', async () => {
+    const product = await createProduct({ sizes: [], stock: 20 });
+    const { agent } = await signedInAgent(ctx.app);
+    await fillCart(agent, product, 2);
+    for (let i = 0; i < 3; i += 1) expect((await agent.post('/api/orders').send({ shippingAddress: address })).status).toBe(201);
+    const fourth = await agent.post('/api/orders').send({ shippingAddress: address });
+    expect(fourth.status).toBe(409);
+    expect(fourth.body.message).toMatch(/unpaid orders/);
+    expect((await Product.findById(product.id)).stock).toBe(14);
+  });
+
+  it('lets only the customer open a payment for their order', async () => {
+    const product = await createProduct({ sizes: [] });
+    const owner = await signedInAgent(ctx.app);
+    const admin = await signedInAgent(ctx.app, { roles: ['user', 'admin'] });
+    await fillCart(owner.agent, product, 1);
+    const { body } = await owner.agent.post('/api/orders').send({ shippingAddress: address });
+    expect((await admin.agent.get(`/api/orders/${body.order.id}`)).status).toBe(200);
+    expect((await admin.agent.post(`/api/orders/${body.order.id}/pay`).send({})).status).toBe(403);
+    expect((await owner.agent.post(`/api/orders/${body.order.id}/pay`).send({})).status).toBe(200);
+  });
+
+  it('flags a second payment for refund and keeps internal notes from the customer', async () => {
+    const product = await createProduct({ sizes: [] });
+    const { agent } = await signedInAgent(ctx.app);
+    const admin = await signedInAgent(ctx.app, { roles: ['user', 'admin'] });
+    await fillCart(agent, product, 1);
+    const { body } = await agent.post('/api/orders').send({ shippingAddress: address });
+    await markOrderPaid(body.order.id, { reference: 'pi_first' });
+    await markOrderPaid(body.order.id, { reference: 'pi_first' });
+    expect((await Order.findById(body.order.id)).attention).toBeUndefined();
+    await markOrderPaid(body.order.id, { reference: 'pi_second' });
+    expect((await Order.findById(body.order.id)).attention).toMatch(/second payment \(pi_second\)/);
+
+    const mine = (await agent.get(`/api/orders/${body.order.id}`)).body.order;
+    expect(mine.needsAttention).toBe(true);
+    expect(mine.attention).toBeUndefined();
+    const adminView = (await admin.agent.get(`/api/admin/orders/${body.order.id}`)).body.order;
+    expect(adminView.attention).toMatch(/needs refunding/);
   });
 });
 

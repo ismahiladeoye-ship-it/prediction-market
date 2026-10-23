@@ -52,7 +52,8 @@ const googleLogin = z.object({ idToken: z.string().min(20).max(5000) });
 
 const sortValues = ['newest', 'price_asc', 'price_desc', 'rating', 'name'];
 const productListQuery = z.object({
-  page: z.coerce.number().int().min(1).max(100000).default(1),
+  // Deep pages make the database skip huge numbers of documents; nobody browses past this.
+  page: z.coerce.number().int().min(1).max(1000).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(12),
   q: z.string().trim().max(100).optional(),
   category: z
@@ -132,7 +133,14 @@ const productFields = {
     .regex(/^[a-z0-9-]+$/, 'Category must be a slug, e.g. t-shirts')
     .max(60),
   stock: z.coerce.number().int().min(0).max(1000000),
-  imageUrl: z.string().trim().url().max(2000).optional().or(z.literal('')),
+  imageUrl: z
+    .string()
+    .trim()
+    .max(2000)
+    .url()
+    .refine((v) => /^https?:\/\//i.test(v), 'Image URL must start with http:// or https://')
+    .optional()
+    .or(z.literal('')),
   brand: z.string().trim().max(60).optional(),
   material: z.string().trim().max(60).optional(),
   color: z.string().trim().max(40).optional(),
@@ -151,7 +159,7 @@ const orderStatusUpdate = z.object({
 });
 
 const pageQuery = z.object({
-  page: z.coerce.number().int().min(1).default(1),
+  page: z.coerce.number().int().min(1).max(1000).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
   status: z.enum(['pending_payment', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded']).optional(),
   q: z.string().trim().max(100).optional(),
