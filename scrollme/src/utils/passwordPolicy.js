@@ -6,7 +6,8 @@ export const passwordProblems = (password) => {
   if (!/[a-z]/.test(password)) problems.push('a lowercase letter');
   if (!/[0-9]/.test(password)) problems.push('a number');
   if (!/[^A-Za-z0-9]/.test(password)) problems.push('a special character');
-  if (new TextEncoder().encode(password).length > 72) problems.push('at most 72 bytes');
+  // UTF-8 byte length (bcrypt on the server reads at most 72 bytes).
+  if (encodeURIComponent(password).replace(/%[0-9A-F]{2}/g, '_').length > 72) problems.push('at most 72 bytes');
   return problems;
 };
 
