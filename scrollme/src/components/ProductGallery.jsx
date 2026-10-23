@@ -4,7 +4,21 @@ import ProductCard from './ProductCard';
 import { listCategoriesAPI, listProductsAPI } from '../services/products/productService';
 import { getErrorMessage } from '../api/client';
 import { humanize } from '../utils/format';
-import { Box, Button, Checkbox, Flex, Heading, HStack, Input, InputGroup, InputLeftAddon, Select, SimpleGrid, Spinner, Text } from '@chakra-ui/react';
+import {
+  Box,
+  Button,
+  Checkbox,
+  Flex,
+  Heading,
+  HStack,
+  Input,
+  InputGroup,
+  InputLeftAddon,
+  Select,
+  SimpleGrid,
+  Spinner,
+  Text,
+} from '@chakra-ui/react';
 
 const PAGE_SIZE = 40;
 const SORTS = [
@@ -118,7 +132,12 @@ const ProductGallery = ({ category: fixedCategory, title }) => {
             <Text fontSize='sm' fontWeight={600} mb={1}>
               Sort Products
             </Text>
-            <Select bg='white' value={sort} onChange={(e) => updateParams({ sort: e.target.value === 'newest' ? '' : e.target.value })} aria-label='Sort products'>
+            <Select
+              bg='white'
+              value={sort}
+              onChange={(e) => updateParams({ sort: e.target.value === 'newest' ? '' : e.target.value })}
+              aria-label='Sort products'
+            >
               {SORTS.map(([value, label]) => (
                 <option key={value} value={value}>
                   {label}
@@ -153,7 +172,12 @@ const ProductGallery = ({ category: fixedCategory, title }) => {
               Apply
             </Button>
           </HStack>
-          <Checkbox colorScheme='teal' isChecked={inStock} onChange={(e) => updateParams({ inStock: e.target.checked ? 'true' : '' })} pb={2}>
+          <Checkbox
+            colorScheme='teal'
+            isChecked={inStock}
+            onChange={(e) => updateParams({ inStock: e.target.checked ? 'true' : '' })}
+            pb={2}
+          >
             In stock only
           </Checkbox>
           {hasFilters && (

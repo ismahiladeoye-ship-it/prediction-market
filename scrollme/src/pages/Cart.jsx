@@ -301,10 +301,18 @@ const Cart = () => {
   // "Save for Later" moves the item to the wishlist.
   const handleSaveForLater = async (item) => {
     if (!wishListItems.some((w) => w._id === item.productId)) {
-      await dispatch(toggleWishlist({ _id: item.productId, name: item.name, imageUrl: item.imageUrl, price: item.price, category: item.category }));
+      await dispatch(
+        toggleWishlist({ _id: item.productId, name: item.name, imageUrl: item.imageUrl, price: item.price, category: item.category })
+      );
     }
     await handleRemoveFromCart(item, { silent: true });
-    toast({ title: 'Saved for later.', description: 'The item was moved to your wishlist.', status: 'success', duration: 3000, isClosable: true });
+    toast({
+      title: 'Saved for later.',
+      description: 'The item was moved to your wishlist.',
+      status: 'success',
+      duration: 3000,
+      isClosable: true,
+    });
   };
 
   const goToCheckout = () => navigate('/checkout');

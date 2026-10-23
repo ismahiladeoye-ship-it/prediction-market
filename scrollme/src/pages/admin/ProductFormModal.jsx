@@ -20,7 +20,19 @@ import {
 import { createProductAPI, updateProductAPI } from '../../services/admin/adminService';
 import { getErrorMessage } from '../../api/client';
 
-const EMPTY = { name: '', brand: '', category: '', price: '', stock: '', imageUrl: '', color: '', material: '', sizes: '', description: '', isActive: true };
+const EMPTY = {
+  name: '',
+  brand: '',
+  category: '',
+  price: '',
+  stock: '',
+  imageUrl: '',
+  color: '',
+  material: '',
+  sizes: '',
+  description: '',
+  isActive: true,
+};
 
 const toForm = (p) =>
   p

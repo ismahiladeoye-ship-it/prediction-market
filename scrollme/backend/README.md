@@ -1,152 +1,69 @@
-# E-Commerce Backend
+# ScrollMe API
 
-## Overview
+Express + Mongoose REST API for the ScrollMe store. Sessions use httpOnly cookies (`accessToken`, 15 minutes; `refreshToken`, 7 days, sent only to `/api/auth`). Every request body and query is validated with zod; money is computed in integer cents.
 
-This is the backend service for an e-commerce application, built using Node.js, Express, and MongoDB. It handles user authentication, including registration, login, and token management with JWT. The backend is designed to work in conjunction with a front-end application, providing endpoints for user management and secure access to resources.
-
-## Table of Contents
-
-- [E-Commerce Backend](#e-commerce-backend)
-  - [Overview](#overview)
-  - [Table of Contents](#table-of-contents)
-  - [Features](#features)
-  - [Installation](#installation)
-  - [Configuration](#configuration)
-  - [Usage](#usage)
-  - [API Endpoints](#api-endpoints)
-    - [User Registration](#user-registration)
-    - [User Login](#user-login)
-    - [Refresh Token](#refresh-token)
-  - [Testing](#testing)
-  - [Working Directory Tree Script](#working-directory-tree-script)
-  - [Script to print the working directory tree](#script-to-print-the-working-directory-tree)
-
-## Features
-
-- User registration and login
-- JWT-based authentication (access and refresh tokens)
-- Token verification and management
-- Secure password hashing with bcrypt
-- Role-based access control
-
-## Installation
-
-1. **Clone the repository:**
-
-    ```bash
-    git clone https://github.com/yourusername/e-commerce-backend.git
-    cd e-commerce-backend
-    ```
-
-2. **Install dependencies:**
-
-    ```bash
-    npm install
-    ```
-
-## Configuration
-
-1. **Create a `.env` file in the root directory with the following variables:**
-
-    ```env
-    MONGO_URI=mongodb://localhost:27017/ecommerce
-    JWT_SECRET=your_jwt_secret
-    REFRESH_TOKEN_SECRET=your_refresh_token_secret
-    PORT=5000
-    ```
-
-2. **Make sure to replace the placeholder values with your actual secrets and database connection string.**
-
-## Usage
-
-1. **Start the server:**
-
-    ```bash
-    npm start
-    ```
-
-    By default, the server will run on `http://localhost:5000`.
-
-2. **API Documentation:**
-
-    Refer to the [API Endpoints](#api-endpoints) section for available routes and usage.
-
-## API Endpoints
-
-### User Registration
-
-- **URL:** `/api/register`
-- **Method:** `POST`
-- **Request Body:**
-    ```json
-    {
-        "firstName": "John",
-        "lastName": "Doe",
-        "username": "johndoe",
-        "email": "john@example.com",
-        "password": "password123"
-    }
-    ```
-- **Response:**
-    ```json
-    {
-        "token": "access_token_here",
-        "refreshToken": "refresh_token_here"
-    }
-    ```
-
-### User Login
-
-- **URL:** `/api/login`
-- **Method:** `POST`
-- **Request Body:**
-    ```json
-    {
-        "username": "johndoe",
-        "password": "password123"
-    }
-    ```
-- **Response:**
-    ```json
-    {
-        "token": "access_token_here",
-        "refreshToken": "refresh_token_here"
-    }
-    ```
-
-### Refresh Token
-
-- **URL:** `/api/refresh-token`
-- **Method:** `POST`
-- **Request Body:**
-    ```json
-    {
-        "refreshToken": "refresh_token_here"
-    }
-    ```
-- **Response:**
-    ```json
-    {
-        "token": "new_access_token_here"
-    }
-    ```
-
-## Testing
-
-To run tests, ensure that you have `mocha` and `chai` installed, then execute:
+## Setup
 
 ```bash
-npm test
+cp .env.example .env     # every variable is documented in the file
+npm install
+npm run seed             # development data (refuses to run in production)
+npm run dev              # nodemon; `npm start` for plain node
 ```
 
-## Working Directory Tree Script
+Configuration is validated at start-up (`api/config/env.js`). In production the server refuses to start with weak or shared JWT secrets, `PAYMENT_PROVIDER=mock`, or a live Stripe key unless `STRIPE_ALLOW_LIVE=true`.
 
-This script prints the working directory tree while excluding the `node_modules` folder. It is useful when you want to see the structure of your project without the clutter of dependencies.
-
-## Script to print the working directory tree
-
-To print the directory tree, excluding the `node_modules` folder, run the following command in Git Bash:
+### Administrators
 
 ```bash
-find . -path ./node_modules -prune -o -print
+ADMIN_PASSWORD='a-strong-password' npm run create-admin -- --email=owner@example.com --username=owner --first=Store --last=Owner
 ```
+Running it for an existing email grants the admin role instead.
+
+## Scripts
+
+| Script | Purpose |
+| --- | --- |
+| `npm start` / `npm run dev` | Run the API |
+| `npm test` | Jest suite on MongoDB (in-memory, or `TEST_MONGODB_URI`) |
+| `npm run lint` | ESLint + Prettier |
+| `npm run seed [-- --reset] [-- --limit=500]` | Seed catalogue (+ demo users outside production) |
+| `npm run create-admin` | Create or promote an administrator |
+
+## Endpoints
+
+Auth column: — public, **U** signed-in user, **A** admin.
+
+| Method & path | Auth | Description |
+| --- | --- | --- |
+| `GET /api/health` | — | Liveness |
+| `GET /api/ready` | — | Readiness (database ping) |
+| `POST /api/auth/register` | — | Create account, starts session |
+| `POST /api/auth/login` | — | `{ username, password }` (username or email) |
+| `POST /api/auth/logout` | — | Ends session and revokes all refresh tokens |
+| `POST /api/auth/refresh-token` | cookie | Rotates tokens |
+| `GET /api/auth/me`, `GET /api/auth/status` | U | Current user |
+| `POST /api/auth/forgot-password` / `reset-password` | — | Emailed, single-use, 30-minute token |
+| `POST /api/auth/google` | — | Firebase ID token → session (needs `FIREBASE_PROJECT_ID`) |
+| `GET /api/product/list` | — | `page, limit≤100, q, category, brand, minPrice, maxPrice, inStock, sort=newest\|price_asc\|price_desc\|rating\|name` |
+| `GET /api/product/categories`, `GET /api/product/brands` | — | Facets with counts |
+| `GET /api/product/:id` | — | Active product |
+| `GET /api/cart` | U | Cart with server prices, `summary`, `deliveryOptions`, `issues` (`?delivery=express`) |
+| `POST /api/cart/add` | U | `{ productId, quantity, size }` — any `price` sent is ignored |
+| `PUT /api/cart/update`, `DELETE /api/cart/delete`, `DELETE /api/cart/items/:id?size=`, `DELETE /api/cart/clear` | U | |
+| `GET/POST/DELETE /api/wishlist`, `POST /api/wishlist/merge`, `DELETE /api/wishlist/:id` | U | |
+| `GET /api/payments/methods` | — | Enabled methods and whether payments are in test mode |
+| `POST /api/orders` | U | `{ shippingAddress, deliveryMethod, paymentMethod }` → order + `checkoutUrl` |
+| `GET /api/orders`, `GET /api/orders/:id` | U | History / detail (confirms payment with Stripe on return) |
+| `POST /api/orders/:id/pay` | U | New payment session, optionally `{ paymentMethod }` |
+| `POST /api/orders/:id/cancel` | U | Unpaid orders only; releases stock |
+| `POST /api/payments/stripe/webhook` | Stripe signature | `checkout.session.completed` etc. |
+| `POST /api/payments/mock/:id/complete` | U | Only when `PAYMENT_PROVIDER=mock` |
+| `GET /api/admin/stats` | A | Dashboard numbers |
+| `GET/POST /api/admin/products`, `GET/PATCH/DELETE /api/admin/products/:id`, `POST /api/admin/products/:id/stock` | A | Product management (`DELETE` hides) |
+| `GET /api/admin/orders`, `GET /api/admin/orders/:id`, `PATCH /api/admin/orders/:id/status` | A | Fulfilment; only allowed status transitions |
+| `POST /api/product/add`, `PUT /api/product/update/:id`, `DELETE /api/product/delete/:id` | A | Original endpoints, now admin-only |
+
+Order statuses: `pending_payment → paid → processing → shipped → delivered`, with `cancelled` (stock returned) and `refunded` where allowed.
+
+Errors are JSON: `{ "message": "...", "details": [{ "field", "message" }] }`.

@@ -42,7 +42,13 @@ const ProductCard = (props) => {
   };
 
   return (
-    <Container role='link' tabIndex={0} aria-label={product.name} onClick={() => handleProductClick(product._id, product.category)} onKeyDown={handleKeyDown}>
+    <Container
+      role='link'
+      tabIndex={0}
+      aria-label={product.name}
+      onClick={() => handleProductClick(product._id, product.category)}
+      onKeyDown={handleKeyDown}
+    >
       <LazyLoadImage
         src={imageSrc(product.imageUrl)}
         width={'100%'}
@@ -62,7 +68,9 @@ const ProductCard = (props) => {
         <ProductPrice>{formatPrice(product.price)}</ProductPrice>
         {product.stock < 10 ? (
           <ProductStock>
-            <ProductStockInfo stock={product.stock}>{product.stock > 0 ? `Only ${product.stock} left in stock.` : 'Out of Stock'}</ProductStockInfo>
+            <ProductStockInfo stock={product.stock}>
+              {product.stock > 0 ? `Only ${product.stock} left in stock.` : 'Out of Stock'}
+            </ProductStockInfo>
           </ProductStock>
         ) : null}
       </Info>

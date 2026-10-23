@@ -39,7 +39,11 @@ const AdminDashboard = () => {
     <>
       <SimpleGrid columns={{ base: 1, sm: 2, lg: 4 }} spacing={4} mb={8}>
         <Card label='Revenue (paid orders)' value={formatPrice(stats.revenue)} />
-        <Card label='Orders to fulfil' value={(stats.ordersByStatus.paid || 0) + (stats.ordersByStatus.processing || 0)} to='/admin/orders?status=paid' />
+        <Card
+          label='Orders to fulfil'
+          value={(stats.ordersByStatus.paid || 0) + (stats.ordersByStatus.processing || 0)}
+          to='/admin/orders?status=paid'
+        />
         <Card label='Low-stock products (≤ 5)' value={stats.lowStockProducts} to='/admin/products?lowStock=true' />
         <Card label='Orders needing attention' value={stats.ordersNeedingAttention} to='/admin/orders' />
       </SimpleGrid>

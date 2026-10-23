@@ -26,7 +26,11 @@ describe('ProductGallery', () => {
   });
 
   it('passes URL filters to the API and renders products', async () => {
-    listProductsAPI.mockResolvedValue({ products: [product('1'), product('2', { description: undefined, ratings: undefined })], totalPages: 1, totalProducts: 2 });
+    listProductsAPI.mockResolvedValue({
+      products: [product('1'), product('2', { description: undefined, ratings: undefined })],
+      totalPages: 1,
+      totalProducts: 2,
+    });
     renderWithProviders(<ProductGallery />, { route: '/products?q=shirt&sort=price_asc&page=1' });
     expect(await screen.findByText('Product 1')).toBeInTheDocument();
     expect(screen.getByText('Product 2')).toBeInTheDocument();

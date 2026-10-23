@@ -30,7 +30,9 @@ const withRollback = (type, call) =>
   });
 
 export const fetchWishlist = withRollback('wishlist/fetch', () => getWishlistAPI());
-export const syncWishlistAfterLogin = withRollback('wishlist/sync', (localIds) => (localIds.length ? mergeWishlistAPI(localIds) : getWishlistAPI()));
+export const syncWishlistAfterLogin = withRollback('wishlist/sync', (localIds) =>
+  localIds.length ? mergeWishlistAPI(localIds) : getWishlistAPI()
+);
 const addRemote = withRollback('wishlist/addRemote', (productId) => addWishlistAPI(productId));
 const removeRemote = withRollback('wishlist/removeRemote', (productId) => removeWishlistAPI(productId));
 

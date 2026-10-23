@@ -1,112 +1,74 @@
 # ScrollMe Ecommerce Website
 
-ScrollMe is an open-source, feature-rich eCommerce platform that provides a modern shopping experience. Built with **JavaScript**, **React**, **Styled Components**, **Node.js (Express.js)**, and **MongoDB**, ScrollMe offers a robust front-end with a highly scalable backend. This project is ideal for those looking to contribute to an eCommerce solution or understand the integration of modern web technologies.
+ScrollMe is an open-source eCommerce platform built with **React**, **Styled Components**, **Node.js (Express)** and **MongoDB**. This version restores the original ScrollMe storefront design and completes it into a working shop: real catalogue, accounts, server-priced cart, checkout with a secure payment-method sheet, orders, and store administration.
 
-## Table of Contents
-
-- [ScrollMe Ecommerce Website](#scrollme-ecommerce-website)
-  - [Table of Contents](#table-of-contents)
-  - [Features](#features)
-  - [Tech Stack](#tech-stack)
-    - [Frontend](#frontend)
-    - [Backend](#backend)
-    - [Additional Tools](#additional-tools)
-  - [Installation](#installation)
-  - [Usage](#usage)
-  - [Contributing](#contributing)
-    - [Guidelines](#guidelines)
-  - [Code of Conduct](#code-of-conduct)
-  - [License](#license)
-  - [Community Discussion](#community-discussion)
+| | |
+| --- | --- |
+| Audit of the original code | [docs/audit/AUDIT.md](docs/audit/AUDIT.md) |
+| Release-candidate report (what was fixed and how it was verified) | [docs/RELEASE_CANDIDATE.md](docs/RELEASE_CANDIDATE.md) |
+| Deployment guide | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) |
+| Operations runbook (logs, health, backups, restore) | [docs/OPERATIONS.md](docs/OPERATIONS.md) |
+| API reference | [backend/README.md](backend/README.md) |
+| Screenshots | [docs/screenshots/](docs/screenshots/) |
 
 ## Features
 
-- [ ] **Modern UI/UX**: Intuitive, responsive design for a seamless shopping experience.
-- [ ] **Product Management**: Admin interface for adding, updating, and removing products.
-- [x] **User Authentication**: Secure user registration, login, and JWT-based authentication.
-- [ ] **Search and Filters**: Search for products and apply filters based on categories, prices, and more.
-- [x] **Shopping Cart**: Add, update, or remove items from the cart, with real-time calculations.
-- [ ] **Checkout Process**: Easy and secure checkout experience.
-- [ ] **Order History**: View past orders and order details.
-- [ ] **Product Reviews and Ratings**: Users can review and rate products.
-- [x] **Wishlist**: Save favorite items for later purchase.
-- [x] **Wishlist**: Save favourite items for later purchase.
-- [ ] **Payment Gateway Integration**: Add integration with payment providers like Stripe or PayPal.
-- [x] **Responsive Design**: Optimized for all devices (mobile, tablet, and desktop).
-- [x] **MongoDB Integration**: Backend management of products, users, and orders with MongoDB.
-- [ ] **Email Notifications**: Send order confirmations and updates via email.
-- [ ] **Inventory Management**: Track stock levels and manage out-of-stock notifications.
-- [ ] **Discounts and Promotions**: Ability to add coupon codes and discounts.
-- [ ] **Multi-language Support**: Internationalization for a global audience.
-- [ ] **Admin Dashboard Analytics**: Insights into sales, customers, and product performance.
+- [x] **Original ScrollMe look**: Urbanist type, teal identity, original pages and assets, now responsive on phones, tablets and desktops.
+- [x] **Catalogue**: 24k products in 278 real categories; search, category pages, price/stock filters, sorting, pagination.
+- [x] **Accounts**: registration, login, logout, refresh tokens in httpOnly cookies, password reset, optional Google sign-in.
+- [x] **Wishlist**: saved per account (guest wishlists are merged on sign-in).
+- [x] **Cart**: sizes, stock checks; prices, tax and delivery always computed on the server.
+- [x] **Checkout**: delivery address and method, then a *Secure Payment* sheet — Apple Pay, card, PayPal, Klarna, Google Pay — paid through **Stripe Checkout in test mode**.
+- [x] **Orders**: confirmation, history, status tracking, cancellation of unpaid orders; stock reserved at checkout and released if payment is abandoned.
+- [x] **Administration**: dashboard, product management (create/edit/hide, stock), order fulfilment with status lifecycle and tracking numbers.
+- [ ] Email notifications for orders, reviews, discounts, multi-language — not in scope yet.
 
-## Tech Stack
+## Project layout
 
-ScrollMe is built using the following technologies:
+```
+scrollme/
+├── src/              React storefront (Create React App)
+├── public/           Static assets (original slider images)
+├── backend/          Express + Mongoose API
+├── e2e/              Playwright end-to-end tests
+├── deploy/nginx/     nginx config for the storefront image
+├── scripts/          backup.sh / restore.sh
+├── docs/             Audit, release report, deployment and operations guides
+├── Dockerfile        Storefront image (build + nginx)
+└── docker-compose.yml  MongoDB + API + storefront
+```
 
-### Frontend
-- **JavaScript (ES6+)**: Core language for building dynamic features.
-- **React.js**: A JavaScript library for building user interfaces.
-- **Styled Components**: A CSS-in-JS tool for modular and customizable component styling.
-- **Redux**: State management library for maintaining global app state and ensuring predictable data flow across components.
+## Local development
 
-### Backend
-- **Node.js**: Runtime environment for executing server-side JavaScript.
-- **Express.js**: Backend framework for building RESTful APIs.
-- **MongoDB**: NoSQL database for managing products, users, and orders.
-- **Mongoose**: ODM library to interact with MongoDB.
+Requirements: Node.js 20+, and MongoDB 7 (local install, Docker, or Atlas).
 
-### Additional Tools
-- **JWT**: For secure user authentication.
-- **Axios**: HTTP client for API communication.
-- **Nodemon**: Automatically restarts the server during development.
-- **Biome**: Code formatter and linter to maintain consistent code style and detect potential errors.
-  
-## Installation
+```bash
+# 1. API
+cd backend
+cp .env.example .env          # PAYMENT_PROVIDER=mock works without Stripe keys
+npm install
+npm run seed                  # 24,324 products + demo users (development only)
+npm run dev                   # http://localhost:8080
 
-To get started with ScrollMe locally, follow these steps:
+# 2. Storefront (new terminal, from scrollme/)
+npm install
+npm start                     # http://localhost:3000 (proxies /api to :8080)
+```
 
-1. **Clone the repository**:
-   ```bash
-   git clone git@github.com:saurabhbakolia/SCROLLME--ECOMMERCE-WEBSITE.git
-   cd SCROLLME--ECOMMERCE-WEBSITE
-   ```
-2. **Install dependencies for both frontend and backend**:
-   ```bash
-   # Install frontend dependencies
-   npm install
+Demo accounts created by the seed (development only): `johndoe` / `password123` (customer) and `mjohnson` / `password123` (admin). Create real administrators with `npm run create-admin` (see [backend/README.md](backend/README.md)).
 
-   # Install backend dependencies
-   cd ./backend
-   npm install
-   ```
-3. **Set up environment variables**:  
-   In the `backend` directory, we have a `.env.example` file. You can create your own `.env` file by copying this file and adding the necessary environment variables:
-   
-   ```bash
-   cp backend/.env.example backend/.env
-   ```
-4. **Start the development server**:
-   ```bash
-   # Start the backend
-   cd backend
-   npm run start
+With `PAYMENT_PROVIDER=mock` the payment step opens a local **test-mode** page for the chosen method (card form, Apple Pay, Google Pay, PayPal, Klarna). Card test numbers: `4242 4242 4242 4242` succeeds, `4000 0000 0000 0002` is declined. To use real Stripe test mode, see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#payments-stripe-test-mode).
 
-   # Start the frontend
-   npm start
-   ```
+## Tests
 
-5. **Visit the app in your browser**:  
-   Open `http://localhost:3000` to view the application.
+| Suite | Command | What it covers |
+| --- | --- | --- |
+| API | `cd backend && npm test` | 85 tests on a real MongoDB: auth, permissions, catalogue, cart pricing, checkout, stock, payments/webhooks, admin, wishlist, HTTP hardening |
+| Storefront unit | `npm run test:ci` | 24 tests: route guards, payment sheet, gallery states, cart/wishlist state, validation |
+| End-to-end | `npm run build && cd e2e && npm install && npx playwright test` | 18 browser tests (desktop + phone) against the real API, database and production build |
+| Lint/format | `npm run lint && npm run lint-check`, `cd backend && npm run lint` | |
 
-
-## Usage
-
-Once the project is set up, you can:
-
-- Browse products, add items to the cart, and proceed to checkout.
-- Register or log in to track your orders.
-- Admins can manage products and orders through the admin dashboard.
+CI runs all of the above plus Docker image builds: [.github/workflows/scrollme.yml](../.github/workflows/scrollme.yml).
 
 ## Contributing
 

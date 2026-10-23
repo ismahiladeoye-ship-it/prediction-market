@@ -101,13 +101,14 @@ const OrderDrawer = ({ orderId, onClose, onChanged }) => {
               </Text>
               <Text>
                 {order.shippingAddress.line1}
-                {order.shippingAddress.line2 ? `, ${order.shippingAddress.line2}` : ''}, {order.shippingAddress.city} {order.shippingAddress.postalCode},{' '}
-                {order.shippingAddress.country}
+                {order.shippingAddress.line2 ? `, ${order.shippingAddress.line2}` : ''}, {order.shippingAddress.city}{' '}
+                {order.shippingAddress.postalCode}, {order.shippingAddress.country}
               </Text>
               <Text mb={3}>Delivery: {order.deliveryMethod}</Text>
               <OrderItems items={order.items} />
               <Text mt={3} textAlign='right'>
-                Subtotal {formatPrice(order.summary.subtotal)} · Tax {formatPrice(order.summary.tax)} · Delivery {formatPrice(order.summary.shipping)}
+                Subtotal {formatPrice(order.summary.subtotal)} · Tax {formatPrice(order.summary.tax)} · Delivery{' '}
+                {formatPrice(order.summary.shipping)}
               </Text>
               <Text textAlign='right' fontSize='lg' fontWeight={600}>
                 Total {formatPrice(order.summary.total)}
@@ -212,7 +213,13 @@ const AdminOrders = () => {
             update({ q: search.trim() });
           }}
         >
-          <Input placeholder='Order number, email or name' value={search} onChange={(e) => setSearch(e.target.value)} maxW='280px' bg='white' />
+          <Input
+            placeholder='Order number, email or name'
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            maxW='280px'
+            bg='white'
+          />
           <Button type='submit' variant='outline' colorScheme='teal'>
             Search
           </Button>

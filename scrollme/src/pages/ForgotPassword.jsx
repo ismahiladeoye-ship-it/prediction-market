@@ -113,7 +113,9 @@ const ForgotPassword = () => {
         <Title>RESET PASSWORD</Title>
         {sent ? (
           <>
-            <Message role='status'>If an account exists for that email address, we have sent a link to reset the password. The link is valid for 30 minutes.</Message>
+            <Message role='status'>
+              If an account exists for that email address, we have sent a link to reset the password. The link is valid for 30 minutes.
+            </Message>
             <Link to='/login'>Back to Login</Link>
           </>
         ) : (

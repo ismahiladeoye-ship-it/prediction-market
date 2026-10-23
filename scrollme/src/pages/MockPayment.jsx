@@ -97,8 +97,20 @@ const CardForm = ({ total, onPay, busy }) => {
 const WalletPanel = ({ method, total, onPay, busy }) => {
   const styles = {
     apple_pay: { bg: 'black', fg: 'white', icon: <FaApple size={20} />, text: 'Pay', note: 'Double-click to pay with Face ID (simulated)' },
-    google_pay: { bg: 'black', fg: 'white', icon: <FaGoogle size={18} />, text: 'Pay', note: 'Choose a card saved to your Google account (simulated)' },
-    paypal: { bg: '#ffc439', fg: '#003087', icon: <FaPaypal size={18} />, text: 'Pay Now', note: 'You are signed in to PayPal as a test buyer (simulated)' },
+    google_pay: {
+      bg: 'black',
+      fg: 'white',
+      icon: <FaGoogle size={18} />,
+      text: 'Pay',
+      note: 'Choose a card saved to your Google account (simulated)',
+    },
+    paypal: {
+      bg: '#ffc439',
+      fg: '#003087',
+      icon: <FaPaypal size={18} />,
+      text: 'Pay Now',
+      note: 'You are signed in to PayPal as a test buyer (simulated)',
+    },
     klarna: { bg: '#ffb3c7', fg: 'black', icon: <SiKlarna size={46} />, text: '', note: null },
   }[method];
 
@@ -116,7 +128,14 @@ const WalletPanel = ({ method, total, onPay, busy }) => {
         </Schedule>
       )}
       {styles.note && <Hint>{styles.note}</Hint>}
-      <WalletButton type='button' bg={styles.bg} fg={styles.fg} onClick={onPay} disabled={busy} aria-label={`Pay with ${PAYMENT_METHOD_LABELS[method]}`}>
+      <WalletButton
+        type='button'
+        bg={styles.bg}
+        fg={styles.fg}
+        onClick={onPay}
+        disabled={busy}
+        aria-label={`Pay with ${PAYMENT_METHOD_LABELS[method]}`}
+      >
         {busy ? (
           'Processing…'
         ) : (

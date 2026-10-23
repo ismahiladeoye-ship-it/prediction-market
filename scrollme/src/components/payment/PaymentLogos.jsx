@@ -1,5 +1,16 @@
 import styled from 'styled-components';
-import { FaApple, FaCcAmex, FaCcDinersClub, FaCcDiscover, FaCcJcb, FaCcMastercard, FaCcVisa, FaGoogle, FaPaypal, FaPlus } from 'react-icons/fa';
+import {
+  FaApple,
+  FaCcAmex,
+  FaCcDinersClub,
+  FaCcDiscover,
+  FaCcJcb,
+  FaCcMastercard,
+  FaCcVisa,
+  FaGoogle,
+  FaPaypal,
+  FaPlus,
+} from 'react-icons/fa';
 import { SiKlarna } from 'react-icons/si';
 
 const Box = styled.span`

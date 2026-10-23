@@ -86,7 +86,13 @@ const ResetPassword = () => {
     const confirm = e.target.confirmPassword.value;
     const hint = passwordHint(password);
     if (hint || password !== confirm) {
-      toast({ title: 'Check your password', description: hint || 'Passwords do not match.', status: 'warning', duration: 5000, isClosable: true });
+      toast({
+        title: 'Check your password',
+        description: hint || 'Passwords do not match.',
+        status: 'warning',
+        duration: 5000,
+        isClosable: true,
+      });
       return;
     }
     setSubmitting(true);
@@ -95,7 +101,13 @@ const ResetPassword = () => {
       toast({ title: 'Password updated', description: res.message, status: 'success', duration: 5000, isClosable: true });
       navigate('/login', { replace: true });
     } catch (error) {
-      toast({ title: 'Error', description: getErrorMessage(error, 'This reset link is invalid or has expired.'), status: 'error', duration: 5000, isClosable: true });
+      toast({
+        title: 'Error',
+        description: getErrorMessage(error, 'This reset link is invalid or has expired.'),
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
     } finally {
       setSubmitting(false);
     }
@@ -126,7 +138,14 @@ const ResetPassword = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-            <Input placeholder='confirm new password' name='confirmPassword' type='password' aria-label='Confirm new password' autoComplete='new-password' required />
+            <Input
+              placeholder='confirm new password'
+              name='confirmPassword'
+              type='password'
+              aria-label='Confirm new password'
+              autoComplete='new-password'
+              required
+            />
             {password && passwordHint(password) && <Message>{passwordHint(password)}</Message>}
             <Button type='submit' disabled={submitting}>
               UPDATE PASSWORD

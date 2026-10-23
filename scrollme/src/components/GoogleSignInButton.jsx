@@ -43,10 +43,22 @@ const GoogleSignInButton = ({ onSuccess }) => {
       const idToken = await getGoogleIdToken();
       const { user } = await googleSignInAPI(idToken);
       await dispatch(startSession(user));
-      toast({ title: 'Google Login Successful', description: `Welcome ${user.firstName}!`, status: 'success', duration: 5000, isClosable: true });
+      toast({
+        title: 'Google Login Successful',
+        description: `Welcome ${user.firstName}!`,
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      });
       onSuccess?.();
     } catch (error) {
-      toast({ title: 'Google Login Failed!', description: getErrorMessage(error, 'Please try again later.'), status: 'error', duration: 5000, isClosable: true });
+      toast({
+        title: 'Google Login Failed!',
+        description: getErrorMessage(error, 'Please try again later.'),
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
     } finally {
       setBusy(false);
     }

@@ -142,7 +142,14 @@ const Login = () => {
         <br />
         <Title>SIGN IN</Title>
         <Form onSubmit={(e) => handleSubmit(e)}>
-          <Input placeholder='username or email' name='username' type='text' autoComplete='username' aria-label='Username or email' required />
+          <Input
+            placeholder='username or email'
+            name='username'
+            type='text'
+            autoComplete='username'
+            aria-label='Username or email'
+            required
+          />
           <Input placeholder='password' name='password' type='password' autoComplete='current-password' aria-label='Password' required />
           {error && <ErrorText role='alert'>{error}</ErrorText>}
           <Button type='submit' disabled={submitting}>

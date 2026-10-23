@@ -137,7 +137,13 @@ const Navbar = () => {
         <Left>
           <Language>EN</Language>
           <SearchContainer role='search' onSubmit={handleSearch}>
-            <Input placeholder='Search' aria-label='Search products' value={search} onChange={(e) => setSearch(e.target.value)} maxLength={100} />
+            <Input
+              placeholder='Search'
+              aria-label='Search products'
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              maxLength={100}
+            />
             <SearchButton type='submit' aria-label='Search'>
               <SearchIcon style={{ color: 'gray', fontSize: 16 }} />
             </SearchButton>

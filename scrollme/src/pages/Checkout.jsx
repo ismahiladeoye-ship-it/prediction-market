@@ -101,7 +101,13 @@ const Checkout = () => {
         setErrors(fieldErrors);
       }
       setSheet(null);
-      toast({ title: 'Could not place your order', description: getErrorMessage(error), status: 'error', duration: 6000, isClosable: true });
+      toast({
+        title: 'Could not place your order',
+        description: getErrorMessage(error),
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      });
       dispatch(viewCart(deliveryMethod));
       setSubmitting(false);
     }

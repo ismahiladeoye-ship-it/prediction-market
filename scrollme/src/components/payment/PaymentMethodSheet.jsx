@@ -27,7 +27,18 @@ export const isMethodSupported = (method) => {
 };
 
 // Bottom sheet on phones, centred dialog on larger screens.
-const PaymentMethodSheet = ({ isOpen, methods, selected, onSelect, onClose, onConfirm, total, busy = false, confirmLabel = 'Confirm', testMode = false }) => {
+const PaymentMethodSheet = ({
+  isOpen,
+  methods,
+  selected,
+  onSelect,
+  onClose,
+  onConfirm,
+  total,
+  busy = false,
+  confirmLabel = 'Confirm',
+  testMode = false,
+}) => {
   const [showAll, setShowAll] = useState(false);
   const firstInput = useRef(null);
   const ordered = methods.filter((m) => METHOD_INFO[m]);

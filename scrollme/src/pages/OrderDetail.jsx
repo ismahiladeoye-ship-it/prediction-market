@@ -77,7 +77,13 @@ const OrderDetail = () => {
       else setOrder(updated);
     } catch (err) {
       setSheetOpen(false);
-      toast({ title: 'Payment could not be started', description: getErrorMessage(err), status: 'error', duration: 5000, isClosable: true });
+      toast({
+        title: 'Payment could not be started',
+        description: getErrorMessage(err),
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
       load();
     } finally {
       setBusy(false);

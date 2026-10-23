@@ -26,7 +26,9 @@ const thunk = (type, call) =>
 
 export const viewCart = thunk('cart/viewCart', (delivery) => viewCartAPI(delivery));
 export const addToCart = thunk('cart/addToCart', ({ productId, quantity = 1, size = '' }) => addToCartAPI({ productId, quantity, size }));
-export const updateCartItem = thunk('cart/updateCartItem', ({ productId, quantity, size }) => updateCartItemAPI({ productId, quantity, size }));
+export const updateCartItem = thunk('cart/updateCartItem', ({ productId, quantity, size }) =>
+  updateCartItemAPI({ productId, quantity, size })
+);
 export const deleteCartItem = thunk('cart/deleteCartItem', (arg) => deleteCartItemAPI(typeof arg === 'string' ? { productId: arg } : arg));
 export const clearCart = thunk('cart/clearCart', () => clearCartAPI());
 

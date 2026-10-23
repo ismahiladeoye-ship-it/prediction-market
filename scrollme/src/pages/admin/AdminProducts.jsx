@@ -98,7 +98,13 @@ const AdminProducts = () => {
             update({ q: search.trim() });
           }}
         >
-          <Input placeholder='Search name, brand, category' value={search} onChange={(e) => setSearch(e.target.value)} maxW='280px' bg='white' />
+          <Input
+            placeholder='Search name, brand, category'
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            maxW='280px'
+            bg='white'
+          />
           <Button type='submit' variant='outline' colorScheme='teal'>
             Search
           </Button>
@@ -169,11 +175,21 @@ const AdminProducts = () => {
                           Stock
                         </Button>
                         {p.isActive ? (
-                          <Button size='xs' colorScheme='red' variant='outline' onClick={() => act(() => deactivateProductAPI(p._id), 'Product hidden')}>
+                          <Button
+                            size='xs'
+                            colorScheme='red'
+                            variant='outline'
+                            onClick={() => act(() => deactivateProductAPI(p._id), 'Product hidden')}
+                          >
                             Hide
                           </Button>
                         ) : (
-                          <Button size='xs' colorScheme='teal' variant='outline' onClick={() => act(() => updateProductAPI(p._id, { isActive: true }), 'Product visible')}>
+                          <Button
+                            size='xs'
+                            colorScheme='teal'
+                            variant='outline'
+                            onClick={() => act(() => updateProductAPI(p._id, { isActive: true }), 'Product visible')}
+                          >
                             Show
                           </Button>
                         )}
@@ -199,7 +215,12 @@ const AdminProducts = () => {
           )}
         </>
       )}
-      <ProductFormModal isOpen={modal.isOpen} onClose={modal.onClose} product={editing} onSaved={(saved) => (editing ? replace(saved) : load())} />
+      <ProductFormModal
+        isOpen={modal.isOpen}
+        onClose={modal.onClose}
+        product={editing}
+        onSaved={(saved) => (editing ? replace(saved) : load())}
+      />
     </>
   );
 };

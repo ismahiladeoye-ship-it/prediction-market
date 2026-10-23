@@ -160,7 +160,16 @@ const Product = () => {
       <Container>
         <Navbar />
         <Announcement />
-        <Box display='flex' flexDirection='column' justifyContent='center' alignItems='center' minHeight='60vh' gap={4} px={4} textAlign='center'>
+        <Box
+          display='flex'
+          flexDirection='column'
+          justifyContent='center'
+          alignItems='center'
+          minHeight='60vh'
+          gap={4}
+          px={4}
+          textAlign='center'
+        >
           {loading ? (
             <ButtonSpinner size='xl' />
           ) : error === 'not_found' ? (
@@ -211,7 +220,9 @@ const Product = () => {
           </ProductRating>
           <Desc>{product?.description}</Desc>
           <Price>{formatPrice(product?.price)}</Price>
-          <StockInfo low={product.stock < 10}>{outOfStock ? 'Out of stock' : product.stock < 10 ? `Only ${product.stock} left in stock` : 'In stock'}</StockInfo>
+          <StockInfo low={product.stock < 10}>
+            {outOfStock ? 'Out of stock' : product.stock < 10 ? `Only ${product.stock} left in stock` : 'In stock'}
+          </StockInfo>
           <FilterContainer>
             {product?.color && (
               <Filter>

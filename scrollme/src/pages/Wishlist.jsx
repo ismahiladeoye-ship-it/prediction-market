@@ -142,7 +142,9 @@ const Wishlist = () => {
               {product?.isActive === false || product?.stock === 0 ? (
                 <Unavailable>Currently unavailable</Unavailable>
               ) : (
-                <MoveToBagButton onClick={() => handleAddToCart(product)}>{product?.sizes?.length ? 'Choose Size' : 'Move to Cart'}</MoveToBagButton>
+                <MoveToBagButton onClick={() => handleAddToCart(product)}>
+                  {product?.sizes?.length ? 'Choose Size' : 'Move to Cart'}
+                </MoveToBagButton>
               )}
             </ProductCard>
           ))

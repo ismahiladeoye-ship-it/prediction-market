@@ -124,7 +124,11 @@ const Product = ({ item }) => {
       await dispatch(addToCart({ productId: item._id, quantity: 1 })).unwrap();
       toast({ position: 'bottom-right', status: 'success', render: toastBox('teal', 'Product added to cart.') });
     } catch (err) {
-      toast({ position: 'bottom-right', status: 'error', render: toastBox('red', typeof err === 'string' ? err : 'Error adding product to cart.') });
+      toast({
+        position: 'bottom-right',
+        status: 'error',
+        render: toastBox('red', typeof err === 'string' ? err : 'Error adding product to cart.'),
+      });
     }
   };
 

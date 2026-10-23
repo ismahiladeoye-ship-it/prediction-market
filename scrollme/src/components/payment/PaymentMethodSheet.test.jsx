@@ -7,7 +7,18 @@ const setup = (props = {}) => {
   const onSelect = jest.fn();
   const onConfirm = jest.fn();
   const onClose = jest.fn();
-  render(<PaymentMethodSheet isOpen methods={methods} selected='card' onSelect={onSelect} onConfirm={onConfirm} onClose={onClose} total={95} {...props} />);
+  render(
+    <PaymentMethodSheet
+      isOpen
+      methods={methods}
+      selected='card'
+      onSelect={onSelect}
+      onConfirm={onConfirm}
+      onClose={onClose}
+      total={95}
+      {...props}
+    />
+  );
   return { onSelect, onConfirm, onClose };
 };
 

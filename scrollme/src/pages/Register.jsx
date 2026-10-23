@@ -212,9 +212,33 @@ const Register = () => {
           <br />
           <Title>CREATE AN ACCOUNT</Title>
           <Form onSubmit={(e) => handleSubmit(e)}>
-            <Input type='text' name='firstName' placeholder='first name' aria-label='First name' autoComplete='given-name' maxLength={50} required />
-            <Input type='text' name='lastName' placeholder='last name' aria-label='Last name' autoComplete='family-name' maxLength={50} required />
-            <Input type='text' name='username' placeholder='username' aria-label='Username' autoComplete='username' maxLength={30} required />
+            <Input
+              type='text'
+              name='firstName'
+              placeholder='first name'
+              aria-label='First name'
+              autoComplete='given-name'
+              maxLength={50}
+              required
+            />
+            <Input
+              type='text'
+              name='lastName'
+              placeholder='last name'
+              aria-label='Last name'
+              autoComplete='family-name'
+              maxLength={50}
+              required
+            />
+            <Input
+              type='text'
+              name='username'
+              placeholder='username'
+              aria-label='Username'
+              autoComplete='username'
+              maxLength={30}
+              required
+            />
             <Input type='email' name='email' placeholder='email' aria-label='Email' autoComplete='email' required />
             <Input
               type='password'
@@ -225,7 +249,14 @@ const Register = () => {
               required
               onChange={(e) => handlePassword(e)}
             />
-            <Input type='password' name='confirmPassword' placeholder='confirm password' aria-label='Confirm password' autoComplete='new-password' required />
+            <Input
+              type='password'
+              name='confirmPassword'
+              placeholder='confirm password'
+              aria-label='Confirm password'
+              autoComplete='new-password'
+              required
+            />
             <PasswordBox>
               <PasswordStrengthBar password={password} />
               {password && passwordHint(password) && <Text>{passwordHint(password)}</Text>}
