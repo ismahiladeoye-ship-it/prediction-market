@@ -2,7 +2,8 @@ import styled from 'styled-components';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { HiOutlineChevronLeft, HiOutlineChevronRight } from 'react-icons/hi2';
-import { storeConfig } from '../../data';
+import { getHomeContentAPI } from '../../services/site/siteService';
+import { starterHero, toHero } from '../../utils/heroSlides';
 
 const Wrap = styled.section`
   padding: 16px;
@@ -30,7 +31,7 @@ const Slide = styled.div`
   opacity: ${({ $active }) => ($active ? 1 : 0)};
   transition: opacity 0.8s ease;
   background-image: linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.25) 45%, rgba(0, 0, 0, 0.6) 100%),
-    url(${({ $img }) => $img});
+    url(${({ $img }) => JSON.stringify($img)});
   background-size: cover;
   background-position: ${({ $position }) => $position || 'center'};
   filter: ${({ $mono }) => ($mono ? 'grayscale(1) contrast(1.08)' : 'none')};
@@ -110,10 +111,22 @@ const Control = styled.button`
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
 `;
 
-// Rounded, dark hero card that cross-fades between slides.
+// Rounded, dark hero card that cross-fades between the cover images set in
+// Admin → Home page (or the starter ones).
 const Hero = () => {
-  const slides = storeConfig.heroSlides;
+  const [hero, setHero] = useState(null);
+  const slides = hero?.slides || [];
   const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    let current = true;
+    getHomeContentAPI()
+      .then((content) => current && setHero(toHero(content)))
+      .catch(() => current && setHero(starterHero()));
+    return () => {
+      current = false;
+    };
+  }, []);
   const [paused, setPaused] = useState(false);
 
   useEffect(() => {
@@ -126,6 +139,15 @@ const Hero = () => {
   const go = (step) => setIndex((i) => (i + step + slides.length) % slides.length);
   const slide = slides[index];
 
+  // Same size while loading, so the page does not jump.
+  if (!slide) {
+    return (
+      <Wrap aria-label='Featured'>
+        <Card aria-busy='true' />
+      </Wrap>
+    );
+  }
+
   return (
     <Wrap aria-roledescription='carousel' aria-label='Featured'>
       <Card
@@ -135,7 +157,7 @@ const Hero = () => {
         onBlur={() => setPaused(false)}
       >
         {slides.map((s, i) => (
-          <Slide key={s.id} $img={s.img} $position={s.position} $mono={storeConfig.heroMono} $active={i === index} aria-hidden='true' />
+          <Slide key={`${i}-${s.image}`} $img={s.image} $position={s.position} $mono={hero.mono} $active={i === index} aria-hidden='true' />
         ))}
         <Content aria-live='polite'>
           <Title>{slide.title}</Title>

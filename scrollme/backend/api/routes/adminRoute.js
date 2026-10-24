@@ -5,6 +5,7 @@ const { authMiddleware, requireAdmin } = require('../middleware/authMiddleware')
 const validate = require('../middleware/validate');
 const admin = require('../controllers/adminController');
 const uploads = require('../controllers/uploadController');
+const site = require('../controllers/siteController');
 const s = require('../validators/schemas');
 const { asyncHandler } = require('../utils/httpError');
 
@@ -19,6 +20,10 @@ const adminProductQuery = s.productListQuery.extend({
 router.use(authMiddleware, requireAdmin);
 
 router.get('/stats', asyncHandler(admin.stats));
+
+// Home page cover images.
+router.put('/home', validate({ body: s.homeContent }), asyncHandler(site.updateHome));
+router.delete('/home', asyncHandler(site.resetHome));
 
 // Product photos (multipart, one image per request).
 router.post('/uploads', uploads.receivePhoto, asyncHandler(uploads.uploadPhoto));

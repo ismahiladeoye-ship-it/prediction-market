@@ -139,6 +139,34 @@ const imageRef = z
     'Image must be an uploaded photo or a link starting with http:// or https://'
   );
 
+// A page on this shop, e.g. /collections/footwear or /products?q=tracksuit.
+// Never another site: "//host" and "/\host" are refused because browsers
+// treat them as links to another site.
+const internalLink = z
+  .string()
+  .trim()
+  .max(200)
+  .regex(/^\/(?![/\\])\S*$/, 'Use a page on this shop starting with /, e.g. /collections/footwear');
+
+// Home page cover images (hero slides).
+const heroSlide = z
+  .object({
+    // Also used inside CSS url(), so no quotes, brackets or spaces.
+    image: imageRef.refine((v) => !/["'()\\\s<>]/.test(v), 'That photo link contains characters that are not allowed'),
+    title: z.string().trim().min(1, 'Add a heading').max(60, 'Keep the heading to 60 characters'),
+    subtitle: z.string().trim().max(120, 'Keep the text to 120 characters').default(''),
+    cta: z.string().trim().min(1, 'Add the button text').max(24, 'Keep the button text to 24 characters'),
+    link: internalLink,
+    focus: z.enum(['top', 'center', 'bottom']).default('center'),
+  })
+  .strict();
+const homeContent = z
+  .object({
+    heroSlides: z.array(heroSlide).min(1, 'Add at least one cover image').max(6, 'Up to 6 cover images'),
+    heroMono: z.boolean().default(true),
+  })
+  .strict();
+
 const sku = z
   .string()
   .trim()
@@ -206,6 +234,7 @@ module.exports = {
   productCreate,
   productUpdate,
   orderStatusUpdate,
+  homeContent,
   pageQuery,
   idParam,
 };

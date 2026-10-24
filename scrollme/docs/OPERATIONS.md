@@ -68,6 +68,10 @@ The script refuses archives whose checksum does not match. After a restore: rest
 
 **Rehearsed on 2026-10-23** against the development database: backup 4.6 MB; restored counts matched exactly (24,324 products, 12 users, 5 orders, 3 carts); a modified archive was rejected by the checksum check.
 
+## Home page cover images
+
+*Admin → Home page* changes the large photos at the top of the home page, without a code change: upload a photo (JPEG, PNG or WebP; landscape and at least 1600 px wide looks best), set the heading, text and button, and choose which page the button opens. Changes show on the next page load. Covers are saved in the database and their photos in the uploads folder, so both are in your normal backups.
+
 ## Monthly sales (order book)
 
 *Admin → Order book* shows, for any month, what sold (product, sizes, quantity, sales), the stock left now, and month-by-month totals. Use **Download CSV** at the end of each month for your records or accountant.

@@ -155,4 +155,43 @@ test.describe('administration', () => {
     await other.goto('/admin/security');
     await expect(other.getByText('Recovery codes left: 9')).toBeVisible();
   });
+
+  test('admin sets the home page cover images from their own photos', async ({ page }) => {
+    await login(page, ADMIN);
+    await page.goto('/admin/home');
+    await expect(page.getByText('These are the starter cover images.')).toBeVisible();
+    const first = page.getByRole('group', { name: 'Cover image 1' });
+    await first
+      .getByLabel('Photo for cover image 1')
+      .setInputFiles({ name: 'restock.jpg', mimeType: 'image/jpeg', buffer: await photo('#222222') });
+    await expect(first.getByRole('img', { name: 'Cover image 1 preview' })).toHaveAttribute('src', /^\/api\/uploads\/[a-f0-9]{32}\.webp$/);
+    await first.getByRole('textbox', { name: 'Heading', exact: true }).fill('Our shoe restock is here');
+    await first.getByLabel('Text under the heading').fill('New pairs this week');
+    await first.getByLabel('Button goes to').selectOption({ label: 'Footwear' });
+    await page.getByRole('group', { name: 'Cover image 4' }).getByRole('button', { name: 'Remove' }).click();
+    await page.getByText('Show cover images in black and white').click();
+    await page.getByRole('button', { name: 'Save cover images' }).click();
+    await expect(page.getByText('Home page updated').first()).toBeVisible();
+
+    await page.goto('/');
+    const featured = page.locator('[aria-label="Featured"]');
+    await expect(featured.getByRole('heading', { level: 1, name: 'Our shoe restock is here' })).toBeVisible();
+    await expect(featured.getByRole('link', { name: 'Shop' })).toHaveAttribute('href', '/collections/footwear');
+    const backgrounds = await featured.evaluate((el) =>
+      [...el.querySelectorAll('[aria-hidden="true"]')]
+        .map((d) => `${getComputedStyle(d).backgroundImage} ${getComputedStyle(d).filter}`)
+        .filter((b) => b.includes('url('))
+    );
+    expect(backgrounds).toHaveLength(3);
+    expect(backgrounds[0]).toMatch(/\/api\/uploads\/[a-f0-9]{32}\.webp/);
+    expect(backgrounds[0]).not.toContain('grayscale');
+
+    // Back to the starter cover images (other tests expect them).
+    await page.goto('/admin/home');
+    page.once('dialog', (d) => d.accept());
+    await page.getByRole('button', { name: 'Use the starter cover images' }).click();
+    await expect(page.getByText('Starter cover images restored').first()).toBeVisible();
+    await page.goto('/');
+    await expect(page.getByRole('heading', { level: 1, name: 'Footwear, sourced' })).toBeVisible();
+  });
 });

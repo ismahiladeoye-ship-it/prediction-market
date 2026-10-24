@@ -73,6 +73,9 @@ const AdminLayout = () => {
           <NavLink to='/admin/order-book' style={tabStyle}>
             Order book
           </NavLink>
+          <NavLink to='/admin/home' style={tabStyle}>
+            Home page
+          </NavLink>
           <NavLink to='/admin/security' style={tabStyle}>
             Security
           </NavLink>

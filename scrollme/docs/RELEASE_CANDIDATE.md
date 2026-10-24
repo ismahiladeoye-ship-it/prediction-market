@@ -7,11 +7,11 @@ Branch `claude/scrollme-ecommerce-phases-cwocsl`. Baseline: the original code im
 | Check | Result |
 | --- | --- |
 | API lint (ESLint + Prettier) | ✅ clean |
-| API tests (Jest + Supertest, real MongoDB) | ✅ **125 / 125** — in-memory MongoDB and an external MongoDB (as CI uses) |
+| API tests (Jest + Supertest, real MongoDB) | ✅ **129 / 129** — in-memory MongoDB and an external MongoDB (as CI uses) |
 | Storefront lint + Prettier check | ✅ clean (the original failed Prettier in 28 files) |
 | Storefront unit tests | ✅ **26 / 26** (the original suite could not run) |
 | Storefront production build | ✅ compiles; no inline scripts (CSP-safe) |
-| End-to-end browser tests (Playwright, desktop + phone) | ✅ **21 / 21** (one phone-only test is skipped in the desktop browser) against the real API, a seeded database and the production build |
+| End-to-end browser tests (Playwright, desktop + phone) | ✅ **22 / 22** (one phone-only test is skipped in the desktop browser) against the real API, a seeded database and the production build |
 | Full purchase through nginx with production headers | ✅ 17 steps, 0 CSP violations, 0 console/page errors, 0 px horizontal overflow at 390 px |
 | nginx config (`nginx -t`) and headers | ✅ CSP, HSTS, X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy on pages; `no-store` + API CSP on `/api`; immutable caching on assets |
 | Backup → restore drill | ✅ counts identical after restore into a separate database; tampered archive rejected |
@@ -80,6 +80,7 @@ New screens (checkout, payment sheet, orders, account, admin) reuse the original
 - **Collections and newsletter**: products are grouped into four collections (`backend/api/config/collections.js`); footer sign-ups are stored and admins can export them from `GET /api/newsletter`.
 - **Placeholder content to replace**: `storeConfig` in `src/data.js` holds the location ("United Kingdom"), empty social links (icons are hidden until set), contact email and the *We'll source it* section (remove it with `feature: null` if the store does not take sourcing requests); the About page copy is a starting point.
 - **Home product rows** show each collection's best-rated items in stock (by rating, not sales, so they are not labelled "best sellers"); repeated catalogue listings are shown once. Shortcuts and collections are set in `storeConfig.homeCollections`.
+- **Home page cover images** (*Admin → Home page*): the owner uploads their own photos for the slides at the top of the home page and sets each heading, text, button and the page it opens (only pages on the shop), reorders or removes slides (up to 6), and turns black and white on or off. Until something is saved the starter photos from `storeConfig` are shown; *Use the starter cover images* goes back to them. Uploaded covers are stored like product photos (WebP, no EXIF/GPS).
 - **Order book** (*Admin → Order book*): pick a month to see each product sold that month with its sizes, quantity, sales and the stock left now, plus orders, sales and average order for the month, stock on hand, and a month-by-month table. Months follow UK time and count orders by the date they were paid; orders later cancelled or refunded are listed separately, not as sales. *Download CSV* gives the month as a spreadsheet. Stock is per product, so the stock column is not split by size.
 - **Admin two-factor sign-in** (added at the owner's request): admins need an authenticator-app code after their password; new admins set it up on their first visit to `/admin` and save ten recovery codes. Production needs `MFA_SECRET_KEY` ([DEPLOYMENT.md](DEPLOYMENT.md#2-environment-variables)); lost phones are handled as in [OPERATIONS.md](OPERATIONS.md#admin-two-factor-sign-in). Customer accounts are unchanged, but deploying this version signs everyone out once (session tokens gained a type check).
 - **Renamed to Get It Sourced** at the owner's request: wordmark, page title, footer, FAQ, emails and order numbers (`GIS-…`). Internal identifiers (folder, database name, CI) keep `scrollme`.
