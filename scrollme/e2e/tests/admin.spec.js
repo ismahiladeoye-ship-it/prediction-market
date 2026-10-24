@@ -55,6 +55,16 @@ test.describe('administration', () => {
     await expect(customer.getByTestId('order-status')).toHaveText('Shipped');
     await expect(customer.getByText('1Z999AA10123456784')).toBeVisible();
 
+    // The sale shows in this month's order book, and in its spreadsheet.
+    await page.goto('/admin/order-book');
+    await expect(page.getByRole('heading', { name: /^What sold in / })).toBeVisible();
+    const sold = page.getByRole('table', { name: 'Products sold' });
+    await expect(sold.getByRole('link', { name: product.name }).first()).toBeVisible();
+    const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Download CSV' }).click()]);
+    expect(download.suggestedFilename()).toMatch(/^order-book-\d{4}-\d{2}\.csv$/);
+    const csv = require('node:fs').readFileSync(await download.path(), 'utf8');
+    expect(csv).toContain(product.name);
+
     // Stock adjustment
     await page.goto(`/admin/products?q=${encodeURIComponent(product.name)}`);
     page.once('dialog', (d) => d.accept('+5'));

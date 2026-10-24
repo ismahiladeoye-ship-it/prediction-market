@@ -88,6 +88,9 @@ const orderSchema = new Schema(
   { timestamps: true }
 );
 
+// Monthly sales (order book) are selected by payment date.
+orderSchema.index({ 'payment.paidAt': 1 });
+
 orderSchema.statics.STATUSES = STATUSES;
 orderSchema.statics.TRANSITIONS = TRANSITIONS;
 

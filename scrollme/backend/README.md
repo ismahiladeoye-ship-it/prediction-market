@@ -76,6 +76,7 @@ Auth column: — public, **U** signed-in user, **A** admin who completed two-fac
 | `POST /api/admin/products/import` | A | `{ csv, dryRun, photos: { "file.jpg": url } }` — spreadsheet create/update by SKU; see [docs/BULK_UPLOAD.md](../docs/BULK_UPLOAD.md) |
 | `GET /api/uploads/:file` | — | Uploaded photos (immutable caching) |
 | `GET /api/admin/orders`, `GET /api/admin/orders/:id`, `PATCH /api/admin/orders/:id/status` | A | Fulfilment; only allowed status transitions |
+| `GET /api/admin/order-book?month=YYYY-MM` | A | Order book: a month's paid orders (by payment date, UK time) broken down by product and size with sales and current stock, cancelled/refunded totals, stock on hand, and the 12 months up to it. Defaults to the current month |
 | `POST /api/product/add`, `PUT /api/product/update/:id`, `DELETE /api/product/delete/:id` | A | Original endpoints, now admin-only |
 
 Order statuses: `pending_payment → paid → processing → shipped → delivered`, with `cancelled` (stock returned) and `refunded` where allowed.

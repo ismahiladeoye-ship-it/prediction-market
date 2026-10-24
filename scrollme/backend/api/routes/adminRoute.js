@@ -60,6 +60,18 @@ router.post(
 );
 
 router.get('/orders', validate({ query: s.pageQuery }), asyncHandler(admin.listOrders));
+router.get(
+  '/order-book',
+  validate({
+    query: z.object({
+      month: z
+        .string()
+        .regex(/^20\d\d-(0[1-9]|1[0-2])$/, 'Use a month like 2026-10')
+        .optional(),
+    }),
+  }),
+  asyncHandler(admin.orderBook)
+);
 router.get('/orders/:orderId', orderId, asyncHandler(admin.getOrder));
 router.patch('/orders/:orderId/status', orderId, validate({ body: s.orderStatusUpdate }), asyncHandler(admin.updateOrderStatus));
 

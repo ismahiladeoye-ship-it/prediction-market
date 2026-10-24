@@ -5,6 +5,7 @@ const { buildFilter, paginate } = require('./productController');
 const { serializeOrder } = require('./orderController');
 const { changeStatus } = require('../services/orders');
 const { importProducts } = require('../services/productImport');
+const { monthlyOrderBook } = require('../services/orderBook');
 const { fromCents } = require('../utils/money');
 const { notFound, conflict } = require('../utils/httpError');
 const logger = require('../utils/logger');
@@ -108,6 +109,11 @@ exports.updateOrderStatus = async (req, res) => {
   await changeStatus(order, req.body.status, { by: req.user._id, note: req.body.note, trackingNumber: req.body.trackingNumber });
   audit(req, 'order_status', { orderId: String(order._id), from, to: order.status });
   res.json({ order: serializeOrder(order, { admin: true }), allowedTransitions: Order.TRANSITIONS[order.status] });
+};
+
+// Monthly sales by product, with stock on hand.
+exports.orderBook = async (req, res) => {
+  res.json(await monthlyOrderBook(req.validatedQuery.month));
 };
 
 // ---- Dashboard ----

@@ -68,6 +68,14 @@ The script refuses archives whose checksum does not match. After a restore: rest
 
 **Rehearsed on 2026-10-23** against the development database: backup 4.6 MB; restored counts matched exactly (24,324 products, 12 users, 5 orders, 3 carts); a modified archive was rejected by the checksum check.
 
+## Monthly sales (order book)
+
+*Admin → Order book* shows, for any month, what sold (product, sizes, quantity, sales), the stock left now, and month-by-month totals. Use **Download CSV** at the end of each month for your records or accountant.
+
+- An order counts in the month it was **paid** (UK time), whatever its delivery status. Unpaid orders are not included; orders paid and later cancelled or refunded are shown as a separate total, not as sales.
+- *Sales* is what customers paid: products plus delivery (plus tax only if `TAX_RATE` is set; by default prices include VAT). Stripe fees are not deducted, so compare with your Stripe payouts for money received.
+- *In stock now* is today's stock, not the stock at the end of that month.
+
 ## Admin two-factor sign-in
 
 Every administrator signs in with their password **and** a 6-digit code from an authenticator app on their phone. A new admin is asked to set it up the first time they open `/admin`, and gets ten one-time recovery codes to keep somewhere safe (a password manager). *Admin → Security* shows how many are left and lets an admin move to a new phone.

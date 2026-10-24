@@ -59,6 +59,7 @@ export const ADMIN_ENDPOINTS = {
   ORDERS: `${API_BASE_URL}/admin/orders`,
   ORDER: (orderId) => `${API_BASE_URL}/admin/orders/${orderId}`,
   ORDER_STATUS: (orderId) => `${API_BASE_URL}/admin/orders/${orderId}/status`,
+  ORDER_BOOK: `${API_BASE_URL}/admin/order-book`,
 };
 
 export const AUTH_STATUS = {
