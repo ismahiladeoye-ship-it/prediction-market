@@ -11,7 +11,8 @@ export const storeConfig = {
     { icon: 'delivery', text: 'Free UK delivery over £100' },
     { icon: 'returns', text: '30-day returns' },
   ],
-  // Home page hero. Photos: Pexels licence (free for commercial use), no visible brand logos.
+  // Home page hero. Photos: Pexels licence (free for commercial use), product only (no
+  // people) and no visible brand logos.
   heroSlides: [
     {
       id: 'footwear',
@@ -19,8 +20,8 @@ export const storeConfig = {
       subtitle: 'Fresh pairs, ready to ship',
       cta: 'Shop',
       link: '/collections/footwear',
-      img: pexels(7519524),
-      position: 'center 60%',
+      img: pexels(19577865),
+      position: 'center 55%',
     },
     {
       id: 'outerwear',
@@ -28,8 +29,8 @@ export const storeConfig = {
       subtitle: 'Puffers, jackets and layers',
       cta: 'Shop',
       link: '/collections/clothing?category=jackets',
-      img: pexels(19426409),
-      position: 'center 35%',
+      img: pexels(6045058),
+      position: 'center 45%',
     },
     {
       id: 'hoodies',
@@ -37,8 +38,8 @@ export const storeConfig = {
       subtitle: 'Everyday staples',
       cta: 'Shop',
       link: '/collections/clothing?category=sweatshirts',
-      img: pexels(7026775),
-      position: 'center 30%',
+      img: pexels(31961168),
+      position: 'center 40%',
     },
     {
       id: 'all',
@@ -46,8 +47,8 @@ export const storeConfig = {
       subtitle: 'Thousands of pieces in one place',
       cta: 'Shop all',
       link: '/products',
-      img: pexels(5480696),
-      position: 'center 25%',
+      img: pexels(581339),
+      position: 'center',
     },
   ],
   // Home page, one entry per collection in display order: a card in "Shop by
@@ -56,7 +57,7 @@ export const storeConfig = {
   homeCollections: [
     {
       collection: 'clothing',
-      img: pexels(3812433, 900),
+      img: pexels(2249249, 900),
       shortcuts: [
         { label: 'Hoodies & sweats', category: 'sweatshirts' },
         { label: 'Jackets', category: 'jackets' },
@@ -77,7 +78,8 @@ export const storeConfig = {
     },
     {
       collection: 'accessories',
-      img: pexels(11817096, 900),
+      // Pexels 16359299, with the maker's name removed from the patch.
+      img: '/images/home/accessories-backpack.jpg',
       shortcuts: [
         { label: 'Bags', category: 'backpacks' },
         { label: 'Watches', category: 'watches' },
@@ -102,7 +104,7 @@ export const storeConfig = {
     text: "Tell us the piece, size and budget you're after and we'll look for it for you.",
     cta: 'Send a request',
     link: '/contact-us',
-    img: pexels(7679444, 1400),
+    img: pexels(9594676, 1400),
   },
   location: 'United Kingdom',
   contactEmail: '',

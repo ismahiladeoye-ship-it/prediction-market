@@ -116,6 +116,9 @@ const offsetOf = (i, active, n) => {
 
 // "Coverflow" carousel: the active card in front, neighbours smaller behind.
 // Short lists are repeated (inert copies) so both sides stay filled.
+// e.g. 1 item, 1,240 items
+const itemCount = (n) => `${n.toLocaleString()} ${n === 1 ? 'item' : 'items'}`;
+
 const Coverflow = ({ items, label }) => {
   const [{ active, previous }, setState] = useState({ active: 0, previous: 0 });
   const pointer = useRef({ x: 0, down: false, swiped: false });
@@ -167,7 +170,7 @@ const Coverflow = ({ items, label }) => {
             key={`${item.id}-${i}`}
             to={item.link}
             draggable={false}
-            aria-label={item.count ? `${item.title}, ${item.count.toLocaleString()} items` : item.title}
+            aria-label={item.count ? `${item.title}, ${itemCount(item.count)}` : item.title}
             aria-hidden={copy || undefined}
             tabIndex={copy || far ? -1 : undefined}
             onFocus={() => !pointer.current.down && d !== 0 && goTo(i)}
@@ -181,7 +184,7 @@ const Coverflow = ({ items, label }) => {
             }}
           >
             <img src={item.img} alt='' loading='lazy' style={item.position ? { objectPosition: item.position } : undefined} />
-            {item.count > 0 && <Chip>{item.count.toLocaleString()} items</Chip>}
+            {item.count > 0 && <Chip>{itemCount(item.count)}</Chip>}
             <Footer>
               <Title>{item.title}</Title>
               <Pill aria-hidden='true'>SHOP</Pill>
