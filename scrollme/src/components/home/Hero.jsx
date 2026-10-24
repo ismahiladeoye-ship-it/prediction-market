@@ -33,6 +33,7 @@ const Slide = styled.div`
     url(${({ $img }) => $img});
   background-size: cover;
   background-position: ${({ $position }) => $position || 'center'};
+  filter: ${({ $mono }) => ($mono ? 'grayscale(1) contrast(1.08)' : 'none')};
 `;
 
 const Content = styled.div`
@@ -134,7 +135,7 @@ const Hero = () => {
         onBlur={() => setPaused(false)}
       >
         {slides.map((s, i) => (
-          <Slide key={s.id} $img={s.img} $position={s.position} $active={i === index} aria-hidden='true' />
+          <Slide key={s.id} $img={s.img} $position={s.position} $mono={storeConfig.heroMono} $active={i === index} aria-hidden='true' />
         ))}
         <Content aria-live='polite'>
           <Title>{slide.title}</Title>

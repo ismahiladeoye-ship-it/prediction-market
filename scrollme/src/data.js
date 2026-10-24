@@ -11,6 +11,8 @@ export const storeConfig = {
     { icon: 'delivery', text: 'Free UK delivery over £100' },
     { icon: 'returns', text: '30-day returns' },
   ],
+  // Show the hero photos in black and white, to match the store's monochrome look.
+  heroMono: true,
   // Home page hero. Photos: Pexels licence (free for commercial use), product only (no
   // people) and no visible brand logos.
   heroSlides: [
