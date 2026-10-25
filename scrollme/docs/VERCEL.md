@@ -33,7 +33,7 @@ The database starts empty: no products and no accounts. You add your own stock i
 
 ## 2. Create the Vercel project
 
-1. In Vercel: **Add New → Project** and import the GitHub repository `prediction-market`.
+1. In Vercel: **Add New → Project** and import this GitHub repository.
 2. **Root Directory**: click *Edit* and choose **`scrollme`**. Vercel then detects *Create React App*; leave the build settings as they are (they come from `vercel.json`).
 3. Open **Environment Variables** and add the variables below. Tick **Production** only, so test deployments of other branches never touch your real database or payments (those test deployments will show the shop as unavailable, which is expected). Mark the secret ones as *Sensitive*.
 
