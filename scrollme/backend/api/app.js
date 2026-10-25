@@ -1,3 +1,4 @@
+const crypto = require('node:crypto');
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -9,6 +10,7 @@ const { apiLimiter } = require('./middleware/rateLimit');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const { asyncHandler } = require('./utils/httpError');
 const paymentController = require('./controllers/paymentController');
+const { releaseExpiredOrders } = require('./services/orders');
 const authRoutes = require('./routes/authRoute');
 const cartRoute = require('./routes/cartRoute');
 const productRoute = require('./routes/productRoute');
@@ -46,6 +48,13 @@ const createApp = () => {
     })
   );
 
+  // API responses are per-visitor: never store them in browser or CDN caches.
+  // Uploaded photos (below) are the exception: they are cached for a year.
+  app.use('/api', (req, res, next) => {
+    if (!req.path.startsWith('/uploads/')) res.set('Cache-Control', 'no-store');
+    next();
+  });
+
   // Health checks: liveness and readiness (database reachable).
   app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
   app.get(
@@ -54,6 +63,22 @@ const createApp = () => {
       if (mongoose.connection.readyState !== 1) return res.status(503).json({ status: 'unavailable', db: 'disconnected' });
       await mongoose.connection.db.admin().ping();
       res.json({ status: 'ok', db: 'connected' });
+    })
+  );
+
+  // Daily backstop for serverless hosting, called by Vercel Cron with
+  // "Authorization: Bearer <CRON_SECRET>": returns stock held by unpaid orders
+  // whose time ran out. Disabled unless CRON_SECRET is set.
+  app.get(
+    '/api/cron/release-expired',
+    asyncHandler(async (req, res) => {
+      const secret = config.CRON_SECRET;
+      const given = Buffer.from(req.get('authorization') || '');
+      const expected = Buffer.from(`Bearer ${secret}`);
+      if (!secret || given.length !== expected.length || !crypto.timingSafeEqual(given, expected)) {
+        return res.status(404).json({ message: 'Not found' });
+      }
+      res.json({ released: await releaseExpiredOrders() });
     })
   );
 

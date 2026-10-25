@@ -57,14 +57,37 @@ const schema = z.object({
   MFA_SECRET_KEY: z.string().optional(),
   // Where uploaded product photos are stored (a persistent volume in production).
   UPLOAD_DIR: z.string().default(path.resolve(__dirname, '../../uploads')),
+  // Vercel Blob store for photos (set automatically when a store is connected
+  // to the Vercel project). When set, photos are stored there instead of UPLOAD_DIR.
+  BLOB_READ_WRITE_TOKEN: z.string().optional(),
+  // Protects the daily cron endpoint (Vercel sends it as a Bearer token).
+  CRON_SECRET: z.string().optional(),
 });
 
 const PAYMENT_METHOD_IDS = ['apple_pay', 'google_pay', 'card', 'paypal', 'klarna'];
 
 const WEAK_SECRETS = new Set(['someone', 'SCROLLME_SECRET', 'changeme', 'secret']);
 
+// On Vercel, fill in what the platform already knows: the shop's public
+// address (and so the allowed origin) and the proxy in front of the API.
+const withPlatformDefaults = (source) => {
+  if (!source.VERCEL) return source;
+  const production = source.VERCEL_PROJECT_PRODUCTION_URL ? `https://${source.VERCEL_PROJECT_PRODUCTION_URL}` : undefined;
+  const appUrl = source.APP_URL || production;
+  return {
+    ...source,
+    ...(appUrl ? { APP_URL: appUrl } : {}),
+    ...(!source.CLIENT_ORIGINS && appUrl ? { CLIENT_ORIGINS: appUrl } : {}),
+    ...(!source.TRUST_PROXY ? { TRUST_PROXY: '1' } : {}),
+  };
+};
+
+// This deployment's own addresses on Vercel (previews and branch URLs), so
+// writes from them pass the Origin check.
+const platformOrigins = (source) => (source.VERCEL ? [source.VERCEL_URL, source.VERCEL_BRANCH_URL].filter(Boolean).map((host) => `https://${host}`) : []);
+
 function loadConfig(source = process.env) {
-  const parsed = schema.safeParse(source);
+  const parsed = schema.safeParse(withPlatformDefaults(source));
   if (!parsed.success) {
     const issues = parsed.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`).join('\n');
     throw new Error(`Invalid configuration:\n${issues}`);
@@ -105,9 +128,8 @@ function loadConfig(source = process.env) {
       .update(env.MFA_SECRET_KEY || `mfa-dev:${env.JWT_SECRET}`)
       .digest(),
     shipToCountries: [...new Set(env.SHIP_TO_COUNTRIES.split(',').map((c) => c.trim().toUpperCase()))],
-    clientOrigins: env.CLIENT_ORIGINS.split(',')
-      .map((o) => o.trim())
-      .filter(Boolean),
+    clientOrigins: [...new Set([...env.CLIENT_ORIGINS.split(','), ...platformOrigins(source)].map((o) => o.trim()).filter(Boolean))],
+    onVercel: Boolean(source.VERCEL),
     cookieSecure: env.COOKIE_SECURE ? env.COOKIE_SECURE === 'true' : isProd,
     trustProxy: /^\d+$/.test(env.TRUST_PROXY) ? Number(env.TRUST_PROXY) : env.TRUST_PROXY === 'false' ? false : env.TRUST_PROXY,
   };

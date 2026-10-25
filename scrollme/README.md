@@ -7,7 +7,8 @@
 | Audit of the original code | [docs/audit/AUDIT.md](docs/audit/AUDIT.md) |
 | Security audit (Oct 2026) | [docs/security/SECURITY_AUDIT.md](docs/security/SECURITY_AUDIT.md) |
 | Release-candidate report (what was fixed and how it was verified) | [docs/RELEASE_CANDIDATE.md](docs/RELEASE_CANDIDATE.md) |
-| Deployment guide | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) |
+| **Launching on Vercel (step by step)** | [docs/VERCEL.md](docs/VERCEL.md) |
+| Deployment guide (Docker) | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) |
 | Operations runbook (logs, health, backups, restore) | [docs/OPERATIONS.md](docs/OPERATIONS.md) |
 | API reference | [backend/README.md](backend/README.md) |
 | Adding products in bulk (spreadsheet + photos) | [docs/BULK_UPLOAD.md](docs/BULK_UPLOAD.md) |

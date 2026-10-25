@@ -1,5 +1,6 @@
 import client from '../../api/client';
 import { ADMIN_ENDPOINTS } from '../../api/endPoints';
+import { shrinkPhoto } from '../../utils/shrinkPhoto';
 
 const clean = (params) => Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== ''));
 
@@ -13,8 +14,13 @@ export const adjustStockAPI = async (productId, delta) => (await client.post(ADM
 // multipart type stops the client's JSON default from serialising the form.
 export const uploadPhotoAPI = async (file) => {
   const form = new FormData();
-  form.append('image', file);
-  return (await client.post(ADMIN_ENDPOINTS.UPLOADS, form, { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 120000 })).data;
+  form.append('image', await shrinkPhoto(file));
+  try {
+    return (await client.post(ADMIN_ENDPOINTS.UPLOADS, form, { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 120000 })).data;
+  } catch (err) {
+    if (err.response?.status === 413) throw new Error(`${file.name} is too large to upload. Try a smaller photo or a screenshot of it.`);
+    throw err;
+  }
 };
 
 // Spreadsheet check/import. Row problems come back as a 400 with the same

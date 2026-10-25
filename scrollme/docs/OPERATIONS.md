@@ -8,6 +8,8 @@
 | `GET /api/health` (API process) | `{"status":"ok"}` |
 | `GET /api/ready` (API + database) | `{"status":"ok","db":"connected"}` — 503 when MongoDB is unreachable |
 
+On Vercel there is no nginx, so use `/api/health` and `/api/ready`; failed starts appear in the project's *Logs* as `startup_failed`, and a missing `NODEJS_HELPERS=0` as `nodejs_helpers_enabled` ([VERCEL.md](VERCEL.md#4-check-it-works)).
+
 Both Docker images define `HEALTHCHECK`s; `docker compose ps` shows their state. The API exits on start-up if configuration is invalid (the message lists each bad variable) and shuts down gracefully on `SIGTERM` (finishes in-flight requests, closes the database).
 
 ## Logs
@@ -53,6 +55,8 @@ docker run --rm -v scrollme_uploads:/data:ro -v "$PWD/backups:/backup" alpine \
 ```
 
 Photo file names are random and never reused, so restoring an older copy never overwrites a newer photo.
+
+On Vercel, photos are stored in the project's Vercel Blob store (`products/<random>.webp`) instead of `UPLOAD_DIR`. The shop never deletes them (a product's photos stay even if the product is removed), so they are not lost on redeploys.
 
 ## Restore
 
