@@ -6,5 +6,6 @@ const router = express.Router();
 
 // Shop content edited in the admin (e.g. home page cover images).
 router.get('/home', asyncHandler(site.getHome));
+router.get('/business', asyncHandler(site.getBusiness));
 
 module.exports = router;

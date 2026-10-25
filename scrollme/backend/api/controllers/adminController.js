@@ -6,6 +6,9 @@ const { serializeOrder } = require('./orderController');
 const { changeStatus } = require('../services/orders');
 const { importProducts } = require('../services/productImport');
 const { monthlyOrderBook } = require('../services/orderBook');
+const ContactMessage = require('../models/contactMessageModel');
+const { getShopDetails } = require('../services/shopDetails');
+const { getConfig } = require('../config/env');
 const { fromCents } = require('../utils/money');
 const { notFound, conflict } = require('../utils/httpError');
 const logger = require('../utils/logger');
@@ -118,7 +121,7 @@ exports.orderBook = async (req, res) => {
 
 // ---- Dashboard ----
 exports.stats = async (req, res) => {
-  const [byStatus, revenue, lowStock, products, customers, attention] = await Promise.all([
+  const [byStatus, revenue, lowStock, products, customers, attention, newMessages, shop] = await Promise.all([
     Order.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
     Order.aggregate([
       { $match: { 'payment.status': 'paid', status: { $nin: ['refunded'] } } },
@@ -128,7 +131,10 @@ exports.stats = async (req, res) => {
     Product.countDocuments({ isActive: true }),
     User.countDocuments({}),
     Order.countDocuments({ attention: { $nin: [null, ''] } }),
+    ContactMessage.countDocuments({ status: 'new' }),
+    getShopDetails(),
   ]);
+  const config = getConfig();
   res.json({
     ordersByStatus: Object.fromEntries(byStatus.map((r) => [r._id, r.count])),
     revenue: fromCents(revenue[0]?.cents || 0),
@@ -136,5 +142,13 @@ exports.stats = async (req, res) => {
     activeProducts: products,
     customers,
     ordersNeedingAttention: attention,
+    newMessages,
+    // What is still needed before taking real orders (Admin → Dashboard checklist).
+    setup: {
+      shopAddress: Boolean(shop.address),
+      shopEmail: Boolean(shop.email),
+      emailSending: Boolean(config.SMTP_URL),
+      payments: config.PAYMENT_PROVIDER === 'mock' ? 'mock' : String(config.STRIPE_SECRET_KEY || '').startsWith('sk_live_') ? 'live' : 'test',
+    },
   });
 };

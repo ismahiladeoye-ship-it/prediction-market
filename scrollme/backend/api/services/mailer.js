@@ -12,7 +12,7 @@ const getTransport = () => {
 
 // Without SMTP configured, development logs the message (so reset links can be
 // used locally) while production only logs that mail is not configured.
-const sendMail = async ({ to, subject, text }) => {
+const sendMail = async ({ to, subject, text, html, replyTo }) => {
   const config = getConfig();
   const t = getTransport();
   if (!t) {
@@ -20,7 +20,7 @@ const sendMail = async ({ to, subject, text }) => {
     else logger.info('mail_dev_outbox', { to, subject, text });
     return { delivered: false };
   }
-  await t.sendMail({ from: config.MAIL_FROM, to, subject, text });
+  await t.sendMail({ from: config.MAIL_FROM, to, subject, text, ...(html ? { html } : {}), ...(replyTo ? { replyTo } : {}) });
   return { delivered: true };
 };
 

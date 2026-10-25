@@ -167,6 +167,105 @@ const homeContent = z
   })
   .strict();
 
+const optionalText = (max, message) =>
+  z
+    .string()
+    .trim()
+    .max(max, message || `Keep it to ${max} characters`)
+    .default('');
+const socialLink = (hosts, example) =>
+  z
+    .string()
+    .trim()
+    .max(200)
+    .refine((v) => {
+      if (!v) return true;
+      try {
+        const url = new URL(v);
+        return url.protocol === 'https:' && hosts.some((h) => url.hostname === h || url.hostname.endsWith(`.${h}`));
+      } catch {
+        return false;
+      }
+    }, `Paste the full link, e.g. ${example}`)
+    .default('');
+
+// Admin → Shop details.
+const businessDetails = z
+  .object({
+    name: z.string().trim().min(1, 'Add the shop name').max(80),
+    legalName: optionalText(150),
+    address: optionalText(300),
+    email: z.union([z.literal(''), z.string().trim().toLowerCase().email('Enter a valid email address').max(254)]).default(''),
+    phone: z
+      .string()
+      .trim()
+      .max(30)
+      .regex(/^[0-9+()\-\s]*$/, 'Use digits, spaces and + ( ) - only')
+      .default(''),
+    companyNumber: z
+      .string()
+      .trim()
+      .toUpperCase()
+      .max(12)
+      .regex(/^[A-Z0-9]*$/, 'Letters and numbers only, e.g. 12345678')
+      .default(''),
+    vatNumber: z
+      .string()
+      .trim()
+      .toUpperCase()
+      .max(16)
+      .regex(/^[A-Z0-9 ]*$/, 'Letters and numbers only, e.g. GB123456789')
+      .default(''),
+    deliveryEstimate: z.string().trim().min(1, 'Add how long delivery takes').max(60).default('3–5 working days'),
+    returnPostage: z.enum(['customer', 'free']).default('customer'),
+    socials: z
+      .object({
+        instagram: socialLink(['instagram.com'], 'https://www.instagram.com/yourshop'),
+        tiktok: socialLink(['tiktok.com'], 'https://www.tiktok.com/@yourshop'),
+        whatsapp: socialLink(['wa.me', 'whatsapp.com'], 'https://wa.me/447700900000'),
+      })
+      .strict()
+      .default({}),
+  })
+  .strict();
+
+// Contact page: a question, or a sourcing request for a specific item.
+const contactMessage = z
+  .object({
+    kind: z.enum(['general', 'sourcing']).default('general'),
+    name: z.string().trim().min(1, 'Add your name').max(100),
+    email: z.string().trim().toLowerCase().email('Enter a valid email address').max(254),
+    phone: z
+      .string()
+      .trim()
+      .max(30)
+      .regex(/^[0-9+()\-\s]*$/, 'Use digits, spaces and + ( ) - only')
+      .default(''),
+    orderNumber: z
+      .string()
+      .trim()
+      .toUpperCase()
+      .max(40)
+      .regex(/^[A-Z0-9-]*$/, 'Order numbers look like GIS-…')
+      .default(''),
+    item: optionalText(200),
+    size: optionalText(40),
+    budget: optionalText(40),
+    message: z.string().trim().min(10, 'Tell us a little more (at least 10 characters)').max(5000, 'Keep it to 5,000 characters'),
+    // Hidden field that people never fill in; bots often do.
+    website: z.string().max(200).default(''),
+  })
+  .strict()
+  .superRefine((v, ctx) => {
+    if (v.kind === 'sourcing' && !v.item) ctx.addIssue({ code: 'custom', path: ['item'], message: 'Tell us which item you are looking for' });
+  });
+const messageStatus = z.object({ status: z.enum(['new', 'replied', 'closed']) }).strict();
+const messageListQuery = z.object({
+  status: z.enum(['new', 'replied', 'closed', 'all']).default('new'),
+  page: z.coerce.number().int().min(1).max(1000).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
+
 const sku = z
   .string()
   .trim()
@@ -235,6 +334,10 @@ module.exports = {
   productUpdate,
   orderStatusUpdate,
   homeContent,
+  businessDetails,
+  contactMessage,
+  messageStatus,
+  messageListQuery,
   pageQuery,
   idParam,
 };

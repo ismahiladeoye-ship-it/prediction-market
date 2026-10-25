@@ -29,6 +29,12 @@ const LazyAdminImport = lazy(() => import('./pages/admin/AdminImport'));
 const LazyAdminSecurity = lazy(() => import('./pages/admin/AdminSecurity'));
 const LazyAdminOrderBook = lazy(() => import('./pages/admin/AdminOrderBook'));
 const LazyAdminHome = lazy(() => import('./pages/admin/AdminHome'));
+const LazyAdminShopDetails = lazy(() => import('./pages/admin/AdminShopDetails'));
+const LazyAdminMessages = lazy(() => import('./pages/admin/AdminMessages'));
+const LazyTerms = lazy(() => import('./pages/legal/Terms'));
+const LazyPrivacy = lazy(() => import('./pages/legal/Privacy'));
+const LazyReturns = lazy(() => import('./pages/legal/Returns'));
+const LazyDelivery = lazy(() => import('./pages/legal/Delivery'));
 
 const protect = (element, adminOnly = false) => <ProtectedRoute adminOnly={adminOnly}>{element}</ProtectedRoute>;
 
@@ -62,12 +68,18 @@ function App() {
             <Route path='orders' element={<LazyAdminOrders />} />
             <Route path='order-book' element={<LazyAdminOrderBook />} />
             <Route path='home' element={<LazyAdminHome />} />
+            <Route path='shop' element={<LazyAdminShopDetails />} />
+            <Route path='messages' element={<LazyAdminMessages />} />
             <Route path='import' element={<LazyAdminImport />} />
             <Route path='security' element={<LazyAdminSecurity />} />
           </Route>
           <Route path='/products' element={<LazyAllProducts />} />
           <Route path='/collections/:slug' element={<LazyCollectionProducts />} />
           <Route path='/about' element={<LazyAbout />} />
+          <Route path='/terms' element={<LazyTerms />} />
+          <Route path='/privacy' element={<LazyPrivacy />} />
+          <Route path='/returns' element={<LazyReturns />} />
+          <Route path='/delivery' element={<LazyDelivery />} />
           <Route path='/login' element={<Login />} />
           <Route path='/forgot-password' element={<ForgotPassword />} />
           <Route path='/reset-password' element={<ResetPassword />} />

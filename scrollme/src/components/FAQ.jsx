@@ -2,22 +2,29 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import { HiChevronDown } from 'react-icons/hi2';
 import SectionHeading from './home/SectionHeading';
+import { useShopDetails } from '../context/ShopDetails';
+import { formatPrice } from '../utils/format';
 
-const faqData = [
+// e.g. "delivery is free on orders over £100", from the API's delivery settings.
+const deliveryCost = (d) => {
+  if (!d || d.standard <= 0) return d ? 'delivery is free' : 'delivery is free on orders over £100';
+  return d.freeOver ? `delivery is free on orders over ${formatPrice(d.freeOver)}` : `standard delivery costs ${formatPrice(d.standard)}`;
+};
+
+// Delivery time and return postage come from Admin → Shop details.
+const faqData = (shop) => [
   {
-    question: 'What is Get It Sourced?',
-    answer:
-      'Get It Sourced is an online store where we source fashion, footwear and accessories for you, so you can shop a wide range of products from the comfort of your home.',
+    question: `What is ${shop.name}?`,
+    answer: `${shop.name} is an online store where we source fashion, footwear and accessories for you, so you can shop a wide range of products from the comfort of your home.`,
   },
   {
     question: 'Where do you deliver, and how much does it cost?',
-    answer:
-      'We deliver across the UK, and delivery is free on orders over £100. On smaller orders the delivery charge is shown in your bag before you pay. We do not ship outside the UK at the moment. Standard delivery takes 3–5 working days.',
+    answer: `We deliver across the UK, and ${deliveryCost(shop.delivery)}. Otherwise the delivery charge is shown in your bag before you pay. We do not ship outside the UK at the moment. Standard delivery takes ${shop.deliveryEstimate}. Full details are on our Delivery page.`,
   },
   {
     question: 'How do I track my order?',
     answer:
-      "Sign in and open 'Account'. Your order history lists every order; open one to see its status, tracking number and full history.",
+      "We email you when your order is on its way, with a tracking number. You can also sign in and open 'Account': your order history lists every order; open one to see its status, tracking number and full history.",
   },
   {
     question: 'What payment methods are accepted?',
@@ -26,8 +33,9 @@ const faqData = [
   },
   {
     question: "What if I'm not happy with my order?",
-    answer:
-      'You have 30 days from delivery to return an item, as long as it is unused and in its original condition. Contact us with your order number to arrange a return.',
+    answer: `You have 30 days from delivery to return an item, as long as it is unused and in its original condition. ${
+      shop.returnPostage === 'free' ? 'Returns are free. ' : ''
+    }Contact us with your order number to arrange a return; our Returns page has the details.`,
   },
 ];
 
@@ -75,13 +83,14 @@ const Answer = styled.p`
 `;
 
 const FAQ = () => {
+  const shop = useShopDetails();
   const [open, setOpen] = useState(null);
 
   return (
     <section id='faq' aria-labelledby='faq-title'>
       <SectionHeading id='faq-title'>FAQ</SectionHeading>
       <List>
-        {faqData.map((item, index) => (
+        {faqData(shop).map((item, index) => (
           <Item key={item.question}>
             <Question
               type='button'

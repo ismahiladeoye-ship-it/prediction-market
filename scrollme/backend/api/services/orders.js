@@ -8,6 +8,8 @@ const { reserveStock, releaseStock } = require('./inventory');
 const { getProvider } = require('./payments');
 const { badRequest, conflict, HttpError } = require('../utils/httpError');
 const logger = require('../utils/logger');
+// Emails are sent in the background; they never hold up or fail an order.
+const { notifyOrderPaid, notifyOrderStatus } = require('./notifications');
 
 // Order numbers look like GIS-MH3K2Q1A-4F2C9B (Get It Sourced).
 const newOrderNumber = () => `GIS-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
@@ -127,6 +129,7 @@ const markOrderPaid = async (orderId, { reference, amountTotal } = {}) => {
     if (updated) {
       await removePurchasedFromCart(updated);
       logger.info('order_paid', { orderId: String(updated._id), orderNumber: updated.orderNumber });
+      notifyOrderPaid(updated);
       return updated;
     }
     return Order.findById(order._id);
@@ -146,7 +149,10 @@ const markOrderPaid = async (orderId, { reference, amountTotal } = {}) => {
     order.payment.reference = reference;
     order.payment.paidAt = new Date();
     await order.save();
-    if (order.status === 'paid') await removePurchasedFromCart(order);
+    if (order.status === 'paid') {
+      await removePurchasedFromCart(order);
+      notifyOrderPaid(order);
+    }
     logger.warn('late_payment', { orderId: String(order._id), status: order.status });
     return order;
   }
@@ -171,6 +177,8 @@ const changeStatus = async (order, status, { by, note, trackingNumber } = {}) =>
   order.status = status;
   order.statusHistory.push({ status, by, note });
   await order.save();
+  if (status === 'paid') notifyOrderPaid(order);
+  else notifyOrderStatus(order);
   return order;
 };
 

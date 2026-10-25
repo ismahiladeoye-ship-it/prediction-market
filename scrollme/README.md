@@ -22,6 +22,7 @@
 - [x] **Cart**: sizes, stock checks; prices, tax and delivery always computed on the server.
 - [x] **Checkout**: delivery address and method, then a *Secure Payment* sheet — Apple Pay, card, PayPal, Klarna, Google Pay — paid through **Stripe Checkout in test mode**.
 - [x] **Orders**: confirmation, history, status tracking, cancellation of unpaid orders; stock reserved at checkout and released if payment is abandoned.
+- [x] **Contact and legal**: contact page with *Find me an item* sourcing requests (saved to *Admin → Messages* and emailed to you), Terms, Privacy, Returns & refunds and Delivery pages filled from *Admin → Shop details*, and order confirmation, shipped and refund emails.
 - [x] **Administration**: **two-factor sign-in for admins** (authenticator app + one-time recovery codes), dashboard, product management (create/edit/hide, stock, photo uploads), **bulk upload from a spreadsheet with photos** (preview, update by SKU), order fulfilment with status lifecycle and tracking numbers, **home page cover images** you change yourself (upload photos, headings, buttons), and a monthly **order book** (what sold by product and size, sales, stock left, month-by-month totals, CSV download).
 - [ ] Email notifications for orders, reviews, discounts, multi-language — not in scope yet.
 
@@ -65,9 +66,9 @@ With `PAYMENT_PROVIDER=mock` the payment step opens a local **test-mode** page f
 
 | Suite | Command | What it covers |
 | --- | --- | --- |
-| API | `cd backend && npm test` | 129 tests on a real MongoDB: auth, admin two-factor sign-in, permissions, order book, home page cover images, catalogue and collections, photo uploads, bulk import, cart pricing, UK delivery, checkout, stock, payments/webhooks, admin, wishlist, newsletter, HTTP hardening |
+| API | `cd backend && npm test` | 140 tests on a real MongoDB: auth, admin two-factor sign-in, permissions, order book, home page cover images, shop details, contact messages, order emails, catalogue and collections, photo uploads, bulk import, cart pricing, UK delivery, checkout, stock, payments/webhooks, admin, wishlist, newsletter, HTTP hardening |
 | Storefront unit | `npm run test:ci` | 26 tests: route guards, CSV export, payment sheet, gallery states, cart/wishlist state, validation |
-| End-to-end | `npm run build && cd e2e && npm install && npx playwright test` | 22 browser tests (desktop + phone) against the real API, database and production build |
+| End-to-end | `npm run build && cd e2e && npm install && npx playwright test` | 25 browser tests (desktop + phone) against the real API, database and production build |
 | Lint/format | `npm run lint && npm run lint-check`, `cd backend && npm run lint` | |
 
 CI runs all of the above plus Docker image builds: [.github/workflows/scrollme.yml](../.github/workflows/scrollme.yml).

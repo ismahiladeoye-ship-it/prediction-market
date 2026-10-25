@@ -94,3 +94,10 @@ Added at the owner's request (not a finding above; admin passwords were already 
 - Each 6-digit code is accepted once (the last used time step is stored and claimed atomically, so parallel replays fail); ±30 s clock drift is allowed. Wrong codes are limited to 5 per 15 minutes per account, on top of the per-IP sign-in limit.
 - Turning it on, or moving to a new phone, signs the account out everywhere else. Lost phone and codes: `npm run reset-mfa` on the server (see OPERATIONS.md).
 - Covered by `backend/__tests__/mfa.test.js` (10 tests) and an end-to-end test of a new admin's setup and recovery-code sign-in.
+
+## After the audit: contact form, shop details and emails
+
+- `POST /api/contact` is limited to 5 messages per hour per IP and has a hidden bot field; it never sends an automatic reply, so it cannot be used to make the shop email other people. Messages are only readable by admins with two-factor sign-in.
+- Emails escape everything customers or admins typed (product names, addresses, messages) in their HTML version; links in emails use `APP_URL`.
+- Shop details are admin-only; social links must be `https://` links on Instagram, TikTok or WhatsApp. Covered by `backend/__tests__/launch.test.js`.
+

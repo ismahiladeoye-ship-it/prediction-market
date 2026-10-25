@@ -29,5 +29,7 @@ const mfaAccountLimiter = make({
 });
 const checkoutLimiter = make({ windowMs: 10 * 60 * 1000, limit: 30 });
 const apiLimiter = make({ windowMs: 60 * 1000, limit: 300 });
+// Contact form: 5 messages an hour from one address.
+const contactLimiter = make({ windowMs: 60 * 60 * 1000, limit: 5 });
 
-module.exports = { authLimiter, loginAccountLimiter, mfaAccountLimiter, checkoutLimiter, apiLimiter };
+module.exports = { authLimiter, loginAccountLimiter, mfaAccountLimiter, checkoutLimiter, apiLimiter, contactLimiter };

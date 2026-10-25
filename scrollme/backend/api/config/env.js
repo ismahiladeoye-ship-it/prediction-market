@@ -50,6 +50,8 @@ const schema = z.object({
   FIREBASE_PROJECT_ID: z.string().optional(),
   SMTP_URL: z.string().optional(),
   MAIL_FROM: z.string().default('Get It Sourced <no-reply@getitsourced.com>'),
+  // Where new-order and contact-form alerts go (default: the email in Admin → Shop details).
+  NOTIFY_EMAIL: z.preprocess((v) => (v === '' ? undefined : v), z.string().email().optional()),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error', 'silent']).default('info'),
   // Encrypts admins' two-factor secrets in the database (required in production).
   MFA_SECRET_KEY: z.string().optional(),

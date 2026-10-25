@@ -38,7 +38,8 @@ API (`backend/.env`, from `backend/.env.example`):
 | `PAYMENT_PROVIDER` | `stripe` |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | test-mode keys first (`sk_test_…`, `whsec_…`) |
 | `PAYMENT_METHODS` | e.g. `apple_pay,card,paypal,klarna,google_pay` — only methods enabled in Stripe |
-| `SMTP_URL`, `MAIL_FROM` | for password-reset emails |
+| `SMTP_URL`, `MAIL_FROM` | **needed before launch**: order confirmations, shipping and refund emails, password resets, and alerts to you. Use a transactional email service (e.g. `smtps://user:pass@smtp.example.com:465`) |
+| `NOTIFY_EMAIL` | optional: where new-order and contact-form alerts go. Defaults to the contact email in *Admin → Shop details* |
 | `FIREBASE_PROJECT_ID` | only if Google sign-in is enabled |
 
 Storefront build arguments (`docker compose build` / `Dockerfile` `ARG`s): `REACT_APP_API_URL` (default `/api`), `REACT_APP_CURRENCY_SYMBOL`, and the four `REACT_APP_FIREBASE_*` values for Google sign-in.

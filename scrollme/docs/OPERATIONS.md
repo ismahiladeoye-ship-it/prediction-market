@@ -68,6 +68,18 @@ The script refuses archives whose checksum does not match. After a restore: rest
 
 **Rehearsed on 2026-10-23** against the development database: backup 4.6 MB; restored counts matched exactly (24,324 products, 12 users, 5 orders, 3 carts); a modified archive was rejected by the checksum check.
 
+## Shop details and legal pages
+
+Fill in *Admin → Shop details* before launch: UK law requires an online shop to show its business name, a geographic (postal) address and an email address. They appear in the footer, on the Terms, Privacy, Returns and Delivery pages, the contact page and in every order email. The dashboard lists anything still missing.
+
+The legal pages (`src/pages/legal/`) are drafts written for a UK consumer shop from what this code actually does. Have them reviewed before relying on them; if you change what the shop does (new payment method, analytics, marketing emails), update the Privacy policy too, and the `LAST_UPDATED` date.
+
+## Messages and order emails
+
+- *Admin → Messages* lists contact-page questions and sourcing requests. Each is also emailed to the contact email (or `NOTIFY_EMAIL`) with Reply-To set to the customer, so replying answers them; then mark it *Replied*.
+- Customers are emailed when an order is paid (confirmation with the 14-day cancellation information), when it is marked *Shipped* (include the tracking number) and when it is marked *Refunded*. Each email is sent once per order; you get a new-order alert at the same time as the confirmation.
+- Emails need `SMTP_URL`. A failed send never stops an order; it is logged as `email_failed` (search the API logs for it). Nothing is retried automatically, so contact the customer if one failed.
+
 ## Home page cover images
 
 *Admin → Home page* changes the large photos at the top of the home page, without a code change: upload a photo (JPEG, PNG or WebP; landscape and at least 1600 px wide looks best), set the heading, text and button, and choose which page the button opens. Changes show on the next page load. Covers are saved in the database and their photos in the uploads folder, so both are in your normal backups.

@@ -105,7 +105,7 @@ export const storeConfig = {
     title: "Can't find it? We'll source it",
     text: "Tell us the piece, size and budget you're after and we'll look for it for you.",
     cta: 'Send a request',
-    link: '/contact-us',
+    link: '/contact-us?type=sourcing',
     img: pexels(9594676, 1400),
   },
   location: 'United Kingdom',

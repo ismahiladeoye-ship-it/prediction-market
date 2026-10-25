@@ -5,6 +5,7 @@ import { FaApplePay, FaCcAmex, FaCcMastercard, FaCcPaypal, FaCcVisa, FaGooglePay
 import { collections, storeConfig } from '../data';
 import { subscribeAPI } from '../services/newsletter/newsletterService';
 import { getErrorMessage } from '../api/client';
+import { useShopDetails } from '../context/ShopDetails';
 
 const scroll = keyframes`
   from { transform: translateX(0); }
@@ -219,8 +220,9 @@ const Footer = () => {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState(null); // { ok, message }
   const [busy, setBusy] = useState(false);
-  const brand = storeConfig.name.toUpperCase();
-  const socials = SOCIAL_ICONS.filter(([key]) => storeConfig.socials[key]);
+  const shop = useShopDetails();
+  const brand = shop.name.toUpperCase();
+  const socials = SOCIAL_ICONS.filter(([key]) => shop.socials[key]);
 
   const subscribe = async (e) => {
     e.preventDefault();
@@ -283,7 +285,7 @@ const Footer = () => {
           {socials.length > 0 && (
             <Socials>
               {socials.map(([key, label, Icon]) => (
-                <a key={key} href={storeConfig.socials[key]} target='_blank' rel='noopener noreferrer' aria-label={label}>
+                <a key={key} href={shop.socials[key]} target='_blank' rel='noopener noreferrer' aria-label={label}>
                   <Icon size={30} />
                 </a>
               ))}
@@ -294,7 +296,7 @@ const Footer = () => {
 
       <Bottom>
         <p>
-          © {new Date().getFullYear()} {storeConfig.name}
+          © {new Date().getFullYear()} {shop.legalName || shop.name}
         </p>
         <Links aria-label='Footer'>
           <ul>
@@ -321,9 +323,21 @@ const Footer = () => {
             <li>
               <a href='/#faq'>FAQ</a>
             </li>
-            {storeConfig.contactEmail && (
+            <li>
+              <Link to='/delivery'>Delivery</Link>
+            </li>
+            <li>
+              <Link to='/returns'>Returns</Link>
+            </li>
+            <li>
+              <Link to='/terms'>Terms</Link>
+            </li>
+            <li>
+              <Link to='/privacy'>Privacy</Link>
+            </li>
+            {shop.email && (
               <li>
-                <a href={`mailto:${storeConfig.contactEmail}`}>{storeConfig.contactEmail}</a>
+                <a href={`mailto:${shop.email}`}>{shop.email}</a>
               </li>
             )}
           </ul>

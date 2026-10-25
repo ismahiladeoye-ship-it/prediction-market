@@ -61,10 +61,15 @@ export const ADMIN_ENDPOINTS = {
   ORDER_STATUS: (orderId) => `${API_BASE_URL}/admin/orders/${orderId}/status`,
   ORDER_BOOK: `${API_BASE_URL}/admin/order-book`,
   HOME: `${API_BASE_URL}/admin/home`,
+  BUSINESS: `${API_BASE_URL}/admin/business`,
+  MESSAGES: `${API_BASE_URL}/admin/messages`,
+  MESSAGE: (messageId) => `${API_BASE_URL}/admin/messages/${messageId}`,
 };
 
 export const SITE_ENDPOINTS = {
   HOME: `${API_BASE_URL}/site/home`,
+  BUSINESS: `${API_BASE_URL}/site/business`,
+  CONTACT: `${API_BASE_URL}/contact`,
 };
 
 export const AUTH_STATUS = {

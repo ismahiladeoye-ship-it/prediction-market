@@ -84,6 +84,9 @@ const Input = styled.input`
 const Agreement = styled.span`
   font-size: 12px;
   margin: 20px 0px;
+  a {
+    text-decoration: underline;
+  }
 `;
 
 const Text = styled.p`
@@ -267,7 +270,8 @@ const Register = () => {
             </PasswordBox>
             <Box>
               <Agreement>
-                By creating an account, I consent to the processing of my personal data in accordance with the <b>PRIVACY POLICY</b>
+                By creating an account you agree to our <RouterLink to='/terms'>Terms &amp; conditions</RouterLink>. Our{' '}
+                <RouterLink to='/privacy'>Privacy policy</RouterLink> explains how we use your information.
               </Agreement>
               <Text>
                 Already have an account?{' '}

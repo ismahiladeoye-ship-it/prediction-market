@@ -14,13 +14,34 @@ const slideSchema = new mongoose.Schema(
   { _id: false }
 );
 
-// Content the shop owner edits without a code change. A single document,
-// _id 'home'; when it does not exist the storefront shows its starter slides.
+// The business behind the shop, edited in Admin → Shop details. Shown in the
+// footer, the legal pages and emails (UK law requires the trader's name,
+// geographic address and email to be easy to find).
+const businessSchema = new mongoose.Schema(
+  {
+    name: String,
+    legalName: String,
+    address: String,
+    email: String,
+    phone: String,
+    companyNumber: String,
+    vatNumber: String,
+    deliveryEstimate: String,
+    returnPostage: { type: String, enum: ['customer', 'free'] },
+    socials: { instagram: String, tiktok: String, whatsapp: String },
+  },
+  { _id: false }
+);
+
+// Content the shop owner edits without a code change, one document each:
+// _id 'home' (cover images; when missing the storefront shows its starter
+// slides) or 'business' (shop details).
 const siteContentSchema = new mongoose.Schema(
   {
     _id: { type: String },
     heroSlides: { type: [slideSchema], default: undefined },
     heroMono: { type: Boolean, default: true },
+    business: businessSchema,
     updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   },
   { timestamps: true }

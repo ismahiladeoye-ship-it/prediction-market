@@ -10,6 +10,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import ScrollToTop from './components/utils/ScrollToTop';
 import { ChakraProvider } from '@chakra-ui/react';
 import theme from './theme';
+import { ShopDetailsProvider } from './context/ShopDetails';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -18,7 +19,9 @@ root.render(
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <ScrollToTop />
         <ChakraProvider theme={theme}>
-          <App />
+          <ShopDetailsProvider>
+            <App />
+          </ShopDetailsProvider>
         </ChakraProvider>
       </BrowserRouter>
     </PersistGate>

@@ -6,6 +6,7 @@ const validate = require('../middleware/validate');
 const admin = require('../controllers/adminController');
 const uploads = require('../controllers/uploadController');
 const site = require('../controllers/siteController');
+const contact = require('../controllers/contactController');
 const s = require('../validators/schemas');
 const { asyncHandler } = require('../utils/httpError');
 
@@ -24,6 +25,9 @@ router.get('/stats', asyncHandler(admin.stats));
 // Home page cover images.
 router.put('/home', validate({ body: s.homeContent }), asyncHandler(site.updateHome));
 router.delete('/home', asyncHandler(site.resetHome));
+
+// Shop details (legal pages, footer, emails).
+router.put('/business', validate({ body: s.businessDetails }), asyncHandler(site.updateBusiness));
 
 // Product photos (multipart, one image per request).
 router.post('/uploads', uploads.receivePhoto, asyncHandler(uploads.uploadPhoto));
@@ -63,6 +67,9 @@ router.post(
   }),
   asyncHandler(admin.adjustStock)
 );
+
+router.get('/messages', validate({ query: s.messageListQuery }), asyncHandler(contact.listMessages));
+router.patch('/messages/:messageId', validate({ params: s.idParam('messageId'), body: s.messageStatus }), asyncHandler(contact.updateMessage));
 
 router.get('/orders', validate({ query: s.pageQuery }), asyncHandler(admin.listOrders));
 router.get(

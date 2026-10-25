@@ -76,6 +76,10 @@ Auth column: — public, **U** signed-in user, **A** admin who completed two-fac
 | `POST /api/admin/products/import` | A | `{ csv, dryRun, photos: { "file.jpg": url } }` — spreadsheet create/update by SKU; see [docs/BULK_UPLOAD.md](../docs/BULK_UPLOAD.md) |
 | `GET /api/uploads/:file` | — | Uploaded photos (immutable caching) |
 | `GET /api/admin/orders`, `GET /api/admin/orders/:id`, `PATCH /api/admin/orders/:id/status` | A | Fulfilment; only allowed status transitions |
+| `GET /api/site/business` | — | Shop details (name, legal name, address, email, phone, company/VAT numbers, delivery time, return postage, socials) and the delivery terms from the API settings |
+| `PUT /api/admin/business` | A | Save the shop details |
+| `POST /api/contact` | — | Contact page: `{ kind: general\|sourcing, name, email, phone?, orderNumber?, item?, size?, budget?, message }`; saved and emailed to the shop. 5 per hour per IP; a filled hidden `website` field is accepted and ignored |
+| `GET /api/admin/messages?status=new\|replied\|closed\|all`, `PATCH /api/admin/messages/:id` | A | Contact messages and their status |
 | `GET /api/site/home` | — | Home page cover images `{ heroSlides, heroMono }`; `heroSlides` is `null` until an admin saves some (the storefront then shows its starter slides) |
 | `PUT /api/admin/home`, `DELETE /api/admin/home` | A | Save the cover images (1–6 slides: `image` uploaded or https, `title`, `subtitle`, `cta`, `link` to a page on the shop starting with `/`, `focus` top/center/bottom; plus `heroMono`), or go back to the starter ones |
 | `GET /api/admin/order-book?month=YYYY-MM` | A | Order book: a month's paid orders (by payment date, UK time) broken down by product and size with sales and current stock, cancelled/refunded totals, stock on hand, and the 12 months up to it. Defaults to the current month |

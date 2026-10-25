@@ -34,5 +34,8 @@ export const updateOrderStatusAPI = async (orderId, body) => (await client.patch
 // Home page cover images: the whole list in display order, or back to the starter ones.
 export const saveHomeContentAPI = async (content) => (await client.put(ADMIN_ENDPOINTS.HOME, content)).data;
 export const resetHomeContentAPI = async () => (await client.delete(ADMIN_ENDPOINTS.HOME)).data;
+export const saveShopDetailsAPI = async (details) => (await client.put(ADMIN_ENDPOINTS.BUSINESS, details)).data;
+export const listMessagesAPI = async (params) => (await client.get(ADMIN_ENDPOINTS.MESSAGES, { params: clean(params) })).data;
+export const updateMessageAPI = async (messageId, status) => (await client.patch(ADMIN_ENDPOINTS.MESSAGE(messageId), { status })).data;
 // month: "YYYY-MM" (UK time).
 export const getOrderBookAPI = async (month) => (await client.get(ADMIN_ENDPOINTS.ORDER_BOOK, { params: clean({ month }) })).data;

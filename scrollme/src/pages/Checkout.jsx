@@ -253,6 +253,10 @@ const Checkout = () => {
                   {submitting ? 'PLACING ORDER…' : 'PLACE ORDER'}
                 </Button>
                 <Note>You will choose how to pay next. Stock is held for 30 minutes while you pay.</Note>
+                <Note>
+                  By placing your order you agree to our <Link to='/terms'>Terms &amp; conditions</Link>. You can cancel within 14 days of
+                  delivery: see <Link to='/returns'>Returns</Link> and our <Link to='/privacy'>Privacy policy</Link>.
+                </Note>
               </OrderSummary>
             )}
           </Side>
@@ -484,6 +488,9 @@ const Note = styled.p`
   margin-top: 10px;
   font-size: 12px;
   color: #777;
+  a {
+    text-decoration: underline;
+  }
 `;
 
 const IssueBox = styled.div`

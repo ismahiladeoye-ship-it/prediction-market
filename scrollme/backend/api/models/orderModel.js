@@ -84,6 +84,8 @@ const orderSchema = new Schema(
     trackingNumber: String,
     // Set when something needs a human, e.g. payment arrived after the stock was released.
     attention: String,
+    // When each email about this order was sent (each goes out once).
+    notifications: { confirmation: Date, ownerAlert: Date, shipped: Date, refunded: Date },
   },
   { timestamps: true }
 );

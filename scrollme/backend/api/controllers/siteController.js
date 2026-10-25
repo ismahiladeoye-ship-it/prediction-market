@@ -1,5 +1,6 @@
 const SiteContent = require('../models/siteContentModel');
 const logger = require('../utils/logger');
+const { getShopDetails, saveShopDetails, deliveryTerms } = require('../services/shopDetails');
 
 const HOME = 'home';
 
@@ -31,4 +32,16 @@ exports.resetHome = async (req, res) => {
   await SiteContent.deleteOne({ _id: HOME });
   logger.info('admin_action', { action: 'home_reset', adminId: String(req.user._id) });
   res.json({ message: 'Starter cover images restored', ...homeResponse(null) });
+};
+
+// Public: who runs the shop and the delivery terms (footer, legal pages, contact page).
+exports.getBusiness = async (req, res) => {
+  res.json({ ...(await getShopDetails()), delivery: deliveryTerms() });
+};
+
+// Admin: save the shop details.
+exports.updateBusiness = async (req, res) => {
+  const details = await saveShopDetails(req.body, req.user._id);
+  logger.info('admin_action', { action: 'business_update', adminId: String(req.user._id) });
+  res.json({ message: 'Shop details saved', ...details, delivery: deliveryTerms() });
 };
