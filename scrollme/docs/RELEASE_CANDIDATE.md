@@ -2,14 +2,14 @@
 
 Branch `claude/scrollme-ecommerce-phases-cwocsl`. Baseline: the original code imported unmodified in commit `79b736e`; audit in [audit/AUDIT.md](audit/AUDIT.md).
 
-## Verification summary (2026-10-23, Node 22.22, MongoDB 7)
+## Verification summary (updated 2026-10-25, Node 22.22, MongoDB 7)
 
 | Check | Result |
 | --- | --- |
 | API lint (ESLint + Prettier) | ✅ clean |
-| API tests (Jest + Supertest, real MongoDB) | ✅ **140 / 140** — in-memory MongoDB and an external MongoDB (as CI uses) |
+| API tests (Jest + Supertest, real MongoDB) | ✅ **148 / 148** — in-memory MongoDB and an external MongoDB (as CI uses) |
 | Storefront lint + Prettier check | ✅ clean (the original failed Prettier in 28 files) |
-| Storefront unit tests | ✅ **26 / 26** (the original suite could not run) |
+| Storefront unit tests | ✅ **28 / 28** (the original suite could not run) |
 | Storefront production build | ✅ compiles; no inline scripts (CSP-safe) |
 | End-to-end browser tests (Playwright, desktop + phone) | ✅ **25 / 25** (one phone-only test is skipped in the desktop browser) against the real API, a seeded database and the production build |
 | Full purchase through nginx with production headers | ✅ 17 steps, 0 CSP violations, 0 console/page errors, 0 px horizontal overflow at 390 px |
@@ -19,6 +19,7 @@ Branch `claude/scrollme-ecommerce-phases-cwocsl`. Baseline: the original code im
 | Security audit (23 Oct 2026) | ✅ 31 code/configuration findings (0 critical/high, 3 medium, 16 low fixed; 12 informational) and 80 dependency advisories reviewed — see [security/SECURITY_AUDIT.md](security/SECURITY_AUDIT.md) |
 | Production dependency audit, storefront | ⚠️ see *Known limitations* |
 | Docker images | ✅ both images built by the `docker` CI job ([run #1](https://github.com/ismahiladeoye-ship-it/prediction-market/actions/runs/39897792729)) |
+| Vercel build (`vercel build`, CLI 65.2) | ✅ storefront and API function build; the function (51 MB, Node 24, London) was then run over HTTP against MongoDB: health, readiness, catalogue, sign-up (bcrypt, Secure cookies), contact form, Stripe webhook signature check (valid and forged), cron secret, sharp — all pass. Photo shrinking checked in Chromium (21.6 MB photo → 2.2 MB) |
 | CI on GitHub | ✅ run #1: API, storefront, end-to-end and Docker jobs all green |
 
 ## How each audit finding was resolved
@@ -92,4 +93,4 @@ New screens (checkout, payment sheet, orders, account, admin) reuse the original
 
 ## Promotion to `main`
 
-Do not merge until the `ScrollMe CI` workflow is green on the latest commit and the Stripe test-mode checklist in DEPLOYMENT.md has been completed on a staging deployment.
+Merged to `main` for the Vercel launch. Before taking real payments, complete the Stripe test-mode purchase and the go-live steps in [VERCEL.md](VERCEL.md) (§7 and §10).

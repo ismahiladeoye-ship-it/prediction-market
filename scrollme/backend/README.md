@@ -46,6 +46,7 @@ Auth column: — public, **U** signed-in user, **A** admin who completed two-fac
 | --- | --- | --- |
 | `GET /api/health` | — | Liveness |
 | `GET /api/ready` | — | Readiness (database ping) |
+| `GET /api/cron/release-expired` | `Authorization: Bearer $CRON_SECRET` | Vercel Cron backstop: releases stock held by expired unpaid orders → `{ released }`; 404 unless `CRON_SECRET` is set and matches |
 | `POST /api/auth/register` | — | Create account, starts session |
 | `POST /api/auth/login` | — | `{ username, password }` (username or email) |
 | `POST /api/auth/logout` | — | Ends session and revokes all refresh tokens |
@@ -72,7 +73,7 @@ Auth column: — public, **U** signed-in user, **A** admin who completed two-fac
 | `POST /api/payments/mock/:id/complete` | U | Only when `PAYMENT_PROVIDER=mock` |
 | `GET /api/admin/stats` | A | Dashboard numbers |
 | `GET/POST /api/admin/products`, `GET/PATCH/DELETE /api/admin/products/:id`, `POST /api/admin/products/:id/stock` | A | Product management (`DELETE` hides); products have an optional unique `sku` and an `images` gallery |
-| `POST /api/admin/uploads` | A | One photo (`multipart/form-data`, field `image`, ≤ 15 MB): re-encoded to WebP ≤ 1600 px without EXIF/GPS → `{ url }` |
+| `POST /api/admin/uploads` | A | One photo (`multipart/form-data`, field `image`, ≤ 15 MB): re-encoded to WebP ≤ 1600 px without EXIF/GPS → `{ url }`. Stored in `UPLOAD_DIR`, or in Vercel Blob when `BLOB_READ_WRITE_TOKEN` is set (503 on Vercel without one) |
 | `POST /api/admin/products/import` | A | `{ csv, dryRun, photos: { "file.jpg": url } }` — spreadsheet create/update by SKU; see [docs/BULK_UPLOAD.md](../docs/BULK_UPLOAD.md) |
 | `GET /api/uploads/:file` | — | Uploaded photos (immutable caching) |
 | `GET /api/admin/orders`, `GET /api/admin/orders/:id`, `PATCH /api/admin/orders/:id/status` | A | Fulfilment; only allowed status transitions |

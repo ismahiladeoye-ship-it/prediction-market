@@ -2,7 +2,7 @@ const { parse } = require('csv-parse/sync');
 const Product = require('../models/productModel');
 const { COLLECTIONS } = require('../config/collections');
 const { productCreate, productUpdate } = require('../validators/schemas');
-const { UPLOAD_URL } = require('./images');
+const { isStoredPhoto } = require('./images');
 
 const MAX_ROWS = 1000;
 
@@ -123,7 +123,7 @@ const resolveImages = (tokens, photos, dryRun) => {
       continue;
     }
     const url = byName.get(name);
-    if (url && UPLOAD_URL.test(url)) {
+    if (url && isStoredPhoto(url)) {
       images.push(url);
       found += 1;
     } else if (dryRun) found += 1;

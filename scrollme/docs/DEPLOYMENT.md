@@ -1,5 +1,7 @@
 # Deploying Get It Sourced
 
+> **Hosting on Vercel?** Follow [VERCEL.md](VERCEL.md) instead: it covers the Vercel, MongoDB Atlas, Blob storage and Stripe settings step by step. This guide covers running the shop in Docker containers; the environment variables in §2 and the Stripe steps in §3 apply to both.
+
 The supported layout is three containers behind a TLS-terminating proxy:
 
 ```
@@ -35,6 +37,8 @@ API (`backend/.env`, from `backend/.env.example`):
 | `CURRENCY`, `TAX_RATE`, `SHIPPING_STANDARD`, `SHIPPING_EXPRESS`, `FREE_SHIPPING_THRESHOLD` | your pricing (see note below). Defaults: `gbp`, prices include VAT, £3.99 standard delivery that is free from £100, no express |
 | `SHIP_TO_COUNTRIES` | countries you deliver to; default `GB` (checkout accepts UK addresses only and checks the postcode) |
 | `UPLOAD_DIR` | where uploaded product photos are stored; the Docker image uses `/app/uploads` on the `uploads` volume. Use persistent storage and back it up (see [OPERATIONS.md](OPERATIONS.md#product-photos)) |
+| `BLOB_READ_WRITE_TOKEN` | Vercel only: added when a Vercel Blob store is connected to the project; photos are then stored there instead of `UPLOAD_DIR` |
+| `CRON_SECRET` | Vercel only: a random value Vercel Cron sends to the daily stock clean-up job |
 | `PAYMENT_PROVIDER` | `stripe` |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | test-mode keys first (`sk_test_…`, `whsec_…`) |
 | `PAYMENT_METHODS` | e.g. `apple_pay,card,paypal,klarna,google_pay` — only methods enabled in Stripe |
