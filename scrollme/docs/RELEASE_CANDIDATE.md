@@ -18,7 +18,7 @@ Branch `claude/scrollme-ecommerce-phases-cwocsl`. Baseline: the original code im
 | Production dependency audit, API | ✅ 0 vulnerabilities (express, mongoose, bcrypt 6, nodemailer, zod 4 upgraded) |
 | Security audit (23 Oct 2026) | ✅ 31 code/configuration findings (0 critical/high, 3 medium, 16 low fixed; 12 informational) and 80 dependency advisories reviewed — see [security/SECURITY_AUDIT.md](security/SECURITY_AUDIT.md) |
 | Production dependency audit, storefront | ⚠️ see *Known limitations* |
-| Docker images | ✅ both images built by the `docker` CI job ([run #1](https://github.com/ismahiladeoye-ship-it/prediction-market/actions/runs/39897792729)) |
+| Docker images | ✅ both images built by the `docker` CI job |
 | Vercel build (`vercel build`, CLI 65.2) | ✅ storefront and API function build; the function (51 MB, Node 24, London) was then run over HTTP against MongoDB: health, readiness, catalogue, sign-up (bcrypt, Secure cookies), contact form, Stripe webhook signature check (valid and forged), cron secret, sharp — all pass. Photo shrinking checked in Chromium (21.6 MB photo → 2.2 MB) |
 | CI on GitHub | ✅ run #1: API, storefront, end-to-end and Docker jobs all green |
 
