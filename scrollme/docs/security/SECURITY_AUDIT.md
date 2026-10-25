@@ -58,6 +58,27 @@ No finding let anyone read other customers' data, change prices, pay less than t
 
 **Tests after the fixes:** 155 API tests (7 new), 28 storefront unit tests and 25 browser tests (one phone-only test is skipped on desktop), all passing.
 
+### Active penetration test (25 Oct 2026)
+
+Beyond reading the code, hostile requests were fired at a running copy of the API — one standing in for each common web attack class — and every one was refused. There is no PHP in this stack, so PHP-specific attacks (local/remote file include, `php://` wrappers, object injection) do not apply; the equivalent risks for Node/Express/MongoDB are covered below. The probes are kept as a regression suite (`backend/__tests__/pentest.test.js`, 13 tests) so a later change cannot quietly reopen any of them.
+
+| Attack tried | Result |
+| --- | --- |
+| **NoSQL / operator injection** — `{"$ne":null}` / `{"$gt":""}` as username and password; `category[$ne]=` in a query string | Refused (400). Every field is parsed to a plain string or number by zod before any query, so Mongo operators never reach the database. |
+| **Authentication bypass by JWT tampering** — `alg:none`, a token signed with a guessed secret, an `mfa-pending` or `refresh` token used as an access token | All rejected (401). Verification is pinned to HS256 and checks the token type. |
+| **Privilege escalation / mass assignment** — `roles:["admin"]`, `isAdmin:true`, `tokenVersion:99` sent in the sign-up body | Ignored. The schema drops unknown fields and the role is hard-set to `user`. |
+| **IDOR** — one signed-in customer requesting and trying to pay for another customer's order | 404 both times (it does not even confirm the order exists). |
+| **CSRF** — a state-changing POST from `https://evil.example` | Blocked (403) by the Origin check. |
+| **Path traversal** — `/api/uploads/..%2f..%2fetc/passwd` and encoded variants | Refused (403); the static handler stays within the uploads folder. |
+| **Prototype pollution** — `__proto__` payload in a JSON body | No pollution; `Object.prototype` is untouched. |
+| **ReDoS / oversized input** — a 5,000-character search term | Handled in a few milliseconds (the term is length-capped and the regex is escaped). |
+| **Stored XSS** — `<script>` in a product name, address or message | Stored as text and HTML-escaped wherever it is shown or emailed; the storefront uses no `dangerouslySetInnerHTML`. |
+| **Email header injection** — a newline and `Bcc:` in a contact subject | Cannot add a header; the mail library folds it into the subject text. |
+| **Response hardening** | `X-Powered-By` hidden, API CSP `default-src 'none'`, `Cache-Control: no-store`, non-JSON bodies on JSON endpoints refused (415). |
+| **Webhook forgery** — a Stripe webhook with a forged signature | Rejected (400); only a correct signature is accepted (verified separately in `backend/__tests__/vercel.test.js`). |
+
+**Tests after this round:** 168 API tests (13 of them this penetration suite), 28 storefront unit tests and 25 browser tests, all passing.
+
 **Recommended next steps (not needed for launch):**
 - Replace Create React App with Vite to clear the 36 build-tool advisories.
 - Add email verification at sign-up, and double opt-in for the newsletter, before sending marketing email.
