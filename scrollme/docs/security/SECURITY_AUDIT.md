@@ -1,8 +1,69 @@
 # Get It Sourced — security audit
 
-**Date:** 23 Oct 2026 · **Branch:** `claude/scrollme-ecommerce-phases-cwocsl` · **Scope:** the whole `scrollme/` codebase — API (`backend/`), storefront (`src/`), end-to-end tests, Docker/nginx/CI configuration, backup scripts and the git history.
+**Date:** 23 Oct 2026, re-audited 25 Oct 2026 before the Vercel launch · **Scope:** the whole `scrollme/` codebase — API (`backend/`), storefront (`src/`), end-to-end tests, Docker/nginx/CI and Vercel configuration, backup scripts and the git history.
 
-## Result in brief
+## Re-audit before the Vercel launch (25 Oct 2026)
+
+**Scope:** everything added since the first audit — bulk upload (photos and spreadsheets), admin two-step sign-in, the order book, home page cover images, contact messages, shop details, legal pages, order emails — and the Vercel setup (serverless entry point, Blob photo storage, daily cron job, settings taken from Vercel, `vercel.json` headers). Dependency audits and the secret scan were run again over the whole repository and the history since.
+
+**Method:** the same as the first audit (below): manual review of every new or changed file, then probes against a running copy of the API with rate limits switched on, to confirm each suspected issue before fixing it and again after.
+
+| | Found | Fixed | Left (with reason) |
+| --- | --- | --- | --- |
+| Critical / High | 0 | — | — |
+| Medium | 2 | 2 | 0 |
+| Low | 1 | 1 | 0 |
+| Informational / accepted | 5 | — | 5 (below) |
+| Dependency advisories | API runtime **0**; API development tools 2 low (ESLint); storefront 36 (8 high, 28 moderate, down from 38) | — | All 36 are in Create React App's development server and build tools; none are in code sent to browsers |
+
+No finding let anyone read other customers' data, change prices, pay less than the order total, get into the admin or run code on the server.
+
+### Fixed
+
+| ID | Finding | Fix | Test |
+| --- | --- | --- | --- |
+| M4 | **Password-reset emails could be sent without limit.** The sign-in limiter only counts failed requests, and *Forgot password* always answers "sent" (so it never reveals which emails have accounts), so it was never counted. A probe sent **40 reset emails to one customer** from one computer in a few seconds. Anyone could flood a customer's inbox, use up the shop's email allowance and get the shop's emails marked as spam. | Every request now counts: 10 an hour per IP, and 3 an hour per email address from any number of IPs. The reply is the same for unknown addresses. The same probe now gets 3 emails through. | `ratelimit.test.js` "password-reset emails" |
+| M5 | **Rate limits were kept in each server's memory.** On Vercel the API runs as many short-lived copies; each kept its own counts and started from zero, so spreading requests over copies multiplied the attempts allowed at passwords, two-step codes, sign-ups, reset emails, contact messages and checkouts. | These limits are now counted in the database (`ratelimits` collection): one atomic update per request, entries delete themselves when their window ends, and keys are stored as hashes rather than emails or IP addresses. The general 300-requests-a-minute flood guard stays in memory, behind Vercel's own DDoS protection. | `ratelimit.test.js` "shared counters" (sharing between copies, window reset, hashing, expiry, successful sign-ins not counted) |
+| L17 | **Sign-ups were not limited** (only failed attempts were counted). A probe created 30 accounts in a row from one computer. Each account can hold up to 3 unpaid orders that reserve stock for 35 minutes, so unlimited accounts got round that limit (L5) and could make products look sold out. | 10 sign-ups per hour per IP, successful or not. Real customers sharing an address (mobile networks, offices) are well under this. | `ratelimit.test.js` "sign-ups" |
+
+### Informational and accepted
+
+| ID | Note | Why it stays |
+| --- | --- | --- |
+| I13 | Someone controlling many IP addresses can still create accounts and hold stock in unpaid orders for up to 35 minutes each. | Limited to 3 unpaid orders per account, 30 checkouts per 10 minutes and 10 sign-ups per hour per IP, and 20 of any one item. Stripe needs sessions to last at least 30 minutes. Unpaid orders are listed in *Admin → Orders* and can be cancelled there. |
+| I14 | Contact messages can contain links, and they reach the owner's inbox. | Messages are shown and emailed as plain text (HTML is escaped). Treat links from strangers with the usual care. |
+| I15 | If the environment variables were also given to Vercel *Preview* deployments, test deployments of other branches would use the live database and Stripe keys. | [VERCEL.md](../VERCEL.md) says to tick *Production* only. Vercel also protects preview deployments with a login by default. |
+| I16 | Product photos in the Blob store can be opened by anyone with the link. | Intended: they are shown on the shop. Names are random (128 bits) and the upload token stays on the server. |
+| I17 | The general flood guard (300 requests a minute per IP) is counted per copy on Vercel. | Writing to the database on every request would cost more than it protects; Vercel's DDoS protection is in front of it, and every security-sensitive limit is shared (M5). |
+
+### Checked and found sound
+
+- **Admin access**: every `/api/admin` route checks the admin role in the database *and* that two-step sign-in was completed in this session. A password alone only gets a separately signed 5-minute cookie that works nowhere else.
+- **Two-step codes**: authenticator secrets are encrypted (AES-256-GCM) and each code is accepted once, claimed atomically. Recovery codes are hashed and generated without bias. The demo admin's known secret is never created in production, because seeding refuses to create demo users there.
+- **Photo uploads**: admins only. Files are limited to 15 MB (4.5 MB on Vercel), decoded with a 50-megapixel limit against decompression bombs, and re-encoded to WebP, which drops EXIF/GPS and anything hidden in the file. Names are random.
+- **Bulk import**: limited to 2 MB and 1,000 rows. Photo links must be uploaded photos or `http(s)` addresses, and every row is validated like a manual edit.
+- **Cover images**: photo links cannot break out of the CSS `url()` (quotes, brackets and spaces are refused). Buttons only link to pages on the shop (`//` and `/\` are refused).
+- **Shop details and storefront**: social links must be `https` links on Instagram, TikTok or WhatsApp. Everything is rendered as text; the storefront has no `dangerouslySetInnerHTML`. Post-sign-in redirects come from in-app state, not the URL.
+- **Emails**: everything typed by customers or admins is HTML-escaped. Reply-to addresses are validated, and line breaks cannot reach email headers. The contact form never emails the sender, so it cannot be used to send mail to strangers.
+- **CSV downloads**: cells starting with `=`, `+`, `-` or `@` are prefixed so spreadsheets treat them as text, not formulas.
+- **Vercel**:
+  - The cron endpoint needs `CRON_SECRET` (compared in constant time; 404 otherwise).
+  - The API refuses to run with Vercel's request helpers on.
+  - Allowed origins are the shop's address plus this deployment's own addresses.
+  - Vercel overwrites `X-Forwarded-For`, so `TRUST_PROXY=1` yields the real client IP.
+  - API responses are `no-store`, and the pages carry the same CSP, HSTS and frame headers as the nginx setup.
+  - No source maps are published.
+  - Payment and email links use `APP_URL`, never the request's `Host` header.
+- **Secrets**: no keys or passwords in the files or in the history since the first audit (only the placeholder connection string in VERCEL.md).
+
+**Tests after the fixes:** 155 API tests (7 new), 28 storefront unit tests and 25 browser tests (one phone-only test is skipped on desktop), all passing.
+
+**Recommended next steps (not needed for launch):**
+- Replace Create React App with Vite to clear the 36 build-tool advisories.
+- Add email verification at sign-up, and double opt-in for the newsletter, before sending marketing email.
+- Turn on Atlas backups once orders start.
+
+## 23 Oct 2026 audit: result in brief
 
 | | Found | Fixed | Left (with reason) |
 | --- | --- | --- | --- |
