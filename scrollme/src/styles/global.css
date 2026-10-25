@@ -1,0 +1,46 @@
+/*
+ * Get It Sourced design tokens. Change the look of the whole store here:
+ * colours, fonts and corner radius are used by every page.
+ */
+:root {
+  --ink: #0d0d0d;
+  --paper: #ffffff;
+  --muted: #6b6b6b;
+  --line: #e7e7e7;
+  --soft: #f5f5f5;
+  --accent: #0d0d0d;
+  --sale: #c1121f;
+  --radius: 18px;
+  --font-display: 'Bebas Neue', 'Oswald', Impact, 'Arial Narrow', sans-serif;
+  --font-body: 'Inter', -apple-system, 'Helvetica Neue', Arial, sans-serif;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+/* Tall condensed uppercase headings, as used across the store. */
+.display {
+  font-family: var(--font-display) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  font-weight: 400;
+}
+
+/* Visible keyboard focus everywhere (the CSS resets removed it). */
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

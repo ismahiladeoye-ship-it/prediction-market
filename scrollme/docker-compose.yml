@@ -1,0 +1,56 @@
+# Production-like stack: MongoDB + API + nginx storefront.
+#   cp backend/.env.example backend/.env   # then set secrets
+#   docker compose up -d --build
+#   docker compose run --rm api npm run seed -- --force   # optional catalogue seed
+# Storefront: http://localhost:8080 (put a TLS-terminating proxy in front in production).
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+      - ./backups:/backups
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', 'db.adminCommand("ping").ok']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    # Not published to the host: only the API can reach it.
+
+  api:
+    build: ./backend
+    restart: unless-stopped
+    env_file: ./backend/.env
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongo:27017/scrollme}
+      # One proxy (nginx) in front of the API.
+      TRUST_PROXY: '1'
+    volumes:
+      # Uploaded product photos (back these up along with the database).
+      - uploads:/app/uploads
+    depends_on:
+      mongo:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options: { max-size: '10m', max-file: '5' }
+
+  web:
+    build:
+      context: .
+      args:
+        REACT_APP_API_URL: /api
+    restart: unless-stopped
+    environment:
+      API_UPSTREAM: api:8080
+    ports:
+      - '${WEB_PORT:-8080}:8080'
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  mongo-data:
+  uploads:

@@ -1,0 +1,10 @@
+node_modules
+build
+backend
+e2e
+docs
+backup
+coverage
+.env
+.env.local
+.git
