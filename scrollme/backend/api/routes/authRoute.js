@@ -4,16 +4,23 @@ const auth = require('../controllers/authController');
 const mfa = require('../controllers/mfaController');
 const authMiddleware = require('../middleware/authMiddleware');
 const validate = require('../middleware/validate');
-const { authLimiter, loginAccountLimiter, mfaAccountLimiter } = require('../middleware/rateLimit');
+const {
+  authLimiter,
+  loginAccountLimiter,
+  mfaAccountLimiter,
+  registerLimiter,
+  passwordResetLimiter,
+  passwordResetEmailLimiter,
+} = require('../middleware/rateLimit');
 const s = require('../validators/schemas');
 const { asyncHandler } = require('../utils/httpError');
 
-router.post('/register', authLimiter, validate({ body: s.register }), asyncHandler(auth.register));
+router.post('/register', registerLimiter, authLimiter, validate({ body: s.register }), asyncHandler(auth.register));
 router.post('/login', authLimiter, validate({ body: s.login }), loginAccountLimiter, asyncHandler(auth.login));
 router.post('/google', authLimiter, validate({ body: s.googleLogin }), asyncHandler(auth.googleLogin));
 router.post('/logout', asyncHandler(auth.logOut));
 router.post('/refresh-token', asyncHandler(auth.refreshToken));
-router.post('/forgot-password', authLimiter, validate({ body: s.forgotPassword }), asyncHandler(auth.forgotPassword));
+router.post('/forgot-password', passwordResetLimiter, validate({ body: s.forgotPassword }), passwordResetEmailLimiter, asyncHandler(auth.forgotPassword));
 router.post('/reset-password', authLimiter, validate({ body: s.resetPassword }), asyncHandler(auth.resetPassword));
 router.get('/status', authMiddleware, asyncHandler(auth.checkAuthStatus));
 
