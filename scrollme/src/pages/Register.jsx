@@ -28,7 +28,9 @@ const LoaderOverlay = styled.div`
 
 const Container = styled.div`
   width: 100vw;
-  height: 100vh;
+  min-height: 100vh;
+  padding: 24px 0;
+  box-sizing: border-box;
   background:
     linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)),
     url('https://images.pexels.com/photos/6984661/pexels-photo-6984661.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940') center;
@@ -116,6 +118,19 @@ const Button = styled.button`
   }
 `;
 
+const Guidelines = styled.ul`
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px 12px 12px 30px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  font-size: 13px;
+  line-height: 1.5;
+  li + li {
+    margin-top: 4px;
+  }
+`;
+
 const ErrorText = styled.p`
   width: 100%;
   color: #c53030;
@@ -131,6 +146,8 @@ const PasswordBox = styled.div`
 const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [password, setPassword] = useState('');
+  // Problems are shown under the form rather than in a toast, which closes after
+  // a few seconds and covers the button on a phone.
   const [formError, setFormError] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
@@ -139,35 +156,29 @@ const Register = () => {
   const from = location.state?.from;
   const redirectTo = from ? `${from.pathname}${from.search || ''}` : '/';
 
-  // Also shown under the form: a toast disappears after a few seconds and is easy to miss on a phone.
-  const warn = (title, description) => {
-    setFormError(description);
-    toast({ title, description, status: 'warning', duration: 5000, isClosable: true });
-  };
-
   // Same rules as the API, checked here for quicker feedback.
   const validateForm = (formData) => {
     const { firstName, lastName, username, password } = formData;
     const namePattern = /^[\p{L}][\p{L}' -]*$/u;
     if (firstName.length < 2 || !namePattern.test(firstName)) {
-      warn('Invalid First Name', 'First name must be at least 2 characters long and contain only letters.');
+      setFormError('First name must be at least 2 characters long and contain only letters.');
       return false;
     }
     if (lastName.length < 2 || !namePattern.test(lastName)) {
-      warn('Invalid Last Name', 'Last name must be at least 2 characters long and contain only letters.');
+      setFormError('Last name must be at least 2 characters long and contain only letters.');
       return false;
     }
     if (username.includes('@')) {
-      warn('Invalid Username', 'The username box needs a username, not your email address, e.g. jay_23.');
+      setFormError('The username box needs a username, not your email address, e.g. jay_23.');
       return false;
     }
     if (username.length < 3 || !/^[a-zA-Z0-9._-]+$/.test(username)) {
-      warn('Invalid Username', 'Username must be at least 3 characters and use only letters, numbers, dots, underscores or hyphens.');
+      setFormError('Username must be at least 3 characters and use only letters, numbers, dots, underscores or hyphens.');
       return false;
     }
     const hint = passwordHint(password);
     if (hint) {
-      warn('Invalid Password', hint);
+      setFormError(hint);
       return false;
     }
     return true;
@@ -188,7 +199,7 @@ const Register = () => {
     };
 
     if (formData.password !== formData.confirmPassword) {
-      warn('Password Mismatch!', 'Passwords do not match, change the password!.');
+      setFormError('The passwords do not match.');
       return;
     }
     if (!validateForm(formData)) return;
@@ -206,15 +217,7 @@ const Register = () => {
       });
       navigate(redirectTo, { replace: true });
     } catch (error) {
-      const message = getErrorMessage(error, 'An error occurred during registration.');
-      setFormError(message);
-      toast({
-        title: 'Registration Failed!',
-        description: message,
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+      setFormError(getErrorMessage(error, 'An error occurred during registration.'));
     } finally {
       setIsLoading(false);
     }
@@ -239,6 +242,20 @@ const Register = () => {
           </div>
           <br />
           <Title>CREATE AN ACCOUNT</Title>
+          <Guidelines aria-label='Sign-up guidelines'>
+            <li>
+              <strong>Names:</strong> at least 2 letters each.
+            </li>
+            <li>
+              <strong>Username:</strong> 3 to 30 characters: letters, numbers, dots, underscores or hyphens. No spaces and not your email
+              address (e.g. jay_23).
+            </li>
+            <li>
+              <strong>Password:</strong> at least 8 characters, with an uppercase letter, a lowercase letter, a number and a symbol (e.g. !
+              ? # @).
+            </li>
+            <li>You can sign in later with your username or your email address.</li>
+          </Guidelines>
           <Form onSubmit={(e) => handleSubmit(e)}>
             <Input
               type='text'
@@ -300,11 +317,7 @@ const Register = () => {
             />
             <PasswordBox>
               <PasswordStrengthBar password={password} />
-              <Text>
-                {password
-                  ? passwordHint(password)
-                  : 'Password: at least 8 characters, with an uppercase and a lowercase letter, a number and a symbol.'}
-              </Text>
+              {password && passwordHint(password) && <Text>{passwordHint(password)}</Text>}
             </PasswordBox>
             <Box>
               <Agreement>

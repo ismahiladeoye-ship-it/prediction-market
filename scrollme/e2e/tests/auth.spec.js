@@ -33,12 +33,13 @@ test.describe('accounts', () => {
     await page.getByLabel('Password', { exact: true }).fill('password');
     await page.getByLabel('Confirm password').fill('password');
     await page.getByRole('button', { name: 'CREATE' }).click();
-    await expect(page.getByText('Invalid Password')).toBeVisible();
+    await expect(page.locator('form [role=alert]')).toContainText('Password needs');
   });
 
   test('explains a rejected sign-up under the form and accepts phone apostrophes', async ({ page }) => {
     const id = Date.now();
     await page.goto('/register');
+    await expect(page.getByRole('list', { name: 'Sign-up guidelines' })).toContainText('not your email address');
     await page.getByLabel('First name').fill('Shaq');
     await page.getByLabel('Last name').fill('O’Neal');
     await page.getByLabel('Username').fill(`shaq${id}@example.com`);
