@@ -36,6 +36,24 @@ test.describe('accounts', () => {
     await expect(page.getByText('Invalid Password')).toBeVisible();
   });
 
+  test('explains a rejected sign-up under the form and accepts phone apostrophes', async ({ page }) => {
+    const id = Date.now();
+    await page.goto('/register');
+    await page.getByLabel('First name').fill('Shaq');
+    await page.getByLabel('Last name').fill('O’Neal');
+    await page.getByLabel('Username').fill(`shaq${id}@example.com`);
+    await page.getByLabel('Email').fill(`shaq${id}@example.com`);
+    await page.getByLabel('Password', { exact: true }).fill('Str0ng!Passw0rd');
+    await page.getByLabel('Confirm password').fill('Str0ng!Passw0rd');
+    await page.getByRole('button', { name: 'CREATE' }).click();
+    // The reason stays on the page after the pop-up closes.
+    await expect(page.locator('form [role=alert]')).toContainText('not your email address');
+
+    await page.getByLabel('Username').fill(`shaq${id}`);
+    await page.getByRole('button', { name: 'CREATE' }).click();
+    await expect(page.getByRole('link', { name: 'Account', exact: true })).toBeVisible();
+  });
+
   test('shows an error for wrong credentials', async ({ page }) => {
     await page.goto('/login');
     await page.getByLabel('Username or email').fill('johndoe');

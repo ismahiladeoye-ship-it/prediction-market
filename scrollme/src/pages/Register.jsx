@@ -116,6 +116,13 @@ const Button = styled.button`
   }
 `;
 
+const ErrorText = styled.p`
+  width: 100%;
+  color: #c53030;
+  font-size: 14px;
+  margin-bottom: 10px;
+`;
+
 const PasswordBox = styled.div`
   width: 100%;
   padding: 2px 4px;
@@ -124,6 +131,7 @@ const PasswordBox = styled.div`
 const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [password, setPassword] = useState('');
+  const [formError, setFormError] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
   const toast = useToast();
@@ -131,7 +139,11 @@ const Register = () => {
   const from = location.state?.from;
   const redirectTo = from ? `${from.pathname}${from.search || ''}` : '/';
 
-  const warn = (title, description) => toast({ title, description, status: 'warning', duration: 5000, isClosable: true });
+  // Also shown under the form: a toast disappears after a few seconds and is easy to miss on a phone.
+  const warn = (title, description) => {
+    setFormError(description);
+    toast({ title, description, status: 'warning', duration: 5000, isClosable: true });
+  };
 
   // Same rules as the API, checked here for quicker feedback.
   const validateForm = (formData) => {
@@ -143,6 +155,10 @@ const Register = () => {
     }
     if (lastName.length < 2 || !namePattern.test(lastName)) {
       warn('Invalid Last Name', 'Last name must be at least 2 characters long and contain only letters.');
+      return false;
+    }
+    if (username.includes('@')) {
+      warn('Invalid Username', 'The username box needs a username, not your email address, e.g. jay_23.');
       return false;
     }
     if (username.length < 3 || !/^[a-zA-Z0-9._-]+$/.test(username)) {
@@ -159,9 +175,12 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormError('');
+    // Phones type curly apostrophes (O’Neil); the API accepts the straight one.
+    const name = (value) => value.trim().replace(/[\u2018\u2019]/g, "'");
     const formData = {
-      firstName: e.target.firstName.value.trim(),
-      lastName: e.target.lastName.value.trim(),
+      firstName: name(e.target.firstName.value),
+      lastName: name(e.target.lastName.value),
       username: e.target.username.value.trim(),
       email: e.target.email.value.trim(),
       password: e.target.password.value,
@@ -187,9 +206,11 @@ const Register = () => {
       });
       navigate(redirectTo, { replace: true });
     } catch (error) {
+      const message = getErrorMessage(error, 'An error occurred during registration.');
+      setFormError(message);
       toast({
         title: 'Registration Failed!',
-        description: getErrorMessage(error, 'An error occurred during registration.'),
+        description: message,
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -243,10 +264,23 @@ const Register = () => {
               placeholder='username'
               aria-label='Username'
               autoComplete='username'
+              autoCapitalize='none'
+              autoCorrect='off'
+              spellCheck={false}
               maxLength={30}
               required
             />
-            <Input type='email' name='email' placeholder='email' aria-label='Email' autoComplete='email' required />
+            <Input
+              type='email'
+              name='email'
+              placeholder='email'
+              aria-label='Email'
+              autoComplete='email'
+              autoCapitalize='none'
+              autoCorrect='off'
+              spellCheck={false}
+              required
+            />
             <Input
               type='password'
               name='password'
@@ -266,7 +300,11 @@ const Register = () => {
             />
             <PasswordBox>
               <PasswordStrengthBar password={password} />
-              {password && passwordHint(password) && <Text>{passwordHint(password)}</Text>}
+              <Text>
+                {password
+                  ? passwordHint(password)
+                  : 'Password: at least 8 characters, with an uppercase and a lowercase letter, a number and a symbol.'}
+              </Text>
             </PasswordBox>
             <Box>
               <Agreement>
@@ -280,6 +318,7 @@ const Register = () => {
                 </Link>
               </Text>
             </Box>
+            {formError && <ErrorText role='alert'>{formError}</ErrorText>}
             <Button type='submit' disabled={isLoading}>
               CREATE
             </Button>
