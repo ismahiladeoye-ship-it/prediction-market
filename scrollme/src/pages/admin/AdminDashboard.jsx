@@ -28,7 +28,7 @@ const SetupChecklist = ({ setup }) => {
     !setup.shopAddress && { text: 'Add your business address', to: '/admin/shop' },
     !setup.shopEmail && { text: 'Add your contact email (new orders and messages are sent there)', to: '/admin/shop' },
     !setup.emailSending && { text: 'Set up email sending (SMTP_URL) so customers get order emails — see the deployment guide' },
-    setup.photoStorage === false && { text: 'Connect a Vercel Blob store so photo uploads work — see docs/VERCEL.md' },
+    setup.photoStorage === false && { text: 'Set up photo storage (a Vercel Blob store, or Cloudflare R2) so uploads persist — see the deploy guides' },
     setup.payments === 'mock' && { text: 'Connect Stripe: payments are in local test mode' },
     setup.payments === 'test' && { text: 'Stripe is in test mode: switch to live keys when you are ready to take real payments' },
   ].filter(Boolean);

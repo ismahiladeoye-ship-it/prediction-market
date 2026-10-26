@@ -73,7 +73,7 @@ Auth column: — public, **U** signed-in user, **A** admin who completed two-fac
 | `POST /api/payments/mock/:id/complete` | U | Only when `PAYMENT_PROVIDER=mock` |
 | `GET /api/admin/stats` | A | Dashboard numbers |
 | `GET/POST /api/admin/products`, `GET/PATCH/DELETE /api/admin/products/:id`, `POST /api/admin/products/:id/stock` | A | Product management (`DELETE` hides); products have an optional unique `sku` and an `images` gallery |
-| `POST /api/admin/uploads` | A | One photo (`multipart/form-data`, field `image`, ≤ 15 MB): re-encoded to WebP ≤ 1600 px without EXIF/GPS → `{ url }`. Stored in `UPLOAD_DIR`, or in Vercel Blob when `BLOB_READ_WRITE_TOKEN` is set (503 on Vercel without one) |
+| `POST /api/admin/uploads` | A | One photo (`multipart/form-data`, field `image`, ≤ 15 MB): re-encoded to WebP ≤ 1600 px without EXIF/GPS → `{ url }`. Stored in `UPLOAD_DIR`, in Vercel Blob (`BLOB_READ_WRITE_TOKEN`) or an S3 bucket / Cloudflare R2 (`R2_*`) |
 | `POST /api/admin/products/import` | A | `{ csv, dryRun, photos: { "file.jpg": url } }` — spreadsheet create/update by SKU; see [docs/BULK_UPLOAD.md](../docs/BULK_UPLOAD.md) |
 | `GET /api/uploads/:file` | — | Uploaded photos (immutable caching) |
 | `GET /api/admin/orders`, `GET /api/admin/orders/:id`, `PATCH /api/admin/orders/:id/status` | A | Fulfilment; only allowed status transitions |

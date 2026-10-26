@@ -1,0 +1,58 @@
+# Self-contained stack for one always-on server (e.g. an Oracle Cloud Always
+# Free VM): the shop, its database, and automatic HTTPS. Everything persists on
+# named volumes. See docs/ORACLE.md. Fill in deploy/oracle/.env first.
+
+services:
+  # The whole shop in one container (Node serves the storefront + API).
+  app:
+    build:
+      context: ../..
+      dockerfile: deploy/railway.Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      # One proxy (Caddy) sits in front, terminating TLS.
+      TRUST_PROXY: '1'
+      APP_URL: https://${DOMAIN}
+      CLIENT_ORIGINS: https://${DOMAIN}
+      MONGODB_URI: mongodb://gis:${MONGO_PASSWORD}@mongo:27017/getitsourced?authSource=admin
+      PAYMENT_PROVIDER: stripe
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      - mongo
+    expose:
+      - '8080'
+
+  # The database. Not published to the internet; only the app can reach it.
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: gis
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    volumes:
+      - mongo-data:/data/db
+
+  # Gets and renews a free HTTPS certificate for your domain automatically.
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - app
+
+volumes:
+  uploads:
+  mongo-data:
+  caddy-data:
+  caddy-config:

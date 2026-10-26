@@ -1,6 +1,6 @@
 # Deploying Get It Sourced
 
-> **Hosting on a platform?** Follow [VERCEL.md](VERCEL.md) (serverless) or [RAILWAY.md](RAILWAY.md) (one always-on container — also the pattern for Render, Fly or a VPS) instead. This guide covers the three-container Docker setup; the environment variables in §2 and the Stripe steps in §3 apply to all of them.
+> **Hosting on a platform?** Follow [VERCEL.md](VERCEL.md) (serverless), [RAILWAY.md](RAILWAY.md) (one always-on container), or [ORACLE.md](ORACLE.md) (free, on an Oracle Cloud server) instead. This guide covers the three-container Docker setup; the environment variables in §2 and the Stripe steps in §3 apply to all of them.
 > 
 > **Single container.** `deploy/railway.Dockerfile` builds one image where the Node process serves both the storefront and the API (`SERVE_STATIC=true`). It needs only `MONGODB_URI`, the three secrets, the Stripe settings, `APP_URL`/`CLIENT_ORIGINS` and a volume at `/app/uploads`.
 
@@ -41,6 +41,7 @@ API (`backend/.env`, from `backend/.env.example`):
 | `UPLOAD_DIR` | where uploaded product photos are stored; the Docker image uses `/app/uploads` on the `uploads` volume. Use persistent storage and back it up (see [OPERATIONS.md](OPERATIONS.md#product-photos)) |
 | `BLOB_READ_WRITE_TOKEN` | Vercel only: added when a Vercel Blob store is connected to the project; photos are then stored there instead of `UPLOAD_DIR` |
 | `CRON_SECRET` | Vercel only: a random value Vercel Cron sends to the daily stock clean-up job |
+| `R2_BUCKET`, `R2_ENDPOINT`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_PUBLIC_URL` | Store photos in an S3-compatible bucket (Cloudflare R2). Set all five on a host without a lasting disk so uploads persist |
 | `PAYMENT_PROVIDER` | `stripe` |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | test-mode keys first (`sk_test_…`, `whsec_…`) |
 | `PAYMENT_METHODS` | e.g. `apple_pay,card,paypal,klarna,google_pay` — only methods enabled in Stripe |

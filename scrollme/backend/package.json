@@ -22,6 +22,7 @@
 	"license": "ISC",
 	"dependencies": {
 		"@vercel/blob": "^2.8.2",
+		"aws4fetch": "^1.0.20",
 		"bcrypt": "^6.0.0",
 		"cookie-parser": "^1.4.6",
 		"cors": "^2.8.5",

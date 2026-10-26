@@ -1,0 +1,10 @@
+# Caddy terminates HTTPS (free Let's Encrypt certificate, renewed automatically)
+# and forwards to the shop. {$DOMAIN} is read from the environment.
+{$DOMAIN} {
+	encode zstd gzip
+	# Admin photo uploads and spreadsheet imports can be a few MB.
+	request_body {
+		max_size 16MB
+	}
+	reverse_proxy app:8080
+}

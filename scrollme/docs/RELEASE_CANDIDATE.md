@@ -7,7 +7,7 @@ Branch `claude/scrollme-ecommerce-phases-cwocsl`. Baseline: the original code im
 | Check | Result |
 | --- | --- |
 | API lint (ESLint + Prettier) | ✅ clean |
-| API tests (Jest + Supertest, real MongoDB) | ✅ **174 / 174** — in-memory MongoDB and an external MongoDB (as CI uses) |
+| API tests (Jest + Supertest, real MongoDB) | ✅ **178 / 178** — in-memory MongoDB and an external MongoDB (as CI uses) |
 | Storefront lint + Prettier check | ✅ clean (the original failed Prettier in 28 files) |
 | Storefront unit tests | ✅ **28 / 28** (the original suite could not run) |
 | Storefront production build | ✅ compiles; no inline scripts (CSP-safe) |
