@@ -1,0 +1,19 @@
+# Ignore file for railway.Dockerfile (the combined image). Unlike the storefront
+# image, this build needs both the frontend and backend/, so it does not ignore
+# them. BuildKit prefers this file over .dockerignore for this Dockerfile.
+node_modules
+backend/node_modules
+build
+e2e
+docs
+backup
+coverage
+test-results
+playwright-report
+.git
+.github
+.env
+.env.local
+.env.*.local
+Dockerfile
+docker-compose.yml

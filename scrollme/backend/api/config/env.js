@@ -60,8 +60,21 @@ const schema = z.object({
   // Vercel Blob store for photos (set automatically when a store is connected
   // to the Vercel project). When set, photos are stored there instead of UPLOAD_DIR.
   BLOB_READ_WRITE_TOKEN: z.string().optional(),
+  // Cloudflare R2 (or any S3-compatible bucket) for photos. Set all five on a
+  // host without a lasting disk (Render, Koyeb, Cloud Run) so uploads persist.
+  R2_BUCKET: z.string().optional(),
+  R2_ENDPOINT: z.string().url().optional(),
+  R2_ACCESS_KEY_ID: z.string().optional(),
+  R2_SECRET_ACCESS_KEY: z.string().optional(),
+  R2_PUBLIC_URL: z.string().url().optional(),
   // Protects the daily cron endpoint (Vercel sends it as a Bearer token).
   CRON_SECRET: z.string().optional(),
+  // Single-service hosting (Railway, Render, Fly, a VPS): this Node process also
+  // serves the built storefront, so the whole shop runs from one container at
+  // one address. Off by default; nginx (or Vercel) serves the pages otherwise.
+  SERVE_STATIC: bool(false),
+  // Where the built storefront lives when SERVE_STATIC is on.
+  STATIC_DIR: z.string().default(path.resolve(__dirname, '../../../build')),
 });
 
 const PAYMENT_METHOD_IDS = ['apple_pay', 'google_pay', 'card', 'paypal', 'klarna'];
@@ -130,6 +143,17 @@ function loadConfig(source = process.env) {
     shipToCountries: [...new Set(env.SHIP_TO_COUNTRIES.split(',').map((c) => c.trim().toUpperCase()))],
     clientOrigins: [...new Set([...env.CLIENT_ORIGINS.split(','), ...platformOrigins(source)].map((o) => o.trim()).filter(Boolean))],
     onVercel: Boolean(source.VERCEL),
+    // Photos go to an S3-compatible bucket (Cloudflare R2) when all five are set.
+    r2:
+      env.R2_BUCKET && env.R2_ENDPOINT && env.R2_ACCESS_KEY_ID && env.R2_SECRET_ACCESS_KEY && env.R2_PUBLIC_URL
+        ? {
+            bucket: env.R2_BUCKET,
+            endpoint: env.R2_ENDPOINT.replace(/\/$/, ''),
+            accessKeyId: env.R2_ACCESS_KEY_ID,
+            secretAccessKey: env.R2_SECRET_ACCESS_KEY,
+            publicUrl: env.R2_PUBLIC_URL.replace(/\/$/, ''),
+          }
+        : null,
     cookieSecure: env.COOKIE_SECURE ? env.COOKIE_SECURE === 'true' : isProd,
     trustProxy: /^\d+$/.test(env.TRUST_PROXY) ? Number(env.TRUST_PROXY) : env.TRUST_PROXY === 'false' ? false : env.TRUST_PROXY,
   };

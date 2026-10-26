@@ -11,6 +11,7 @@ const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const { asyncHandler } = require('./utils/httpError');
 const paymentController = require('./controllers/paymentController');
 const { releaseExpiredOrders } = require('./services/orders');
+const { serveStaticSite } = require('./middleware/staticSite');
 const authRoutes = require('./routes/authRoute');
 const cartRoute = require('./routes/cartRoute');
 const productRoute = require('./routes/productRoute');
@@ -33,9 +34,12 @@ const createApp = () => {
   app.set('trust proxy', config.trustProxy);
 
   app.use(requestLogger);
+  // JSON API: lock everything down. Scoped to /api so it never applies to the
+  // storefront pages, which (when this process serves them) get their own CSP
+  // in serveStaticSite; otherwise nginx or Vercel serves them.
   app.use(
+    '/api',
     helmet({
-      // JSON API: lock everything down; the SPA is served (with its own CSP) by nginx.
       contentSecurityPolicy: { directives: { defaultSrc: ["'none'"], frameAncestors: ["'none'"] } },
       crossOriginResourcePolicy: { policy: 'same-site' },
     })
@@ -128,6 +132,9 @@ const createApp = () => {
   app.use('/api/newsletter', newsletterRoute);
   app.use('/api/site', siteRoute);
   app.use('/api/contact', contactRoute);
+
+  // Single-service hosting: this process also serves the built storefront.
+  if (config.SERVE_STATIC) serveStaticSite(app, config.STATIC_DIR);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

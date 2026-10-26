@@ -149,7 +149,7 @@ exports.stats = async (req, res) => {
       shopEmail: Boolean(shop.email),
       emailSending: Boolean(config.SMTP_URL),
       // On Vercel, photos need a connected Blob store.
-      photoStorage: !config.onVercel || Boolean(config.BLOB_READ_WRITE_TOKEN),
+      photoStorage: Boolean(config.r2) || Boolean(config.BLOB_READ_WRITE_TOKEN) || !config.onVercel,
       payments: config.PAYMENT_PROVIDER === 'mock' ? 'mock' : String(config.STRIPE_SECRET_KEY || '').startsWith('sk_live_') ? 'live' : 'test',
     },
   });
