@@ -136,7 +136,7 @@ Test it with **Forgot password** on the sign-in page, then place another test or
 
 ## How it runs on Vercel (for reference)
 
-- `vercel.json` installs the storefront and the API, builds the storefront, sends every `/api/…` request to the function in `api/index.js`, adds the security headers (the same as the nginx setup in `deploy/nginx`) and runs the function in London (`lhr1`).
+- `vercel.json` installs the storefront and the API, builds the storefront, sends every `/api/…` request to the function in `api/index.js`, adds the security headers (the same as the nginx setup in `deploy/nginx`) and runs the function in Dublin (`dub1`), next to a MongoDB Atlas cluster in Ireland (AWS eu-west-1). Keep the function in the same place as your database: if your Atlas cluster is in London (eu-west-2), change `regions` in `vercel.json` to `lhr1`.
 - **Unpaid orders** hold their stock for `RESERVATION_MINUTES` (35). Vercel Functions cannot run a timer, so expired holds are released as visitors use the shop (checked at most once a minute) and by a daily Vercel Cron job (`/api/cron/release-expired`, 03:17 UTC) as a backstop.
 - **Request size**: Vercel accepts at most 4.5 MB per request. Photos are shrunk in the browser first; spreadsheet imports are limited to 2 MB.
 - **Rate limits** on sign-in, two-step codes, sign-ups, password-reset emails, the contact form and checkout are counted in the database (`ratelimits` collection, cleared automatically), so they hold however many copies of the function Vercel runs. Only the general 300-requests-a-minute flood guard is counted per copy.
