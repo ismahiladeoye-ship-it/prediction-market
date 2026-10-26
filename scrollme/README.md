@@ -8,6 +8,7 @@
 | Security audit (Oct 2026) | [docs/security/SECURITY_AUDIT.md](docs/security/SECURITY_AUDIT.md) |
 | Release-candidate report (what was fixed and how it was verified) | [docs/RELEASE_CANDIDATE.md](docs/RELEASE_CANDIDATE.md) |
 | **Launching on Vercel (step by step)** | [docs/VERCEL.md](docs/VERCEL.md) |
+| **Launching on Railway (step by step)** | [docs/RAILWAY.md](docs/RAILWAY.md) |
 | Deployment guide (Docker) | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) |
 | Operations runbook (logs, health, backups, restore) | [docs/OPERATIONS.md](docs/OPERATIONS.md) |
 | API reference | [backend/README.md](backend/README.md) |

@@ -62,6 +62,12 @@ const schema = z.object({
   BLOB_READ_WRITE_TOKEN: z.string().optional(),
   // Protects the daily cron endpoint (Vercel sends it as a Bearer token).
   CRON_SECRET: z.string().optional(),
+  // Single-service hosting (Railway, Render, Fly, a VPS): this Node process also
+  // serves the built storefront, so the whole shop runs from one container at
+  // one address. Off by default; nginx (or Vercel) serves the pages otherwise.
+  SERVE_STATIC: bool(false),
+  // Where the built storefront lives when SERVE_STATIC is on.
+  STATIC_DIR: z.string().default(path.resolve(__dirname, '../../../build')),
 });
 
 const PAYMENT_METHOD_IDS = ['apple_pay', 'google_pay', 'card', 'paypal', 'klarna'];

@@ -1,6 +1,8 @@
 # Deploying Get It Sourced
 
-> **Hosting on Vercel?** Follow [VERCEL.md](VERCEL.md) instead: it covers the Vercel, MongoDB Atlas, Blob storage and Stripe settings step by step. This guide covers running the shop in Docker containers; the environment variables in §2 and the Stripe steps in §3 apply to both.
+> **Hosting on a platform?** Follow [VERCEL.md](VERCEL.md) (serverless) or [RAILWAY.md](RAILWAY.md) (one always-on container — also the pattern for Render, Fly or a VPS) instead. This guide covers the three-container Docker setup; the environment variables in §2 and the Stripe steps in §3 apply to all of them.
+> 
+> **Single container.** `deploy/railway.Dockerfile` builds one image where the Node process serves both the storefront and the API (`SERVE_STATIC=true`). It needs only `MONGODB_URI`, the three secrets, the Stripe settings, `APP_URL`/`CLIENT_ORIGINS` and a volume at `/app/uploads`.
 
 The supported layout is three containers behind a TLS-terminating proxy:
 
