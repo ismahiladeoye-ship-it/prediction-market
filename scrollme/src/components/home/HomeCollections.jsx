@@ -5,7 +5,8 @@ import SectionHeading from './SectionHeading';
 import { listCategoriesAPI, listCollectionsAPI } from '../../services/products/productService';
 import { collections, storeConfig } from '../../data';
 
-const categoryLink = (collection, category) => `/collections/${collection}?category=${encodeURIComponent(category)}`;
+const shortcutLink = (collection, { category, search }) =>
+  `/collections/${collection}?${search ? `q=${encodeURIComponent(search)}` : `category=${encodeURIComponent(category)}`}`;
 
 // Home page by collection (storeConfig.homeCollections): "Shop by collection"
 // with one card per collection, then a separate product row for each one with
@@ -33,8 +34,8 @@ const HomeCollections = () => {
       link: `/collections/${entry.collection}`,
       count: counts ? counts.collections[entry.collection] || 0 : undefined,
       shortcuts: entry.shortcuts
-        .filter((s) => !counts || counts.categories[s.category] > 0)
-        .map((s) => ({ label: s.label, to: categoryLink(entry.collection, s.category) })),
+        .filter((s) => s.search || !counts || counts.categories[s.category] > 0)
+        .map((s) => ({ label: s.label, to: shortcutLink(entry.collection, s) })),
     }))
     .filter((item) => item.count !== 0);
 
