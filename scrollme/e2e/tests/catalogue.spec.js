@@ -6,11 +6,11 @@ test.describe('catalogue', () => {
     await page.goto('/');
     await expect(page.getByText('FREE UK DELIVERY ON ORDERS OVER £100')).toBeVisible();
     await expect(page.getByRole('heading', { level: 1, name: 'Footwear, sourced' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Shop by collection' })).toBeVisible();
-    for (const name of ['Clothing', 'Footwear', 'Accessories', 'Fragrances']) {
+    await expect(page.getByRole('heading', { name: 'Shop by category' })).toBeVisible();
+    for (const name of ["Men's Clothing", "Women's Clothing", "Men's Shoes & Boots", "Women's Shoes & Boots"]) {
       await expect(page.getByRole('heading', { level: 2, name, exact: true })).toBeVisible();
     }
-    await expect(page.getByRole('link', { name: /^Footwear/ }).first()).toBeVisible();
+    await expect(page.getByRole('link', { name: /^Men's Shoes & Boots/ }).first()).toBeVisible();
     await expect(page.getByRole('button', { name: /Add .* to wishlist/ }).first()).toBeAttached();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(overflow).toBeLessThanOrEqual(0);
@@ -40,51 +40,77 @@ test.describe('catalogue', () => {
     await expect(page.getByText('No products found')).toBeVisible();
   });
 
-  test('collection slider, category shortcuts and the Shop menu open collection pages', async ({ page }) => {
+  test('category slider, shortcut buttons and the Men/Women menus open department pages', async ({ page }) => {
     await page.goto('/');
-    const slider = page.getByRole('region', { name: 'Collections', exact: true });
-    await slider.getByRole('button', { name: 'Next: Collections' }).click();
-    await slider.getByRole('link', { name: /^Footwear, [\d,]+ items$/ }).click();
-    await expect(page).toHaveURL(/\/collections\/footwear$/);
-    await expect(page.getByRole('heading', { level: 1, name: 'Footwear' })).toBeVisible();
+    const slider = page.getByRole('region', { name: 'Categories', exact: true });
+    await slider.getByRole('button', { name: 'Next: Categories' }).click();
+    await slider.getByRole('link', { name: /^Women's Shoes & Boots, [\d,]+ items$/ }).click();
+    await expect(page).toHaveURL(/\/women\/shoes-boots$/);
+    await expect(page.getByRole('heading', { level: 1, name: "Women's Shoes & Boots" })).toBeVisible();
 
     await page.goto('/');
-    await page.getByRole('navigation', { name: 'Clothing categories' }).getByRole('link', { name: 'Jackets' }).click();
-    await expect(page).toHaveURL(/\/collections\/clothing\?category=jackets$/);
-    await expect(page.getByRole('heading', { level: 1, name: 'Clothing' })).toBeVisible();
+    await page.getByRole('navigation', { name: "Men's Clothing categories", exact: true }).getByRole('link', { name: 'T-shirts' }).click();
+    await expect(page).toHaveURL(/\/men\/clothing\/t-shirts$/);
+    await expect(page.getByRole('heading', { level: 1, name: 'T-shirts' })).toBeVisible();
+    await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toContainText('Men');
 
-    // Footwear's buttons are brand searches within the collection.
+    // Shoes & Boots buttons are brand searches within the category.
     await page.goto('/');
-    await page.getByRole('navigation', { name: 'Footwear categories' }).getByRole('link', { name: 'UGG Tasman' }).click();
-    await expect(page).toHaveURL(/\/collections\/footwear\?q=ugg%20tasman$/);
-    await expect(page.getByRole('heading', { level: 1, name: 'Footwear' })).toBeVisible();
+    await page
+      .getByRole('navigation', { name: "Men's Shoes & Boots categories", exact: true })
+      .getByRole('link', { name: 'UGG Tasman' })
+      .click();
+    await expect(page).toHaveURL(/\/men\/shoes-boots\?q=ugg%20tasman$/);
+    await expect(page.getByRole('heading', { level: 1, name: "Men's Shoes & Boots" })).toBeVisible();
 
     await page.goto('/');
-    await page.getByRole('link', { name: 'View all Accessories' }).click();
-    await expect(page).toHaveURL(/\/collections\/accessories$/);
-    await expect(page.getByRole('heading', { level: 1, name: 'Accessories' })).toBeVisible();
+    await page.getByRole('link', { name: "View all Women's Clothing" }).click();
+    await expect(page).toHaveURL(/\/women\/clothing$/);
+
+    // Desktop menu: Women opens every category with its subcategories.
     const nav = page.getByRole('navigation', { name: 'Main' });
-    await nav.getByRole('button', { name: 'Shop' }).click();
-    await nav.getByRole('link', { name: 'Fragrances' }).click();
-    await expect(page.getByRole('heading', { level: 1, name: 'Fragrances' })).toBeVisible();
-    await page.goto('/collections/not-a-collection');
-    await expect(page.getByText('This collection does not exist')).toBeVisible();
+    await nav.getByRole('button', { name: 'Women' }).click();
+    const panel = page.getByRole('region', { name: 'Women categories', exact: true });
+    await expect(panel.getByRole('link', { name: 'Knee-high boots' })).toBeVisible();
+    await panel.getByRole('link', { name: 'Dresses', exact: true }).click();
+    await expect(page).toHaveURL(/\/women\/dresses$/);
+    await expect(page.getByRole('heading', { level: 1, name: "Women's Dresses" })).toBeVisible();
+    await page
+      .getByRole('navigation', { name: "Women's Dresses categories", exact: true })
+      .getByRole('link', { name: 'Midi dresses' })
+      .click();
+    await expect(page).toHaveURL(/\/women\/dresses\/midi-dresses$/);
+    await expect(page.getByRole('heading', { level: 1, name: 'Midi dresses' })).toBeVisible();
+
+    await page.goto('/women/not-a-category');
+    await expect(page.getByText('This category does not exist')).toBeVisible();
+    // Links from before Men and Women still land on the shop.
+    await page.goto('/collections/footwear');
+    await expect(page).toHaveURL(/\/products$/);
   });
 
-  test('phone menu lists the collections @phone', async ({ page, isMobile }) => {
+  test('phone menu opens Men and Women categories and their subcategories @phone', async ({ page, isMobile }) => {
     test.skip(!isMobile, 'The hamburger menu only exists on phones');
     await page.goto('/');
     await page.getByRole('button', { name: 'Open menu' }).click();
     const menu = page.getByRole('dialog', { name: 'Menu' });
-    for (const name of ['Home', 'Contact', 'About us', 'Clothing', 'Footwear', 'Accessories', 'Fragrances', 'Login']) {
+    for (const name of ['Home', 'Contact', 'About us', 'Login', 'Shop all Men']) {
       await expect(menu.getByRole('link', { name, exact: true })).toBeVisible();
     }
-    await menu.getByRole('link', { name: 'Footwear', exact: true }).click();
-    await expect(page).toHaveURL(/\/collections\/footwear$/);
+    await menu.getByRole('button', { name: 'Shoes & Boots' }).click();
+    await expect(menu.getByRole('link', { name: 'Shop all Shoes & Boots' })).toBeVisible();
+    await menu.getByRole('link', { name: 'Trainers', exact: true }).click();
+    await expect(page).toHaveURL(/\/men\/shoes-boots\/trainers$/);
+
+    await page.getByRole('button', { name: 'Open menu' }).click();
+    await menu.getByRole('button', { name: 'Women', exact: true }).click();
+    await menu.getByRole('button', { name: 'Dresses' }).click();
+    await menu.getByRole('link', { name: 'Maxi dresses' }).click();
+    await expect(page).toHaveURL(/\/women\/dresses\/maxi-dresses$/);
   });
 
   test('product page shows real sizes and colour, and 404s cleanly', async ({ page, request }) => {
-    const product = await findProduct(request, 'inStock=true&category=tshirts');
+    const product = await findProduct(request, 'inStock=true&category=clothing&subcategory=t-shirts');
     await page.goto(`/${product.category}/${product._id}`);
     await expect(page.getByRole('heading', { name: product.name })).toBeVisible();
     if (product.sizes.length) {

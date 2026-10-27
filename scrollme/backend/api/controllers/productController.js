@@ -1,6 +1,5 @@
 const Product = require('../models/productModel');
 const { notFound } = require('../utils/httpError');
-const { COLLECTIONS, findCollection } = require('../config/collections');
 
 const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -17,11 +16,10 @@ const PUBLIC_FIELDS = '-__v';
 // Builds the Mongo filter for the public catalogue (and the admin list).
 const buildFilter = (query, { includeInactive = false } = {}) => {
   const filter = includeInactive ? {} : { isActive: true };
-  if (query.collection) {
-    const { categories } = findCollection(query.collection);
-    // A category inside the collection narrows it; one outside it matches nothing.
-    filter.category = query.category ? (categories.includes(query.category) ? query.category : '__none__') : { $in: categories };
-  } else if (query.category) filter.category = query.category;
+  // Unisex products are listed under both departments.
+  if (query.department) filter.department = { $in: [query.department, 'unisex'] };
+  if (query.category) filter.category = query.category;
+  if (query.subcategory) filter.subcategory = query.subcategory;
   if (query.brand) filter.brand = new RegExp(`^${escapeRegex(query.brand)}$`, 'i');
   if (query.minPrice !== undefined || query.maxPrice !== undefined) {
     filter.price = {};
@@ -34,7 +32,7 @@ const buildFilter = (query, { includeInactive = false } = {}) => {
     // Every word must match one of the searchable fields.
     filter.$and = words.map((w) => {
       const re = new RegExp(escapeRegex(w), 'i');
-      return { $or: [{ name: re }, { brand: re }, { category: re }, { tags: re }, { color: re }, { sku: re }] };
+      return { $or: [{ name: re }, { brand: re }, { category: re }, { subcategory: re }, { tags: re }, { color: re }, { sku: re }] };
     });
   }
   return filter;
@@ -60,33 +58,22 @@ exports.listProducts = async (req, res) => {
   res.status(200).json(await paginate(buildFilter(query), query));
 };
 
-// Distinct categories of active products with counts, most popular first.
+// Active products counted by department, category and subcategory. The
+// storefront adds unisex counts to both departments and hides empty menus.
 exports.listCategories = async (req, res) => {
   const rows = await Product.aggregate([
     { $match: { isActive: true, category: { $nin: [null, ''] } } },
-    { $group: { _id: '$category', count: { $sum: 1 } } },
-    { $sort: { count: -1, _id: 1 } },
+    { $group: { _id: { department: '$department', category: '$category', subcategory: '$subcategory' }, count: { $sum: 1 } } },
+    { $sort: { count: -1 } },
   ]);
-  res.status(200).json({ categories: rows.map((r) => ({ slug: r._id, count: r.count })) });
-};
-
-// Collections with product counts and a cover image (best-rated in-stock product).
-exports.listCollections = async (req, res) => {
-  const collections = await Promise.all(
-    COLLECTIONS.map(async ({ slug, title, categories }) => {
-      const match = { isActive: true, category: { $in: categories } };
-      // Cover: the best-reviewed in-stock item of the lead category (listed first), else of the whole collection.
-      const coverOf = (filter) =>
-        Product.findOne({ ...filter, isActive: true, stock: { $gt: 0 }, imageUrl: { $nin: [null, ''] } })
-          .sort({ 'ratings.numberOfReviews': -1, _id: 1 })
-          .select('imageUrl')
-          .lean();
-      const [count, lead] = await Promise.all([Product.countDocuments(match), coverOf({ category: categories[0] })]);
-      const cover = lead || (await coverOf({ category: { $in: categories } }));
-      return { slug, title, count, imageUrl: cover?.imageUrl || null, categories };
-    })
-  );
-  res.status(200).json({ collections });
+  res.status(200).json({
+    counts: rows.map((r) => ({
+      department: r._id.department || null,
+      category: r._id.category,
+      subcategory: r._id.subcategory || null,
+      count: r.count,
+    })),
+  });
 };
 
 exports.listBrands = async (req, res) => {

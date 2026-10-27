@@ -30,7 +30,7 @@ test.describe('cart and checkout', () => {
   });
 
   test('requires a size and sign-in before adding to the cart', async ({ page, request }) => {
-    const product = await findProduct(request, 'inStock=true&category=tshirts');
+    const product = await findProduct(request, 'inStock=true&category=clothing&subcategory=t-shirts');
     await page.goto(`/${product.category}/${product._id}`);
     await page.getByRole('button', { name: 'ADD TO CART' }).click();
     await expect(page).toHaveURL(/\/login$/);

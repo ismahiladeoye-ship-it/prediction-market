@@ -18,8 +18,8 @@
 
 ## Features
 
-- [x] **Streetwear storefront design**: monochrome black-and-white look, condensed display headings, rotating announcement bar, hero carousel, shop-by-collection, phone menu drawer, scrolling-brand footer with newsletter sign-up; responsive on phones, tablets and desktops. Edit text, images and links in `src/data.js` (`storeConfig`) and colours/fonts in `src/styles/global.css`.
-- [x] **Catalogue**: 24k products in 278 real categories grouped into Clothing, Footwear, Accessories and Fragrances collections; search, collection and category pages, price/stock filters, sorting, pagination.
+- [x] **Streetwear storefront design**: monochrome black-and-white look, condensed display headings, rotating announcement bar, hero carousel, shop-by-category, Men/Women menus (a panel on desktop, a drill-down drawer on phones), scrolling-brand footer with newsletter sign-up; responsive on phones, tablets and desktops. Edit text, images and links in `src/data.js` (`storeConfig`) and colours/fonts in `src/styles/global.css`.
+- [x] **Catalogue**: **Men** and **Women** departments, each with ten categories and up to ten subcategories (`src/taxonomy.json`, mirrored in `backend/api/config/taxonomy.json`); unisex products appear under both. Pages at `/men`, `/men/clothing`, `/men/clothing/hoodies-sweatshirts`; search, department/category/subcategory filters, price/stock filters, sorting, pagination. The sample catalogue (~17k products) is mapped onto these categories.
 - [x] **Accounts**: registration, login, logout, refresh tokens in httpOnly cookies, password reset, optional Google sign-in.
 - [x] **Wishlist**: saved per account (guest wishlists are merged on sign-in).
 - [x] **Cart**: sizes, stock checks; prices, tax and delivery always computed on the server.

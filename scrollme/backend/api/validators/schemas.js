@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const { z } = require('zod');
-const { COLLECTION_SLUGS } = require('../config/collections');
+const { DEPARTMENT_SLUGS, PRODUCT_DEPARTMENTS, placementProblem } = require('../config/taxonomy');
 
 // A missing value reads "Required" rather than zod 4's type error (applies to every schema).
 z.config({ customError: (issue) => (issue.code === 'invalid_type' && issue.input === undefined ? 'Required' : undefined) });
@@ -64,6 +64,7 @@ const productListQuery = z.object({
   page: z.coerce.number().int().min(1).max(1000).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(12),
   q: z.string().trim().max(100).optional(),
+  department: z.enum(DEPARTMENT_SLUGS, { message: 'Unknown department' }).optional(),
   category: z
     .string()
     .trim()
@@ -71,8 +72,14 @@ const productListQuery = z.object({
     .max(60)
     .regex(/^[a-z0-9-]*$/, 'Invalid category')
     .optional(),
+  subcategory: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .max(60)
+    .regex(/^[a-z0-9-]*$/, 'Invalid subcategory')
+    .optional(),
   brand: z.string().trim().max(60).optional(),
-  collection: z.enum(COLLECTION_SLUGS, { message: 'Unknown collection' }).optional(),
   minPrice: z.coerce.number().min(0).optional(),
   maxPrice: z.coerce.number().min(0).optional(),
   inStock: z.enum(['true', 'false']).optional(),
@@ -139,14 +146,14 @@ const imageRef = z
     'Image must be an uploaded photo or a link starting with http:// or https://'
   );
 
-// A page on this shop, e.g. /collections/footwear or /products?q=tracksuit.
+// A page on this shop, e.g. /men/shoes-boots or /products?q=tracksuit.
 // Never another site: "//host" and "/\host" are refused because browsers
 // treat them as links to another site.
 const internalLink = z
   .string()
   .trim()
   .max(200)
-  .regex(/^\/(?![/\\])\S*$/, 'Use a page on this shop starting with /, e.g. /collections/footwear');
+  .regex(/^\/(?![/\\])\S*$/, 'Use a page on this shop starting with /, e.g. /men/shoes-boots');
 
 // Home page cover images (hero slides).
 const heroSlide = z
@@ -279,12 +286,20 @@ const productFields = {
   description: z.string().trim().max(5000).optional(),
   price: z.coerce.number().min(0).max(1000000),
   discounted_price: z.coerce.number().min(0).max(1000000).optional(),
+  department: z.enum(PRODUCT_DEPARTMENTS, { message: 'Department must be men, women or unisex' }),
   category: z
     .string()
     .trim()
     .toLowerCase()
-    .regex(/^[a-z0-9-]+$/, 'Category must be a slug, e.g. t-shirts')
+    .regex(/^[a-z0-9-]+$/, 'Category must be a slug, e.g. shoes-boots')
     .max(60),
+  subcategory: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .regex(/^[a-z0-9-]*$/, 'Subcategory must be a slug, e.g. trainers')
+    .max(60)
+    .optional(),
   stock: z.coerce.number().int().min(0).max(1000000),
   imageUrl: imageRef.optional().or(z.literal('')),
   images: z.array(imageRef).max(12, 'Up to 12 photos per product').optional(),
@@ -296,8 +311,19 @@ const productFields = {
   weight: z.coerce.number().min(0).optional(),
   isActive: z.boolean().optional(),
 };
-const productCreate = z.object(productFields).strict();
-const productUpdate = z.object(productFields).partial().strict();
+// Department, category and subcategory must fit config/taxonomy.json. An update
+// that changes any of them sends department and category together.
+const checkPlacement = (p, ctx) => {
+  if (p.department === undefined && p.category === undefined && p.subcategory === undefined) return;
+  if (p.department === undefined || p.category === undefined) {
+    ctx.addIssue({ code: 'custom', path: [p.department === undefined ? 'department' : 'category'], message: 'Give department and category together' });
+    return;
+  }
+  const problem = placementProblem(p);
+  if (problem) ctx.addIssue({ code: 'custom', path: [/^Subcategory/.test(problem) ? 'subcategory' : 'category'], message: problem });
+};
+const productCreate = z.object(productFields).strict().superRefine(checkPlacement);
+const productUpdate = z.object(productFields).partial().strict().superRefine(checkPlacement);
 
 const orderStatusUpdate = z.object({
   status: z.enum(['pending_payment', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded']),

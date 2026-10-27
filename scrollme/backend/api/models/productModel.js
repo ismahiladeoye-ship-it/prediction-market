@@ -24,11 +24,24 @@ const ProductSchema = new Schema(
       type: Number,
       min: 0,
     },
+    // Men, women or unisex (shown under both). See config/taxonomy.json.
+    department: {
+      type: String,
+      enum: ['men', 'women', 'unisex'],
+      index: true,
+    },
+    // Category within the department, e.g. "shoes-boots", and optionally a
+    // subcategory within that, e.g. "trainers".
     category: {
       type: String,
       trim: true,
       lowercase: true,
       index: true,
+    },
+    subcategory: {
+      type: String,
+      trim: true,
+      lowercase: true,
     },
     stock: {
       type: Number,
@@ -119,6 +132,7 @@ const ProductSchema = new Schema(
 );
 
 ProductSchema.index({ isActive: 1, category: 1, createdAt: -1 });
+ProductSchema.index({ isActive: 1, department: 1, category: 1, subcategory: 1 });
 ProductSchema.index({ isActive: 1, price: 1 });
 ProductSchema.index({ sku: 1 }, { unique: true, partialFilterExpression: { sku: { $type: 'string' } } });
 

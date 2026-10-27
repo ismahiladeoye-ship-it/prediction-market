@@ -1,8 +1,8 @@
 const { parse } = require('csv-parse/sync');
 const Product = require('../models/productModel');
-const { COLLECTIONS } = require('../config/collections');
 const { productCreate, productUpdate } = require('../validators/schemas');
 const { isStoredPhoto } = require('./images');
+const { slugify, resolvePlacement } = require('./placement');
 
 const MAX_ROWS = 1000;
 
@@ -13,7 +13,11 @@ const COLUMNS = {
   name: 'name',
   product_name: 'name',
   brand: 'brand',
+  department: 'department',
+  gender: 'department',
   category: 'category',
+  subcategory: 'subcategory',
+  sub_category: 'subcategory',
   price: 'price',
   stock: 'stock',
   quantity: 'stock',
@@ -26,52 +30,6 @@ const COLUMNS = {
   images: 'images',
   photos: 'images',
   active: 'isActive',
-};
-
-// Everyday names for categories the storefront's collections use.
-const CATEGORY_ALIASES = {
-  't-shirt': 'tshirts',
-  't-shirts': 'tshirts',
-  tee: 'tshirts',
-  tees: 'tshirts',
-  hoodie: 'sweatshirts',
-  hoodies: 'sweatshirts',
-  sweatshirt: 'sweatshirts',
-  jumper: 'sweaters',
-  jumpers: 'sweaters',
-  knitwear: 'sweaters',
-  tracksuit: 'tracksuits',
-  'track-pants': 'track-pants',
-  joggers: 'track-pants',
-  trainers: 'sports-shoes',
-  sneakers: 'sports-shoes',
-  jacket: 'jackets',
-  coat: 'coats',
-  cap: 'caps',
-  hat: 'hat',
-  bag: 'backpacks',
-  bags: 'backpacks',
-  watch: 'watches',
-  perfume: 'perfume-and-body-mist',
-  fragrance: 'perfume-and-body-mist',
-  fragrances: 'perfume-and-body-mist',
-  aftershave: 'perfume-and-body-mist',
-};
-const COLLECTION_CATEGORIES = new Set(COLLECTIONS.flatMap((c) => c.categories));
-
-const slugify = (value) =>
-  String(value)
-    .toLowerCase()
-    .replace(/&/g, 'and')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-
-const toCategory = (value) => {
-  const slug = slugify(value);
-  if (CATEGORY_ALIASES[slug]) return CATEGORY_ALIASES[slug];
-  // "Jackets"/"Jacket" both work when one of them is a known category.
-  if (!COLLECTION_CATEGORIES.has(slug) && COLLECTION_CATEGORIES.has(`${slug}s`)) return `${slug}s`;
-  return slug;
 };
 
 const list = (value) =>
@@ -143,7 +101,12 @@ const toProduct = (record, { photos, dryRun, isUpdate }) => {
   if (has(record, 'sku')) raw.sku = record.sku;
   if (has(record, 'name')) raw.name = record.name;
   if (has(record, 'brand')) raw.brand = record.brand;
-  if (has(record, 'category')) raw.category = record.category ? toCategory(record.category) : '';
+  // "Men's" / "Hoodies" / "Sneakers" become taxonomy slugs (services/placement.js).
+  const placement = resolvePlacement({ department: record.department, category: record.category, subcategory: record.subcategory });
+  for (const key of ['department', 'category', 'subcategory']) {
+    if (has(record, key) || placement[key]) raw[key] = placement[key] || '';
+  }
+  if (!isUpdate && !raw.department) errors.push('department: add Men, Women or Unisex');
   if (has(record, 'price')) raw.price = toNumber(record.price);
   if (has(record, 'stock')) raw.stock = toNumber(record.stock);
   if (has(record, 'sizes')) raw.sizes = list(record.sizes);
@@ -163,7 +126,7 @@ const toProduct = (record, { photos, dryRun, isUpdate }) => {
     delete raw.isActive;
   }
   // Blank optional text cells are simply left out on new products.
-  for (const key of ['brand', 'color', 'material', 'description']) if (raw[key] === '' && !isUpdate) delete raw[key];
+  for (const key of ['brand', 'subcategory', 'color', 'material', 'description']) if (raw[key] === '' && !isUpdate) delete raw[key];
 
   if (has(record, 'images')) {
     const { images, errors: imageErrors, found } = resolveImages(list(record.images), photos, dryRun);
@@ -177,12 +140,11 @@ const toProduct = (record, { photos, dryRun, isUpdate }) => {
 
   const parsed = (isUpdate ? productUpdate : productCreate).safeParse(raw);
   if (!parsed.success) {
-    errors.push(...parsed.error.issues.map((i) => `${i.path.join('.') || 'row'}: ${i.message}`));
+    // A missing department is already explained above.
+    const issues = parsed.error.issues.filter((i) => !(i.path[0] === 'department' && !raw.department && !isUpdate));
+    errors.push(...issues.map((i) => `${i.path.join('.') || 'row'}: ${i.message}`));
   }
   if (!raw.sku) errors.push('sku: SKU is required');
-  if (raw.category && !COLLECTION_CATEGORIES.has(raw.category)) {
-    warnings.push(`Category "${raw.category}" is not in a collection, so it only appears in search and All products`);
-  }
   return { product: parsed.success ? parsed.data : null, errors, warnings };
 };
 
@@ -245,4 +207,4 @@ const importProducts = async ({ csv, photos, dryRun }) => {
   return result(true, `Imported ${summary.create} new and updated ${summary.update} existing product(s)`);
 };
 
-module.exports = { importProducts, toCategory, MAX_ROWS };
+module.exports = { importProducts, MAX_ROWS };

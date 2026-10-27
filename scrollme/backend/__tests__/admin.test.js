@@ -6,7 +6,16 @@ const ctx = useTestApp();
 
 const address = { fullName: 'Grace Hopper', line1: '1 Navy Way', city: 'Leeds', postalCode: 'LS1 4DY', country: 'GB', phone: '+44 113 496 0000' };
 
-const newProduct = { name: 'Admin Jacket', price: 80, category: 'jackets', stock: 7, brand: 'scrollme', sizes: ['M', 'L'] };
+const newProduct = {
+  name: 'Admin Jacket',
+  price: 80,
+  department: 'men',
+  category: 'coats-jackets',
+  subcategory: 'puffer-jackets',
+  stock: 7,
+  brand: 'scrollme',
+  sizes: ['M', 'L'],
+};
 
 const placePaidOrder = async (product) => {
   const customer = await signedInAgent(ctx.app);
@@ -57,6 +66,15 @@ describe('admin product management', () => {
 
     expect((await agent.post('/api/admin/products').send({ ...newProduct, price: -1 })).status).toBe(400);
     expect((await agent.post('/api/admin/products').send({ ...newProduct, ratings: { averageRating: 5 } })).status).toBe(400);
+    // Department, category and subcategory must fit the shop's Men/Women categories.
+    const { department: _d, ...noDepartment } = newProduct;
+    expect((await agent.post('/api/admin/products').send(noDepartment)).status).toBe(400);
+    const wrongSub = await agent.post('/api/admin/products').send({ ...newProduct, subcategory: 'heels' });
+    expect(wrongSub.status).toBe(400);
+    expect(JSON.stringify(wrongSub.body)).toMatch(/not in coats-jackets/);
+    expect((await agent.patch(`/api/admin/products/${id}`).send({ category: 'dresses' })).status).toBe(400);
+    const moved = await agent.patch(`/api/admin/products/${id}`).send({ department: 'women', category: 'coats-jackets', subcategory: 'parkas' });
+    expect(moved.body.product).toMatchObject({ department: 'women', subcategory: 'parkas' });
     expect((await agent.patch(`/api/admin/products/${id}`).send({ _id: '507f1f77bcf86cd799439011' })).status).toBe(400);
     for (const imageUrl of ['javascript:alert(1)', 'data:text/html,<script>alert(1)</script>', 'ftp://example.com/a.jpg']) {
       expect((await agent.patch(`/api/admin/products/${id}`).send({ imageUrl })).status).toBe(400);

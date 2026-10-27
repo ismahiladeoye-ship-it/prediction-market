@@ -6,15 +6,15 @@ const ctx = useTestApp();
 const seed = async () => {
   await createProduct({
     name: 'Blue Denim Jeans',
-    category: 'jeans',
+    subcategory: 'jeans',
     brand: 'levis',
     price: 60,
     createdAt: new Date('2024-01-01'),
     ratings: { averageRating: 4.5 },
   });
-  await createProduct({ name: 'Red Cotton Tshirt', category: 'tshirts', brand: 'freesoul', price: 15, createdAt: new Date('2024-03-01'), color: 'Red' });
-  await createProduct({ name: 'White Linen Shirt', category: 'shirts', brand: 'greenfibre', price: 35, createdAt: new Date('2024-02-01'), stock: 0 });
-  await createProduct({ name: 'Hidden Shirt', category: 'shirts', price: 5, isActive: false });
+  await createProduct({ name: 'Red Cotton Tshirt', subcategory: 't-shirts', brand: 'freesoul', price: 15, createdAt: new Date('2024-03-01'), color: 'Red' });
+  await createProduct({ name: 'White Linen Shirt', subcategory: 'shirts', brand: 'greenfibre', price: 35, createdAt: new Date('2024-02-01'), stock: 0 });
+  await createProduct({ name: 'Hidden Shirt', subcategory: 'shirts', price: 5, isActive: false });
 };
 
 describe('product catalogue', () => {
@@ -48,7 +48,8 @@ describe('product catalogue', () => {
   });
 
   it('filters by category, brand, price range and stock', async () => {
-    expect((await request(ctx.app).get('/api/product/list?category=shirts')).body.totalProducts).toBe(1);
+    expect((await request(ctx.app).get('/api/product/list?category=clothing')).body.totalProducts).toBe(3);
+    expect((await request(ctx.app).get('/api/product/list?category=clothing&subcategory=shirts')).body.totalProducts).toBe(1);
     expect((await request(ctx.app).get('/api/product/list?brand=levis')).body.totalProducts).toBe(1);
     const range = await request(ctx.app).get('/api/product/list?minPrice=20&maxPrice=50');
     expect(range.body.products.map((p) => p.name)).toEqual(['White Linen Shirt']);
@@ -76,13 +77,14 @@ describe('product catalogue', () => {
     expect(res.body).toMatchObject({ totalProducts: 0, totalPages: 0, products: [] });
   });
 
-  it('lists categories with counts', async () => {
+  it('counts active products by department, category and subcategory', async () => {
     const res = await request(ctx.app).get('/api/product/categories');
-    expect(res.body.categories).toEqual(
+    expect(res.body.counts).toHaveLength(3);
+    expect(res.body.counts).toEqual(
       expect.arrayContaining([
-        { slug: 'jeans', count: 1 },
-        { slug: 'shirts', count: 1 },
-        { slug: 'tshirts', count: 1 },
+        { department: 'men', category: 'clothing', subcategory: 'jeans', count: 1 },
+        { department: 'men', category: 'clothing', subcategory: 'shirts', count: 1 },
+        { department: 'men', category: 'clothing', subcategory: 't-shirts', count: 1 },
       ])
     );
   });
@@ -98,31 +100,50 @@ describe('product catalogue', () => {
   });
 });
 
-describe('collections', () => {
+describe('men and women', () => {
   beforeEach(async () => {
-    await createProduct({ name: 'Runner Sneaker', category: 'sports-shoes', ratings: { numberOfReviews: 50 } });
-    await createProduct({ name: 'Leather Boot', category: 'boots' });
-    await createProduct({ name: 'Logo Tee', category: 'tshirts' });
-    await createProduct({ name: 'Eau de Parfum', category: 'perfume-and-body-mist' });
-    await createProduct({ name: 'Throw Pillow', category: 'pillows' });
+    await createProduct({ name: 'Runner Sneaker', department: 'men', category: 'shoes-boots', subcategory: 'trainers' });
+    await createProduct({ name: 'Heeled Boot', department: 'women', category: 'shoes-boots', subcategory: 'ankle-boots' });
+    await createProduct({ name: 'Logo Tee', department: 'unisex', category: 'clothing', subcategory: 't-shirts' });
+    await createProduct({ name: 'Silk Dress', department: 'women', category: 'dresses', subcategory: 'midi-dresses' });
   });
 
-  it('filters products by collection and narrows by category inside it', async () => {
-    const footwear = await request(ctx.app).get('/api/product/list?collection=footwear&sort=name');
-    expect(footwear.body.products.map((p) => p.name)).toEqual(['Leather Boot', 'Runner Sneaker']);
-    const boots = await request(ctx.app).get('/api/product/list?collection=footwear&category=boots');
-    expect(boots.body.totalProducts).toBe(1);
-    const outside = await request(ctx.app).get('/api/product/list?collection=footwear&category=tshirts');
-    expect(outside.body.totalProducts).toBe(0);
-    expect((await request(ctx.app).get('/api/product/list?collection=homeware')).status).toBe(400);
+  it('lists a department with unisex products, narrowed by category and subcategory', async () => {
+    const names = async (query) => (await request(ctx.app).get(`/api/product/list?sort=name&${query}`)).body.products.map((p) => p.name);
+    expect(await names('department=men')).toEqual(['Logo Tee', 'Runner Sneaker']);
+    expect(await names('department=women')).toEqual(['Heeled Boot', 'Logo Tee', 'Silk Dress']);
+    expect(await names('department=women&category=shoes-boots')).toEqual(['Heeled Boot']);
+    expect(await names('department=women&category=shoes-boots&subcategory=trainers')).toEqual([]);
+    expect(await names('category=shoes-boots')).toEqual(['Heeled Boot', 'Runner Sneaker']);
+    expect(await names('q=ankle')).toEqual(['Heeled Boot']);
+    expect((await request(ctx.app).get('/api/product/list?department=kids')).status).toBe(400);
   });
 
-  it('lists collections with counts and a cover image', async () => {
-    const res = await request(ctx.app).get('/api/product/collections');
-    const bySlug = Object.fromEntries(res.body.collections.map((c) => [c.slug, c]));
-    expect(Object.keys(bySlug)).toEqual(['clothing', 'footwear', 'accessories', 'fragrances']);
-    expect(bySlug.footwear).toMatchObject({ title: 'Footwear', count: 2, imageUrl: 'https://example.com/shirt.jpg' });
-    expect(bySlug.fragrances.count).toBe(1);
-    expect(bySlug.accessories).toMatchObject({ count: 0, imageUrl: null });
+  it('counts unisex products under their own department', async () => {
+    const res = await request(ctx.app).get('/api/product/categories');
+    expect(res.body.counts).toEqual(expect.arrayContaining([{ department: 'unisex', category: 'clothing', subcategory: 't-shirts', count: 1 }]));
+  });
+});
+
+describe('taxonomy', () => {
+  const backend = require('../api/config/taxonomy.json');
+  const storefront = require('../../src/taxonomy.json');
+
+  it('is the same for the API and the storefront menus', () => {
+    expect(storefront).toEqual(backend);
+  });
+
+  it('has Men and Women with ten categories each and at most ten subcategories per category', () => {
+    expect(backend.departments.map((d) => d.slug)).toEqual(['men', 'women']);
+    for (const dept of backend.departments) {
+      expect(dept.categories).toHaveLength(10);
+      expect(new Set(dept.categories.map((c) => c.slug)).size).toBe(10);
+      for (const cat of dept.categories) {
+        expect(cat.subcategories.length).toBeGreaterThan(0);
+        expect(cat.subcategories.length).toBeLessThanOrEqual(10);
+        expect(new Set(cat.subcategories.map((s) => s.slug)).size).toBe(cat.subcategories.length);
+        for (const slug of [cat.slug, ...cat.subcategories.map((s) => s.slug)]) expect(slug).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
+      }
+    }
   });
 });

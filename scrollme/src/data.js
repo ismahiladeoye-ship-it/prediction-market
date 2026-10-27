@@ -23,7 +23,7 @@ export const storeConfig = {
       title: 'Footwear, sourced',
       subtitle: 'Fresh pairs, ready to ship',
       cta: 'Shop',
-      link: '/collections/footwear',
+      link: '/products?category=shoes-boots',
       img: unsplash('photo-1572710029599-1e1ffe84493f'),
       position: 'center 40%',
     },
@@ -32,7 +32,7 @@ export const storeConfig = {
       title: 'Built for the cold',
       subtitle: 'Puffers, jackets and layers',
       cta: 'Shop',
-      link: '/collections/clothing?category=jackets',
+      link: '/products?category=coats-jackets',
       img: pexels(6045058),
       position: 'center 45%',
     },
@@ -41,7 +41,7 @@ export const storeConfig = {
       title: 'Hoodies & sweats',
       subtitle: 'Everyday staples',
       cta: 'Shop',
-      link: '/collections/clothing?category=sweatshirts',
+      link: '/products?category=clothing&subcategory=hoodies-sweatshirts',
       img: pexels(31961168),
       position: 'center 40%',
     },
@@ -55,25 +55,40 @@ export const storeConfig = {
       position: 'center',
     },
   ],
-  // Home page, one entry per collection in display order: a card in "Shop by
-  // collection" and a row of its products with shortcut buttons. A shortcut opens
-  // a category, or with `search` the collection's search results (e.g. a brand).
-  // Collections and category shortcuts with no products are hidden.
-  homeCollections: [
+  // Home page, one entry per section in display order: a card in "Shop by
+  // category" and a row of that department's category with shortcut buttons.
+  // A shortcut opens a subcategory, or with `search` the category's search
+  // results (e.g. a brand). Sections and subcategory shortcuts with no products
+  // are hidden. Departments and categories: src/taxonomy.json.
+  homeSections: [
     {
-      collection: 'clothing',
-      img: pexels(2249249, 900),
+      department: 'men',
+      category: 'clothing',
+      img: pexels(31961168, 900),
       shortcuts: [
-        { label: 'Hoodies & sweats', category: 'sweatshirts' },
-        { label: 'Jackets', category: 'jackets' },
-        { label: 'T-shirts', category: 'tshirts' },
-        { label: 'Jeans', category: 'jeans' },
-        { label: 'Knitwear', category: 'sweaters' },
+        { label: 'Hoodies & sweatshirts', subcategory: 'hoodies-sweatshirts' },
+        { label: 'T-shirts', subcategory: 't-shirts' },
+        { label: 'Tracksuits', subcategory: 'tracksuits' },
+        { label: 'Joggers', subcategory: 'joggers' },
+        { label: 'Jeans', subcategory: 'jeans' },
       ],
     },
     {
-      collection: 'footwear',
-      img: pexels(7193634, 900),
+      department: 'women',
+      category: 'clothing',
+      img: pexels(2249249, 900),
+      shortcuts: [
+        { label: 'Tops', subcategory: 'tops' },
+        { label: 'Hoodies & sweatshirts', subcategory: 'hoodies-sweatshirts' },
+        { label: 'Jeans', subcategory: 'jeans' },
+        { label: 'Co-ords', subcategory: 'co-ords' },
+        { label: 'Jumpers & cardigans', subcategory: 'knitwear' },
+      ],
+    },
+    {
+      department: 'men',
+      category: 'shoes-boots',
+      img: pexels(19577865, 900),
       shortcuts: [
         { label: 'ASICS', search: 'asics' },
         { label: 'UGG Tasman', search: 'ugg tasman' },
@@ -83,24 +98,36 @@ export const storeConfig = {
       ],
     },
     {
-      collection: 'accessories',
-      // Pexels 16359299, with the maker's name removed from the patch.
-      img: '/images/home/accessories-backpack.jpg',
+      department: 'women',
+      category: 'shoes-boots',
+      img: pexels(7193634, 900),
       shortcuts: [
-        { label: 'Bags', category: 'backpacks' },
-        { label: 'Watches', category: 'watches' },
-        { label: 'Wallets', category: 'wallets' },
-        { label: 'Sunglasses', category: 'sunglasses' },
-        { label: 'Caps', category: 'caps' },
+        { label: 'ASICS', search: 'asics' },
+        { label: 'UGG Tasman', search: 'ugg tasman' },
+        { label: 'LV', search: 'louis vuitton' },
+        { label: 'Dior B30', search: 'dior b30' },
       ],
     },
     {
-      collection: 'fragrances',
+      department: 'men',
+      category: 'bags',
+      // Pexels 16359299, with the maker's name removed from the patch.
+      img: '/images/home/accessories-backpack.jpg',
+      shortcuts: [
+        { label: 'Backpacks', subcategory: 'backpacks' },
+        { label: 'Crossbody bags', subcategory: 'crossbody-bags' },
+        { label: 'Bum bags', subcategory: 'bum-bags' },
+        { label: 'Holdalls', subcategory: 'holdalls' },
+      ],
+    },
+    {
+      department: 'women',
+      category: 'fragrance',
       img: pexels(34036480, 900),
       shortcuts: [
-        { label: 'Perfume', category: 'perfume-and-body-mist' },
-        { label: 'Deodorant', category: 'deodorant' },
-        { label: 'Gift sets', category: 'fragrance-gift-set' },
+        { label: 'Perfume', subcategory: 'perfume' },
+        { label: 'Body mist', subcategory: 'body-mist' },
+        { label: 'Gift sets', subcategory: 'gift-sets' },
       ],
     },
   ],
@@ -121,11 +148,3 @@ export const storeConfig = {
     tiktok: '',
   },
 };
-
-// Menu and footer collections (must match backend/api/config/collections.js).
-export const collections = [
-  { slug: 'clothing', title: 'Clothing' },
-  { slug: 'footwear', title: 'Footwear' },
-  { slug: 'accessories', title: 'Accessories' },
-  { slug: 'fragrances', title: 'Fragrances' },
-];

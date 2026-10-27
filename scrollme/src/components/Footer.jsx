@@ -2,7 +2,8 @@ import styled, { keyframes } from 'styled-components';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaApplePay, FaCcAmex, FaCcMastercard, FaCcPaypal, FaCcVisa, FaGooglePay, FaInstagram, FaTiktok, FaWhatsapp } from 'react-icons/fa';
-import { collections, storeConfig } from '../data';
+import { storeConfig } from '../data';
+import { departmentLink, departments } from '../utils/taxonomy';
 import { subscribeAPI } from '../services/newsletter/newsletterService';
 import { getErrorMessage } from '../api/client';
 import { useShopDetails } from '../context/ShopDetails';
@@ -303,9 +304,9 @@ const Footer = () => {
             <li>
               <Link to='/products'>Shop all</Link>
             </li>
-            {collections.map((c) => (
-              <li key={c.slug}>
-                <Link to={`/collections/${c.slug}`}>{c.title}</Link>
+            {departments.map((d) => (
+              <li key={d.slug}>
+                <Link to={departmentLink(d.slug)}>{d.title}</Link>
               </li>
             ))}
             <li>

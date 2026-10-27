@@ -12,7 +12,6 @@ const idParams = validate({ params: s.idParam('productId') });
 // Public catalogue
 router.get('/list', validate({ query: s.productListQuery }), asyncHandler(productController.listProducts));
 router.get('/categories', asyncHandler(productController.listCategories));
-router.get('/collections', asyncHandler(productController.listCollections));
 router.get('/brands', asyncHandler(productController.listBrands));
 router.get('/:productId', idParams, asyncHandler(productController.getProductById));
 

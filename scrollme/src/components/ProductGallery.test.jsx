@@ -22,7 +22,10 @@ const product = (id, extra = {}) => ({
 
 describe('ProductGallery', () => {
   beforeEach(() => {
-    listCategoriesAPI.mockResolvedValue([{ slug: 'shirts', count: 2 }]);
+    listCategoriesAPI.mockResolvedValue([
+      { department: 'men', category: 'clothing', subcategory: 'shirts', count: 2 },
+      { department: 'unisex', category: 'clothing', subcategory: 't-shirts', count: 1 },
+    ]);
   });
 
   it('passes URL filters to the API and renders products', async () => {
@@ -59,5 +62,22 @@ describe('ProductGallery', () => {
     renderWithProviders(<ProductGallery category='lounge-pants' />, { route: '/lounge-pants' });
     expect(await screen.findByText('Lounge Pants')).toBeInTheDocument();
     expect(listProductsAPI).toHaveBeenLastCalledWith(expect.objectContaining({ category: 'lounge-pants' }));
+  });
+
+  it('narrows a department page by subcategory, with product counts', async () => {
+    listProductsAPI.mockResolvedValue({ products: [product('1')], totalPages: 1, totalProducts: 1 });
+    renderWithProviders(<ProductGallery department='men' category='clothing' title="Men's Clothing" />, {
+      route: '/men/clothing?subcategory=shirts',
+    });
+    expect(await screen.findByText("Men's Clothing")).toBeInTheDocument();
+    expect(listProductsAPI).toHaveBeenLastCalledWith(
+      expect.objectContaining({ department: 'men', category: 'clothing', subcategory: 'shirts' })
+    );
+    expect(screen.queryByLabelText('Department')).not.toBeInTheDocument();
+    const select = screen.getByLabelText('Subcategory');
+    expect(select).toHaveValue('shirts');
+    await waitFor(() => expect(screen.getByRole('option', { name: 'Shirts (2)' })).toBeInTheDocument());
+    // Unisex products count under Men too.
+    expect(screen.getByRole('option', { name: 'T-shirts (1)' })).toBeInTheDocument();
   });
 });
