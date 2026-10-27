@@ -86,7 +86,26 @@ const createProduct = async (request, fields) => {
   return (await res.json()).product;
 };
 
+const MAIL_PORT = Number(process.env.E2E_MAIL_PORT || 8091);
+
+// The 6-digit code in the latest email to `to` whose subject matches `subject`
+// (stack.js keeps every email sent). Waits for the email to arrive.
+const emailedCode = async (request, to, subject) => {
+  let code;
+  await expect
+    .poll(async () => {
+      const messages = await (await request.get(`http://localhost:${MAIL_PORT}/?to=${encodeURIComponent(to)}`)).json();
+      code = messages
+        .filter((m) => subject.test(m.subject))
+        .pop()
+        ?.subject.match(/\d{6}/)?.[0];
+      return code;
+    })
+    .toBeTruthy();
+  return code;
+};
+
 // Matches the storefront's price format, e.g. £1,699.00.
 const money = (n) => `£${n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-module.exports = { SEEDED, ADMIN, NEW_ADMIN, login, totpCode, chooseSize, findProduct, createProduct, fillAddress, money };
+module.exports = { SEEDED, ADMIN, NEW_ADMIN, login, totpCode, emailedCode, chooseSize, findProduct, createProduct, fillAddress, money };

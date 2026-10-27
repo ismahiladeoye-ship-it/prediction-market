@@ -50,6 +50,9 @@ const schema = z.object({
   FIREBASE_PROJECT_ID: z.string().optional(),
   SMTP_URL: z.string().optional(),
   MAIL_FROM: z.string().default('Get It Sourced <no-reply@getitsourced.com>'),
+  // New accounts confirm their email with a 6-digit code: "auto" = only once
+  // email sending (SMTP_URL) is set up, so sign-ups are never stuck without it.
+  EMAIL_VERIFICATION: z.enum(['auto', 'on', 'off']).default('auto'),
   // Where new-order and contact-form alerts go (default: the email in Admin → Shop details).
   NOTIFY_EMAIL: z.preprocess((v) => (v === '' ? undefined : v), z.string().email().optional()),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error', 'silent']).default('info'),
@@ -154,6 +157,7 @@ function loadConfig(source = process.env) {
             publicUrl: env.R2_PUBLIC_URL.replace(/\/$/, ''),
           }
         : null,
+    emailVerificationRequired: env.EMAIL_VERIFICATION === 'on' || (env.EMAIL_VERIFICATION === 'auto' && Boolean(env.SMTP_URL)),
     cookieSecure: env.COOKIE_SECURE ? env.COOKIE_SECURE === 'true' : isProd,
     trustProxy: /^\d+$/.test(env.TRUST_PROXY) ? Number(env.TRUST_PROXY) : env.TRUST_PROXY === 'false' ? false : env.TRUST_PROXY,
   };

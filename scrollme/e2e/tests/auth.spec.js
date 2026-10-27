@@ -1,17 +1,27 @@
 const { test, expect } = require('@playwright/test');
-const { login } = require('./helpers');
+const { login, emailedCode } = require('./helpers');
 
 test.describe('accounts', () => {
-  test('registers, stays signed in after reload, and logs out', async ({ page }) => {
+  test('registers, confirms the emailed code, stays signed in after reload, and logs out', async ({ page, request }) => {
     const id = Date.now();
+    const email = `grace${id}@example.com`;
     await page.goto('/register');
     await page.getByLabel('First name').fill('Grace');
     await page.getByLabel('Last name').fill('Hopper');
     await page.getByLabel('Username').fill(`grace${id}`);
-    await page.getByLabel('Email').fill(`grace${id}@example.com`);
+    await page.getByLabel('Email').fill(email);
     await page.getByLabel('Password', { exact: true }).fill('Str0ng!Passw0rd');
     await page.getByLabel('Confirm password').fill('Str0ng!Passw0rd');
     await page.getByRole('button', { name: 'CREATE' }).click();
+
+    await expect(page.getByRole('heading', { name: 'CONFIRM YOUR EMAIL' })).toBeVisible();
+    await expect(page.getByText(email)).toBeVisible();
+    const code = await emailedCode(request, email, /confirmation code/);
+    await page.getByLabel('6-digit code').fill(code === '000000' ? '111111' : '000000');
+    await page.getByRole('button', { name: 'CONFIRM EMAIL' }).click();
+    await expect(page.getByRole('alert')).toContainText('That code is wrong or has expired');
+    await page.getByLabel('6-digit code').fill(code);
+    await page.getByRole('button', { name: 'CONFIRM EMAIL' }).click();
     await expect(page.getByRole('link', { name: 'Account', exact: true })).toBeVisible();
 
     await page.reload();
@@ -59,7 +69,46 @@ test.describe('accounts', () => {
 
     await page.getByLabel('Username').fill(`shaq${id}`);
     await page.getByRole('button', { name: 'CREATE' }).click();
+    // Confirming the email can wait, but the account page asks for it.
+    await expect(page.getByRole('heading', { name: 'CONFIRM YOUR EMAIL' })).toBeVisible();
+    await page.getByRole('link', { name: 'skip for now' }).click();
     await expect(page.getByRole('link', { name: 'Account', exact: true })).toBeVisible();
+    await page.goto('/account');
+    await expect(page.getByText('Please confirm your email address before placing an order')).toBeVisible();
+    await page.getByRole('link', { name: 'Enter the code' }).click();
+    await expect(page.getByRole('heading', { name: 'CONFIRM YOUR EMAIL' })).toBeVisible();
+  });
+
+  test('resets a forgotten password with an emailed code', async ({ page, request }) => {
+    const id = Date.now();
+    const email = `ada${id}@example.com`;
+    const res = await request.post('/api/auth/register', {
+      data: { firstName: 'Ada', lastName: 'Byron', username: `ada${id}`, email, password: 'Old!Passw0rd', confirmPassword: 'Old!Passw0rd' },
+    });
+    expect(res.status()).toBe(201);
+
+    await page.goto('/login');
+    await page.getByRole('link', { name: 'FORGOTTEN YOUR PASSWORD?' }).click();
+    await page.getByLabel('Email').fill(email);
+    await page.getByRole('button', { name: 'SEND CODE' }).click();
+    await expect(page.getByRole('status')).toContainText(`If ${email} has an account, we have sent it a 6-digit code`);
+
+    const code = await emailedCode(request, email, /password reset code/);
+    await page.getByLabel('6-digit code').fill(code);
+    await page.getByLabel('New password', { exact: true }).fill('New!Passw0rd');
+    await expect(page.getByRole('list', { name: 'Your password needs' }).getByText('(done)')).toHaveCount(5);
+    await page.getByLabel('Confirm new password').fill('New!Passw0rd');
+    await page.getByRole('button', { name: 'CHANGE PASSWORD' }).click();
+    await expect(page).toHaveURL(/\/login$/);
+
+    // The old password no longer works; the new one does.
+    await page.getByLabel('Username or email').fill(email);
+    await page.getByLabel('Password').fill('Old!Passw0rd');
+    await page.getByRole('button', { name: 'LOGIN' }).click();
+    await expect(page.getByRole('alert').filter({ hasText: 'Invalid username or password' })).toBeVisible();
+    await page.getByLabel('Password').fill('New!Passw0rd');
+    await page.getByRole('button', { name: 'LOGIN' }).click();
+    await expect(page).not.toHaveURL(/\/login$/);
   });
 
   test('shows an error for wrong credentials', async ({ page }) => {

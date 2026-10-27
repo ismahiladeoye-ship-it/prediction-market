@@ -43,9 +43,20 @@ const UserSchema = new Schema({
   // version are rejected, which revokes every outstanding session.
   tokenVersion: { type: Number, default: 0 },
   wishlist: [{ type: Schema.Types.ObjectId, ref: 'Product' }],
+  // Emailed 6-digit codes (services/emailCodes.js): stored as keyed hashes,
+  // valid for 15 minutes and for 5 guesses.
   passwordReset: {
-    tokenHash: { type: String, select: false },
+    codeHash: { type: String, select: false },
     expiresAt: { type: Date, select: false },
+    attempts: { type: Number, select: false },
+  },
+  // false only for accounts that still have to confirm their address; older
+  // accounts (no value) and Google sign-ins count as confirmed.
+  emailVerified: Boolean,
+  emailVerification: {
+    codeHash: { type: String, select: false },
+    expiresAt: { type: Date, select: false },
+    attempts: { type: Number, select: false },
   },
   authProvider: { type: String, enum: ['password', 'google'], default: 'password' },
   // Two-factor sign-in (authenticator app); required for admins. Secrets are
@@ -95,6 +106,7 @@ UserSchema.methods.toPublicJSON = function () {
     email: this.email,
     roles: this.roles,
     mfaEnabled: Boolean(this.mfa?.enabled),
+    emailVerified: this.emailVerified !== false,
   };
 };
 

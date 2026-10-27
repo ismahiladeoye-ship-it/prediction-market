@@ -11,6 +11,8 @@ export const AUTH_ENDPOINTS = {
   GOOGLE: `${API_BASE_URL}/auth/google`,
   FORGOT_PASSWORD: `${API_BASE_URL}/auth/forgot-password`,
   RESET_PASSWORD: `${API_BASE_URL}/auth/reset-password`,
+  VERIFY_EMAIL: `${API_BASE_URL}/auth/verify-email`,
+  RESEND_VERIFICATION: `${API_BASE_URL}/auth/resend-verification`,
   MFA: `${API_BASE_URL}/auth/mfa`,
   MFA_SETUP: `${API_BASE_URL}/auth/mfa/setup`,
   MFA_ENABLE: `${API_BASE_URL}/auth/mfa/enable`,

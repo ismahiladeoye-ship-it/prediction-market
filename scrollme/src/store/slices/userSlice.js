@@ -11,6 +11,7 @@ const initialState = {
   name: '',
   isAuthenticated: false,
   roles: [],
+  emailVerified: true,
   isFetching: false,
   error: null,
   // True once the session has been checked with the server on this page load.
@@ -34,6 +35,8 @@ const applyUser = (state, user) => {
   state.username = user.username;
   state.name = `${user.firstName} ${user.lastName}`;
   state.roles = user.roles || [];
+  // false until a new account enters the code emailed at sign-up.
+  state.emailVerified = user.emailVerified !== false;
   state.isAuthenticated = true;
   state.lastLogin = new Date().toISOString();
 };

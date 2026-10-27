@@ -75,4 +75,15 @@ const createProduct = (overrides = {}) =>
     ...overrides,
   });
 
-module.exports = { useTestApp, createUser, signedInAgent, createProduct, STRONG_PASSWORD, TEST_MFA_SECRET };
+// Code emails are sent after the response; waits for one (to `to`, if given)
+// and returns its 6-digit code.
+const emailedCode = async (mailSpy, to) => {
+  for (let i = 0; i < 100; i += 1) {
+    const call = [...mailSpy.mock.calls].reverse().find(([m]) => !to || m.to === to);
+    if (call) return call[0].subject.match(/\d{6}/)[0];
+    await new Promise((r) => setTimeout(r, 10));
+  }
+  throw new Error('No code email was sent');
+};
+
+module.exports = { useTestApp, createUser, signedInAgent, createProduct, emailedCode, STRONG_PASSWORD, TEST_MFA_SECRET };

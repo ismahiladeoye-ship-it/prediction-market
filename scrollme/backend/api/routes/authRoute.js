@@ -11,6 +11,7 @@ const {
   registerLimiter,
   passwordResetLimiter,
   passwordResetEmailLimiter,
+  verificationEmailLimiter,
 } = require('../middleware/rateLimit');
 const s = require('../validators/schemas');
 const { asyncHandler } = require('../utils/httpError');
@@ -23,6 +24,10 @@ router.post('/refresh-token', asyncHandler(auth.refreshToken));
 router.post('/forgot-password', passwordResetLimiter, validate({ body: s.forgotPassword }), passwordResetEmailLimiter, asyncHandler(auth.forgotPassword));
 router.post('/reset-password', authLimiter, validate({ body: s.resetPassword }), asyncHandler(auth.resetPassword));
 router.get('/status', authMiddleware, asyncHandler(auth.checkAuthStatus));
+
+// Confirming a new account's email address with the 6-digit code.
+router.post('/verify-email', authMiddleware, authLimiter, validate({ body: s.emailCode }), asyncHandler(auth.verifyEmail));
+router.post('/resend-verification', authMiddleware, verificationEmailLimiter, asyncHandler(auth.resendVerification));
 
 // Two-factor sign-in (admins).
 router.get('/mfa', authMiddleware, asyncHandler(mfa.status));

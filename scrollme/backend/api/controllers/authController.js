@@ -2,11 +2,9 @@ const crypto = require('node:crypto');
 const User = require('../models/userModel');
 const { getConfig } = require('../config/env');
 const { REFRESH_COOKIE, setAuthCookies, clearAuthCookies, verifyRefreshToken, setMfaPendingCookie, clearMfaPendingCookie } = require('../services/tokens');
-const mailer = require('../services/mailer');
+const { issueCode, checkCode, sendCode } = require('../services/emailCodes');
 const googleAuth = require('../services/googleAuth');
 const { badRequest, unauthorized, conflict, HttpError } = require('../utils/httpError');
-const logger = require('../utils/logger');
-const { afterResponse } = require('../utils/background');
 
 // Real bcrypt hash of a random string, compared against when the user does not exist.
 const DUMMY_HASH = '$2b$12$QRwGchrL8LjfV4hGSmigAup8WIdSYopb8y.uAszQLu8qei1DpUXMK';
@@ -22,8 +20,6 @@ const beginSession = (res, user, message) => {
   return res.status(200).json({ message, user: user.toPublicJSON() });
 };
 
-const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
-
 exports.register = async (req, res) => {
   const { firstName, lastName, username, email, password, confirmPassword } = req.body;
   if (confirmPassword !== undefined && confirmPassword !== password) throw badRequest('Passwords do not match');
@@ -34,10 +30,21 @@ exports.register = async (req, res) => {
     throw conflict(`An account with that ${field} already exists.`);
   }
 
-  // Roles are never taken from the request body.
-  const user = await User.create({ firstName, lastName, username, email, password, roles: ['user'] });
+  // Roles are never taken from the request body. With email sending set up, the
+  // address is confirmed with an emailed code before the first order.
+  const verificationRequired = getConfig().emailVerificationRequired;
+  const user = await User.create({
+    firstName,
+    lastName,
+    username,
+    email,
+    password,
+    roles: ['user'],
+    ...(verificationRequired ? { emailVerified: false } : {}),
+  });
+  if (verificationRequired) sendCode(user, 'emailVerification', await issueCode(user, 'emailVerification'));
   setAuthCookies(res, user);
-  res.status(201).json({ message: 'User registered successfully', user: user.toPublicJSON() });
+  res.status(201).json({ message: 'User registered successfully', user: user.toPublicJSON(), verificationRequired });
 };
 
 exports.login = async (req, res) => {
@@ -94,45 +101,44 @@ exports.me = async (req, res) => {
   res.status(200).json({ user: req.user.toPublicJSON() });
 };
 
+// Emails a 6-digit code; the reply is the same whether or not the address has
+// an account, so it cannot be used to find out who shops here.
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
   const user = await User.findOne({ email });
-  if (user) {
-    const token = crypto.randomBytes(32).toString('hex');
-    user.passwordReset = { tokenHash: hashToken(token), expiresAt: new Date(Date.now() + 30 * 60 * 1000) };
-    await user.save();
-    // Fragment, not query string: it never reaches server logs or Referer headers.
-    const link = `${getConfig().APP_URL}/reset-password#token=${token}`;
-    // Not awaited: waiting for the mail server would make the response slower
-    // for registered addresses and reveal which emails have accounts.
-    afterResponse(
-      mailer
-        .sendMail({
-          to: user.email,
-          subject: 'Reset your Get It Sourced password',
-          text: `Hi ${user.firstName},\n\nUse this link within 30 minutes to choose a new password:\n${link}\n\nIf you did not ask for this, you can ignore this email.`,
-        })
-        .catch((err) => logger.error('password_reset_mail_failed', { err }))
-    );
-  }
-  // Identical response whether or not the address is registered.
-  res.status(200).json({ message: 'If an account exists for that email, a reset link has been sent.' });
+  if (user) sendCode(user, 'passwordReset', await issueCode(user, 'passwordReset'));
+  res.status(200).json({ message: 'If an account exists for that email, we have sent it a 6-digit code.' });
 };
 
+const WRONG_CODE = 'That code is wrong or has expired. Check your latest email, or ask for a new code.';
+
 exports.resetPassword = async (req, res) => {
-  const { token, password } = req.body;
-  const user = await User.findOne({
-    'passwordReset.tokenHash': hashToken(token),
-    'passwordReset.expiresAt': { $gt: new Date() },
-  });
-  if (!user) throw badRequest('Invalid or expired reset link');
+  const { email, code, password } = req.body;
+  const user = await User.findOne({ email });
+  if (!user || !(await checkCode(user._id, 'passwordReset', code))) throw badRequest(WRONG_CODE);
   user.password = password;
-  user.passwordReset = undefined;
   user.tokenVersion += 1; // sign out all existing sessions
   user.authProvider = user.authProvider || 'password';
+  // The code reached their inbox, so the address is theirs.
+  if (user.emailVerified === false) user.emailVerified = true;
   await user.save();
   clearAuthCookies(res);
   res.status(200).json({ message: 'Password updated. Please sign in with your new password.' });
+};
+
+// Confirms a new account's email address with the code sent at sign-up.
+exports.verifyEmail = async (req, res) => {
+  if (req.user.emailVerified !== false) return res.json({ message: 'Your email address is confirmed.', user: req.user.toPublicJSON() });
+  if (!(await checkCode(req.user._id, 'emailVerification', req.body.code))) throw badRequest(WRONG_CODE);
+  req.user.emailVerified = true;
+  await req.user.save();
+  return res.json({ message: 'Thanks, your email address is confirmed.', user: req.user.toPublicJSON() });
+};
+
+exports.resendVerification = async (req, res) => {
+  if (req.user.emailVerified !== false) return res.json({ message: 'Your email address is already confirmed.' });
+  sendCode(req.user, 'emailVerification', await issueCode(req.user, 'emailVerification'));
+  return res.json({ message: `We have sent a new code to ${req.user.email}.` });
 };
 
 exports.googleLogin = async (req, res) => {
@@ -160,9 +166,11 @@ exports.googleLogin = async (req, res) => {
       lastName: rest.join(' ') || 'User',
       username,
       email,
-      // Random unusable password; the account signs in with Google or a reset link.
+      // Random unusable password; the account signs in with Google or a reset code.
       password: `${crypto.randomBytes(24).toString('base64')}aA1!`,
       authProvider: 'google',
+      // Google has confirmed the address.
+      emailVerified: true,
     });
   }
   beginSession(res, user, 'Logged in successfully');

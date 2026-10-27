@@ -46,6 +46,13 @@ const passwordResetEmailLimiter = make({
   limit: 3,
   keyGenerator: (req) => String(req.body?.email || '').toLowerCase(),
 });
+// New confirmation codes: 5 an hour per account.
+const verificationEmailLimiter = make({
+  shared: 'verify-email',
+  windowMs: 60 * 60 * 1000,
+  limit: 5,
+  keyGenerator: (req) => String(req.user?._id),
+});
 const checkoutLimiter = make({ shared: 'checkout', windowMs: 10 * 60 * 1000, limit: 30 });
 // General flood guard on every API request; kept in memory (no database write per request).
 const apiLimiter = make({ windowMs: 60 * 1000, limit: 300 });
@@ -59,6 +66,7 @@ module.exports = {
   registerLimiter,
   passwordResetLimiter,
   passwordResetEmailLimiter,
+  verificationEmailLimiter,
   checkoutLimiter,
   apiLimiter,
   contactLimiter,

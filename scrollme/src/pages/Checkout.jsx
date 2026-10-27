@@ -15,6 +15,7 @@ import { imageSrc, onImageError } from '../utils/imageFallback';
 import { countryName } from '../utils/countries';
 import PaymentMethodSheet, { isMethodSupported } from '../components/payment/PaymentMethodSheet';
 import { MethodLogo } from '../components/payment/PaymentLogos';
+import ConfirmEmailNotice from '../components/auth/ConfirmEmailNotice';
 import { getPaymentMethodsAPI } from '../services/payments/paymentService';
 import { FaChevronRight, FaLock } from 'react-icons/fa';
 import { PAYMENT_METHOD_LABELS } from '../utils/format';
@@ -102,6 +103,10 @@ const Checkout = () => {
         navigate(`/orders/${order.id}`);
       }
     } catch (error) {
+      if (error.response?.data?.reason === 'EMAIL_UNVERIFIED') {
+        navigate('/verify-email', { state: { from: { pathname: '/checkout' } } });
+        return;
+      }
       const details = error.response?.data?.details;
       if (Array.isArray(details)) {
         const fieldErrors = {};
@@ -162,6 +167,7 @@ const Checkout = () => {
       <Navbar />
       <Wrapper>
         <Title>CHECKOUT</Title>
+        <ConfirmEmailNotice />
         <Bottom as='form' onSubmit={handleSubmit} noValidate>
           <Info>
             <SectionTitle>Delivery address</SectionTitle>
