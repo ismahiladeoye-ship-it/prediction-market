@@ -34,7 +34,7 @@ const createOrderFromCart = async (user, { shippingAddress, deliveryMethod, paym
   }
   const cart = await Cart.findOne({ userId: user._id });
   const view = await buildCartView(cart, deliveryMethod);
-  if (!view.lines.length) throw badRequest('Your bag is empty');
+  if (!view.lines.length) throw badRequest('Your cart is empty');
   if (view.issues.length) throw conflict(view.issues[0].message, view.issues);
 
   const items = view.lines.map((l) => ({

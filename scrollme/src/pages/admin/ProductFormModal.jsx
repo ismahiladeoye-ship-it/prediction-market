@@ -162,7 +162,7 @@ const ProductFormModal = ({ isOpen, onClose, product, onSaved }) => {
     const value = e.target.value;
     setForm((f) => {
       const next = { ...f, [key]: value };
-      if (key === 'department' && !categoriesOf(value === 'unisex' ? '' : value).some((c) => c.slug === f.category)) {
+      if (key === 'department' && !categoriesOf(value).some((c) => c.slug === f.category)) {
         next.category = '';
         next.subcategory = '';
       }
@@ -170,7 +170,6 @@ const ProductFormModal = ({ isOpen, onClose, product, onSaved }) => {
       return next;
     });
   };
-  const deptForLists = form.department === 'unisex' ? '' : form.department;
 
   const pick = (key, label, options, { isRequired, placeholder, isDisabled } = {}) => (
     <FormControl isInvalid={Boolean(errors[key])} isRequired={isRequired} isDisabled={isDisabled}>
@@ -212,13 +211,13 @@ const ProductFormModal = ({ isOpen, onClose, product, onSaved }) => {
             {pick(
               'category',
               'Category',
-              categoriesOf(deptForLists).map((c) => [c.slug, c.title]),
+              categoriesOf(form.department).map((c) => [c.slug, c.title]),
               { isRequired: true, placeholder: 'Choose…', isDisabled: !form.department }
             )}
             {pick(
               'subcategory',
               'Subcategory',
-              form.category ? subcategoriesOf(deptForLists, form.category).map((sc) => [sc.slug, sc.title]) : [],
+              form.category ? subcategoriesOf(form.department, form.category).map((sc) => [sc.slug, sc.title]) : [],
               { placeholder: 'None', isDisabled: !form.category }
             )}
             {field('price', 'Price', { isRequired: true, type: 'number', min: 0, step: '0.01' })}

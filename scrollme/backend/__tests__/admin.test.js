@@ -73,6 +73,8 @@ describe('admin product management', () => {
     expect(wrongSub.status).toBe(400);
     expect(JSON.stringify(wrongSub.body)).toMatch(/not in coats-jackets/);
     expect((await agent.patch(`/api/admin/products/${id}`).send({ category: 'dresses' })).status).toBe(400);
+    // Unisex means Men and Women, not Electronics.
+    expect((await agent.post('/api/admin/products').send({ ...newProduct, department: 'unisex', category: 'audio', subcategory: '' })).status).toBe(400);
     const moved = await agent.patch(`/api/admin/products/${id}`).send({ department: 'women', category: 'coats-jackets', subcategory: 'parkas' });
     expect(moved.body.product).toMatchObject({ department: 'women', subcategory: 'parkas' });
     expect((await agent.patch(`/api/admin/products/${id}`).send({ _id: '507f1f77bcf86cd799439011' })).status).toBe(400);

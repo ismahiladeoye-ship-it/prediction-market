@@ -3,8 +3,9 @@ const generated = require('./generatedProducts.json');
 const { placementProblem } = require('../../api/config/taxonomy');
 
 // Source product types -> [category, subcategory] in config/taxonomy.json, per
-// department (one entry = same in both). Other types (kidswear, sarees,
-// homeware, make-up...) are left out of the sample shop.
+// department (one entry = same in both; "electronics" = that department for
+// everyone). Other types (kidswear, sarees, homeware, make-up...) are left out
+// of the sample shop.
 const PLACEMENTS = {
   tshirts: ['clothing', 't-shirts'],
   shirts: { men: ['clothing', 'shirts'], women: ['clothing', 'shirts-blouses'] },
@@ -40,20 +41,21 @@ const PLACEMENTS = {
   'duffel-bag': { men: ['bags', 'holdalls'], women: ['bags', 'luggage'] },
   'trolley-bag': { men: ['bags', 'suitcases'], women: ['bags', 'luggage'] },
   wallets: { men: ['accessories', 'wallets'], women: ['bags', 'purses'] },
-  watches: ['jewellery-watches', 'watches'],
-  'smart-watches': ['jewellery-watches', 'smart-watches'],
-  earrings: ['jewellery-watches', 'earrings'],
-  'necklace-and-chains': { men: ['jewellery-watches', 'chains-necklaces'], women: ['jewellery-watches', 'necklaces'] },
-  bracelet: ['jewellery-watches', 'bracelets'],
-  ring: ['jewellery-watches', 'rings'],
-  'jewellery-set': { women: ['jewellery-watches', 'jewellery-sets'] },
+  watches: ['accessories', 'watches'],
+  'smart-watches': { electronics: ['wearables', 'smart-watches'] },
+  headphones: { electronics: ['audio', 'headphones'] },
+  earrings: ['accessories', 'jewellery'],
+  'necklace-and-chains': ['accessories', 'jewellery'],
+  bracelet: ['accessories', 'jewellery'],
+  ring: ['accessories', 'jewellery'],
+  'jewellery-set': { women: ['accessories', 'jewellery'] },
   sunglasses: ['accessories', 'sunglasses'],
   belts: ['accessories', 'belts'],
   caps: { men: ['accessories', 'caps'], women: ['accessories', 'hats-beanies'] },
   hat: ['accessories', 'hats-beanies'],
   socks: { men: ['accessories', 'socks'], women: ['accessories', 'socks-tights'] },
   scarves: ['accessories', 'scarves'],
-  ties: { men: ['accessories', 'ties'] },
+  ties: { men: ['suits-tailoring', 'ties-bow-ties'] },
   bra: { women: ['underwear-nightwear', 'bras'] },
   briefs: { men: ['underwear-nightwear', 'briefs'], women: ['underwear-nightwear', 'knickers'] },
   trunk: { men: ['underwear-nightwear', 'trunks'] },
@@ -113,10 +115,11 @@ const departmentOf = (tags) => {
   return tag ? tag.split('-')[0] : null;
 };
 
-const placementOf = (department, productTag) => {
+const placementOf = (gender, productTag) => {
   const entry = PLACEMENTS[productTag];
-  if (!department || !entry) return null;
-  const pair = Array.isArray(entry) ? entry : entry[department] || (department === 'unisex' && (entry.men || entry.women));
+  if (!gender || !entry) return null;
+  const department = entry.electronics ? 'electronics' : gender;
+  const pair = Array.isArray(entry) ? entry : entry.electronics || entry[gender] || (gender === 'unisex' && (entry.men || entry.women));
   if (!pair) return null;
   const placement = { department, category: pair[0], subcategory: pair[1] };
   return placementProblem(placement) ? null : placement;

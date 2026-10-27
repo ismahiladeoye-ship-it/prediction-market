@@ -124,7 +124,7 @@ const Nav = styled.nav`
   }
 `;
 
-// Desktop: Men / Women open a panel with every category and its subcategories.
+// Desktop: Men / Women / Electronics open a panel with every category and its subcategories.
 const MegaPanel = styled.div`
   position: absolute;
   top: 100%;
@@ -260,17 +260,18 @@ const DrawerList = styled.ul`
   }
 `;
 
-// Phone menu: Men / Women switch, then categories that open their subcategories.
+// Phone menu: Men / Women / Electronics switch, then categories that open their subcategories.
 const DeptTabs = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
   margin: 16px 24px 0;
   border-bottom: 1px solid var(--line);
   button {
     padding: 14px 0;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     background: none;
     border: none;
@@ -392,7 +393,7 @@ const Navbar = () => {
   };
 
   const cartLink = (
-    <IconLink to='/cart' aria-label={`Bag, ${totalQuantity || 0} ${totalQuantity === 1 ? 'item' : 'items'}`}>
+    <IconLink to='/cart' aria-label={`Cart, ${totalQuantity || 0} ${totalQuantity === 1 ? 'item' : 'items'}`}>
       <HiOutlineShoppingBag size={24} aria-hidden='true' />
       <CartCount aria-hidden='true'>({totalQuantity || 0})</CartCount>
     </IconLink>

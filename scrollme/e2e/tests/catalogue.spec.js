@@ -40,7 +40,7 @@ test.describe('catalogue', () => {
     await expect(page.getByText('No products found')).toBeVisible();
   });
 
-  test('category slider, shortcut buttons and the Men/Women menus open department pages', async ({ page }) => {
+  test('category slider, shortcut buttons and the Men/Women/Electronics menus open department pages', async ({ page }) => {
     await page.goto('/');
     const slider = page.getByRole('region', { name: 'Categories', exact: true });
     await slider.getByRole('button', { name: 'Next: Categories' }).click();
@@ -81,6 +81,18 @@ test.describe('catalogue', () => {
       .click();
     await expect(page).toHaveURL(/\/women\/dresses\/midi-dresses$/);
     await expect(page.getByRole('heading', { level: 1, name: 'Midi dresses' })).toBeVisible();
+
+    // Electronics is its own section.
+    await nav.getByRole('button', { name: 'Electronics' }).click();
+    await page
+      .getByRole('region', { name: 'Electronics categories', exact: true })
+      .getByRole('link', { name: 'Gaming', exact: true })
+      .click();
+    await expect(page).toHaveURL(/\/electronics\/gaming$/);
+    await expect(page.getByRole('heading', { level: 1, name: 'Gaming' })).toBeVisible();
+    await expect(
+      page.getByRole('navigation', { name: 'Gaming categories', exact: true }).getByRole('link', { name: 'Consoles' })
+    ).toBeVisible();
 
     await page.goto('/women/not-a-category');
     await expect(page.getByText('This category does not exist')).toBeVisible();
