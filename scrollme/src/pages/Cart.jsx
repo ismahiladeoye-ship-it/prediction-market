@@ -308,8 +308,8 @@ const Cart = () => {
       .then(() => {
         if (silent) return;
         toast({
-          title: 'Removed from your bag.',
-          description: 'The item has been removed from your bag.',
+          title: 'Product removed from cart.',
+          description: 'The item has been successfully removed from your cart.',
           status: 'success',
           duration: 3000,
           isClosable: true,
@@ -318,7 +318,7 @@ const Cart = () => {
       .catch(() => {
         toast({
           title: 'Error removing product.',
-          description: 'We could not remove the item from your bag. Please try again.',
+          description: 'There was an issue removing the item from your cart.',
           status: 'error',
           duration: 3000,
           isClosable: true,

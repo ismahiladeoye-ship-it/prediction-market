@@ -15,9 +15,9 @@
 | `sku` | yes | `ESS-TRK-BLK-01` | Your own code for the item: letters, numbers, `.` `-` `_` `/`. Uploading the same SKU again **updates** that product. |
 | `name` | new products | `Essentials Relaxed Tracksuit - Black` | |
 | `brand` | | `Fear of God Essentials` | |
-| `department` | new products | `Men` | `Men`, `Women` or `Unisex` (shown under both). *Men's, Mens, Ladies, Womens* also work. The column can also be called `gender`. |
-| `category` | new products | `Clothing` | One of the categories below, e.g. *Clothing, Shoes & Boots, Coats & Jackets*. A subcategory on its own works too (*Hoodies*, *Trainers*): the right category is filled in. |
-| `subcategory` | | `Tracksuits` | Optional, from the list below. Everyday names work: *Tees, Hoodie, Jumpers, Sneakers, Puffer, Beanie, Perfume*… |
+| `department` | new products | `Men` | `Men`, `Women`, `Unisex` (shown under Men and Women) or `Electronics`. *Men's, Mens, Ladies, Womens, Tech* also work. The column can also be called `gender`. |
+| `category` | new products | `Clothing` | One of the categories below, e.g. *Clothing, Shoes & Boots, Coats & Jackets, Gaming*. A subcategory on its own works too (*Hoodies*, *Trainers*, *Headphones*): the right category is filled in. |
+| `subcategory` | | `Tracksuits` | Optional, from the list below. Everyday names work: *Tees, Hoodie, Jumper, Puffer, Beanie, Rucksack, Chain, Perfume, Phone, Charger*… |
 | `price` | new products | `185.00` | In pounds; `£` and commas are fine. |
 | `stock` | new products | `6` | Whole number. |
 | `sizes` | | `S\|M\|L\|XL` | Separate with `\|`. Leave empty for one-size items. |
@@ -33,37 +33,47 @@ Columns can be in any order, and unknown columns are ignored.
 
 ## Departments and categories
 
-Products are shown under **Men** and **Women**, each with ten categories (the menus on the shop). Unisex products appear under both. The preview tells you if a category or subcategory does not exist for the department and lists the ones that do. The list lives in `src/taxonomy.json` and `backend/api/config/taxonomy.json` (keep the two files identical).
+Products are shown under **Men**, **Women** and **Electronics** (the menus on the shop). Unisex products appear under both Men and Women. The preview tells you if a category or subcategory does not exist for the department and lists the ones that do. The list lives in `src/taxonomy.json` and `backend/api/config/taxonomy.json` (keep the two files identical).
 
 ### Men
 
 | Category | Subcategories |
 | --- | --- |
-| Clothing | T-shirts, Hoodies & sweatshirts, Tracksuits, Joggers, Jeans, Shirts, Polo shirts, Knitwear, Trousers & chinos, Shorts |
-| Coats & Jackets | Puffer jackets, Parkas, Bomber jackets, Gilets, Rain jackets, Denim jackets, Leather jackets, Overcoats, Fleeces, Overshirts |
-| Shoes & Boots | Trainers, Running shoes, Boots, Casual shoes, Smart shoes, Loafers, Sliders, Sandals, Flip-flops, Slippers |
-| Activewear | Gym tops, Gym shorts, Joggers, Hoodies, Tracksuits, Track jackets, Base layers, Running, Swim shorts, Sports socks |
-| Accessories | Caps, Hats & beanies, Belts, Wallets & cardholders, Sunglasses, Scarves, Gloves, Socks, Ties, Keyrings |
-| Bags & Luggage | Backpacks, Crossbody bags, Bum bags, Holdalls & duffel bags, Tote bags, Laptop bags, Messenger bags, Wash bags, Suitcases |
-| Watches & Jewellery | Watches, Smart watches, Chains & necklaces, Bracelets, Rings, Earrings, Pendants, Cufflinks |
+| Clothing | T-shirts, Hoodies & sweatshirts, Tracksuits, Joggers, Jeans, Shirts, Polo shirts, Jumpers & cardigans, Trousers & chinos, Shorts |
+| Coats & Jackets | Puffer jackets, Parkas, Bomber jackets, Gilets, Raincoats, Denim jackets, Leather jackets, Overcoats, Fleeces, Overshirts |
+| Shoes & Boots | Trainers, Running trainers, Boots, Casual shoes, Smart shoes, Loafers, Sliders, Sandals, Flip-flops, Slippers |
+| Sportswear | Gym tops, Gym shorts, Joggers, Hoodies, Tracksuits, Track tops, Base layers, Running, Swim shorts, Sports socks |
 | Suits & Tailoring | Suits, Blazers, Waistcoats, Formal shirts, Suit trousers, Ties & bow ties |
 | Underwear & Nightwear | Boxers, Trunks, Briefs, Vests, Pyjamas, Loungewear, Dressing gowns, Thermals |
-| Fragrance & Grooming | Aftershave & cologne, Deodorant, Gift sets, Skincare, Shaving, Beard care, Hair care, Body care |
+| Accessories | Caps, Hats & beanies, Watches, Jewellery, Belts, Wallets & cardholders, Sunglasses, Scarves, Gloves, Socks |
+| Bags & Luggage | Rucksacks & backpacks, Cross-body bags, Bum bags, Holdalls, Tote bags, Laptop bags, Messenger bags, Wash bags, Suitcases |
+| Fragrance | Aftershave, Cologne, Body spray, Deodorant, Gift sets |
 
 ### Women
 
 | Category | Subcategories |
 | --- | --- |
 | Clothing | Tops, T-shirts, Hoodies & sweatshirts, Jeans, Jumpers & cardigans, Trousers, Co-ords, Shirts & blouses, Skirts, Jumpsuits & playsuits |
-| Dresses | Mini dresses, Midi dresses, Maxi dresses, Party dresses, Casual dresses, Bodycon dresses, Shirt dresses, Wrap dresses, Knitted dresses, Occasion dresses |
-| Coats & Jackets | Puffer jackets, Wool coats, Trench coats, Blazers, Denim jackets, Leather jackets, Gilets, Rain jackets, Faux fur & teddy, Parkas |
-| Shoes & Boots | Trainers, Ankle boots, Knee-high boots, Slippers, Heels, Flats, Sandals, Loafers, Mules, Sliders & flip-flops |
-| Activewear | Leggings, Sports bras, Gym tops, Joggers, Hoodies, Shorts, Tracksuits, Jackets, Running |
-| Bags & Purses | Handbags, Shoulder bags, Crossbody bags, Tote bags, Backpacks, Clutch bags, Purses & cardholders, Bum bags, Luggage |
-| Accessories | Sunglasses, Hats & beanies, Scarves, Belts, Hair accessories, Gloves, Socks & tights, Keyrings |
-| Jewellery & Watches | Necklaces, Earrings, Bracelets, Rings, Anklets, Jewellery sets, Watches, Smart watches |
+| Dresses | Mini dresses, Midi dresses, Maxi dresses, Party dresses, Casual dresses, Bodycon dresses, Shirt dresses, Wrap dresses, Jumper dresses, Occasion dresses |
+| Coats & Jackets | Puffer jackets, Wool coats, Trench coats, Blazers, Denim jackets, Leather jackets, Gilets, Raincoats, Faux fur & teddy, Parkas |
+| Shoes & Boots | Trainers, Ankle boots, Knee-high boots, Slippers, Heels, Flat shoes, Sandals, Loafers, Mules, Sliders & flip-flops |
+| Sportswear | Leggings, Sports bras, Gym tops, Joggers, Hoodies, Shorts, Tracksuits, Jackets, Running |
 | Lingerie & Nightwear | Bras, Knickers, Lingerie sets, Shapewear, Pyjamas, Nightdresses, Loungewear, Dressing gowns, Swimwear |
-| Fragrance & Beauty | Perfume, Body mist, Gift sets, Deodorant, Skincare, Make-up, Hair care, Body care |
+| Accessories | Jewellery, Watches, Sunglasses, Hats & beanies, Scarves, Belts, Hair accessories, Gloves, Socks & tights, Keyrings |
+| Bags & Purses | Handbags, Shoulder bags, Cross-body bags, Tote bags, Rucksacks & backpacks, Clutch bags, Purses & cardholders, Bum bags, Suitcases & luggage |
+| Fragrance | Perfume, Body mist, Deodorant, Gift sets |
+
+### Electronics
+
+| Category | Subcategories |
+| --- | --- |
+| Phones & Tablets | Mobile phones, Tablets, Phone cases, Screen protectors, Chargers & cables, Power banks |
+| Headphones & Speakers | Headphones, Earbuds, Speakers, Soundbars |
+| Smart Watches | Smart watches, Fitness trackers, Straps & accessories |
+| Gaming | Consoles, Games, Controllers, Gaming headsets, Gaming accessories |
+| Laptops & Computing | Laptops, Monitors, Keyboards & mice, Storage & memory |
+| Cameras | Cameras, Action cameras, Instant cameras, Camera accessories |
+| TV & Smart Home | TVs, Streaming devices, Smart speakers, Smart home |
 
 ## Photos
 

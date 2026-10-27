@@ -1,4 +1,5 @@
 const Product = require('../models/productModel');
+const { UNISEX_DEPARTMENTS } = require('../config/taxonomy');
 const { notFound } = require('../utils/httpError');
 
 const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -16,8 +17,8 @@ const PUBLIC_FIELDS = '-__v';
 // Builds the Mongo filter for the public catalogue (and the admin list).
 const buildFilter = (query, { includeInactive = false } = {}) => {
   const filter = includeInactive ? {} : { isActive: true };
-  // Unisex products are listed under both departments.
-  if (query.department) filter.department = { $in: [query.department, 'unisex'] };
+  // Unisex products are listed under Men and Women.
+  if (query.department) filter.department = UNISEX_DEPARTMENTS.includes(query.department) ? { $in: [query.department, 'unisex'] } : query.department;
   if (query.category) filter.category = query.category;
   if (query.subcategory) filter.subcategory = query.subcategory;
   if (query.brand) filter.brand = new RegExp(`^${escapeRegex(query.brand)}$`, 'i');

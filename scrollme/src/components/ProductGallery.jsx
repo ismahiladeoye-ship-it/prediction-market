@@ -241,7 +241,7 @@ const ProductGallery = ({
           {!fixedDepartment && (
             <FilterSelect
               label='Department'
-              allLabel='Men & Women'
+              allLabel='All departments'
               value={department}
               onChange={(v) => updateParams({ department: v })}
               options={departments.map((d) => [d.slug, d.title])}

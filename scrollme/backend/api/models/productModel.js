@@ -24,10 +24,10 @@ const ProductSchema = new Schema(
       type: Number,
       min: 0,
     },
-    // Men, women or unisex (shown under both). See config/taxonomy.json.
+    // Men, women, electronics or unisex (shown under Men and Women). See config/taxonomy.json.
     department: {
       type: String,
-      enum: ['men', 'women', 'unisex'],
+      enum: ['men', 'women', 'electronics', 'unisex'],
       index: true,
     },
     // Category within the department, e.g. "shoes-boots", and optionally a

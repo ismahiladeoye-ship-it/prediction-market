@@ -106,6 +106,7 @@ describe('men and women', () => {
     await createProduct({ name: 'Heeled Boot', department: 'women', category: 'shoes-boots', subcategory: 'ankle-boots' });
     await createProduct({ name: 'Logo Tee', department: 'unisex', category: 'clothing', subcategory: 't-shirts' });
     await createProduct({ name: 'Silk Dress', department: 'women', category: 'dresses', subcategory: 'midi-dresses' });
+    await createProduct({ name: 'Wireless Earbuds', department: 'electronics', category: 'audio', subcategory: 'earbuds' });
   });
 
   it('lists a department with unisex products, narrowed by category and subcategory', async () => {
@@ -115,6 +116,9 @@ describe('men and women', () => {
     expect(await names('department=women&category=shoes-boots')).toEqual(['Heeled Boot']);
     expect(await names('department=women&category=shoes-boots&subcategory=trainers')).toEqual([]);
     expect(await names('category=shoes-boots')).toEqual(['Heeled Boot', 'Runner Sneaker']);
+    // Electronics is its own section: unisex clothing does not appear there.
+    expect(await names('department=electronics')).toEqual(['Wireless Earbuds']);
+    expect(await names('department=electronics&category=audio&subcategory=earbuds')).toEqual(['Wireless Earbuds']);
     expect(await names('q=ankle')).toEqual(['Heeled Boot']);
     expect((await request(ctx.app).get('/api/product/list?department=kids')).status).toBe(400);
   });
@@ -133,11 +137,16 @@ describe('taxonomy', () => {
     expect(storefront).toEqual(backend);
   });
 
-  it('has Men and Women with ten categories each and at most ten subcategories per category', () => {
-    expect(backend.departments.map((d) => d.slug)).toEqual(['men', 'women']);
+  it('has Men, Women and Electronics with at most ten categories and ten subcategories each', () => {
+    expect(backend.departments.map((d) => [d.slug, d.unisex])).toEqual([
+      ['men', true],
+      ['women', true],
+      ['electronics', false],
+    ]);
     for (const dept of backend.departments) {
-      expect(dept.categories).toHaveLength(10);
-      expect(new Set(dept.categories.map((c) => c.slug)).size).toBe(10);
+      expect(dept.categories.length).toBeGreaterThan(0);
+      expect(dept.categories.length).toBeLessThanOrEqual(10);
+      expect(new Set(dept.categories.map((c) => c.slug)).size).toBe(dept.categories.length);
       for (const cat of dept.categories) {
         expect(cat.subcategories.length).toBeGreaterThan(0);
         expect(cat.subcategories.length).toBeLessThanOrEqual(10);

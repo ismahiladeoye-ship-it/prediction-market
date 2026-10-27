@@ -3,6 +3,7 @@
     {
       "slug": "men",
       "title": "Men",
+      "unisex": true,
       "categories": [
         {
           "slug": "clothing",
@@ -38,7 +39,7 @@
             },
             {
               "slug": "knitwear",
-              "title": "Knitwear"
+              "title": "Jumpers & cardigans"
             },
             {
               "slug": "trousers",
@@ -72,7 +73,7 @@
             },
             {
               "slug": "rain-jackets",
-              "title": "Rain jackets"
+              "title": "Raincoats"
             },
             {
               "slug": "denim-jackets",
@@ -106,7 +107,7 @@
             },
             {
               "slug": "running-shoes",
-              "title": "Running shoes"
+              "title": "Running trainers"
             },
             {
               "slug": "boots",
@@ -144,7 +145,7 @@
         },
         {
           "slug": "activewear",
-          "title": "Activewear",
+          "title": "Sportswear",
           "subcategories": [
             {
               "slug": "gym-tops",
@@ -168,7 +169,7 @@
             },
             {
               "slug": "track-jackets",
-              "title": "Track jackets"
+              "title": "Track tops"
             },
             {
               "slug": "base-layers",
@@ -185,132 +186,6 @@
             {
               "slug": "sports-socks",
               "title": "Sports socks"
-            }
-          ]
-        },
-        {
-          "slug": "accessories",
-          "title": "Accessories",
-          "subcategories": [
-            {
-              "slug": "caps",
-              "title": "Caps"
-            },
-            {
-              "slug": "hats-beanies",
-              "title": "Hats & beanies"
-            },
-            {
-              "slug": "belts",
-              "title": "Belts"
-            },
-            {
-              "slug": "wallets",
-              "title": "Wallets & cardholders"
-            },
-            {
-              "slug": "sunglasses",
-              "title": "Sunglasses"
-            },
-            {
-              "slug": "scarves",
-              "title": "Scarves"
-            },
-            {
-              "slug": "gloves",
-              "title": "Gloves"
-            },
-            {
-              "slug": "socks",
-              "title": "Socks"
-            },
-            {
-              "slug": "ties",
-              "title": "Ties"
-            },
-            {
-              "slug": "keyrings",
-              "title": "Keyrings"
-            }
-          ]
-        },
-        {
-          "slug": "bags",
-          "title": "Bags & Luggage",
-          "subcategories": [
-            {
-              "slug": "backpacks",
-              "title": "Backpacks"
-            },
-            {
-              "slug": "crossbody-bags",
-              "title": "Crossbody bags"
-            },
-            {
-              "slug": "bum-bags",
-              "title": "Bum bags"
-            },
-            {
-              "slug": "holdalls",
-              "title": "Holdalls & duffel bags"
-            },
-            {
-              "slug": "tote-bags",
-              "title": "Tote bags"
-            },
-            {
-              "slug": "laptop-bags",
-              "title": "Laptop bags"
-            },
-            {
-              "slug": "messenger-bags",
-              "title": "Messenger bags"
-            },
-            {
-              "slug": "wash-bags",
-              "title": "Wash bags"
-            },
-            {
-              "slug": "suitcases",
-              "title": "Suitcases"
-            }
-          ]
-        },
-        {
-          "slug": "jewellery-watches",
-          "title": "Watches & Jewellery",
-          "subcategories": [
-            {
-              "slug": "watches",
-              "title": "Watches"
-            },
-            {
-              "slug": "smart-watches",
-              "title": "Smart watches"
-            },
-            {
-              "slug": "chains-necklaces",
-              "title": "Chains & necklaces"
-            },
-            {
-              "slug": "bracelets",
-              "title": "Bracelets"
-            },
-            {
-              "slug": "rings",
-              "title": "Rings"
-            },
-            {
-              "slug": "earrings",
-              "title": "Earrings"
-            },
-            {
-              "slug": "pendants",
-              "title": "Pendants"
-            },
-            {
-              "slug": "cufflinks",
-              "title": "Cufflinks"
             }
           ]
         },
@@ -383,12 +258,108 @@
           ]
         },
         {
+          "slug": "accessories",
+          "title": "Accessories",
+          "subcategories": [
+            {
+              "slug": "caps",
+              "title": "Caps"
+            },
+            {
+              "slug": "hats-beanies",
+              "title": "Hats & beanies"
+            },
+            {
+              "slug": "watches",
+              "title": "Watches"
+            },
+            {
+              "slug": "jewellery",
+              "title": "Jewellery"
+            },
+            {
+              "slug": "belts",
+              "title": "Belts"
+            },
+            {
+              "slug": "wallets",
+              "title": "Wallets & cardholders"
+            },
+            {
+              "slug": "sunglasses",
+              "title": "Sunglasses"
+            },
+            {
+              "slug": "scarves",
+              "title": "Scarves"
+            },
+            {
+              "slug": "gloves",
+              "title": "Gloves"
+            },
+            {
+              "slug": "socks",
+              "title": "Socks"
+            }
+          ]
+        },
+        {
+          "slug": "bags",
+          "title": "Bags & Luggage",
+          "subcategories": [
+            {
+              "slug": "backpacks",
+              "title": "Rucksacks & backpacks"
+            },
+            {
+              "slug": "crossbody-bags",
+              "title": "Cross-body bags"
+            },
+            {
+              "slug": "bum-bags",
+              "title": "Bum bags"
+            },
+            {
+              "slug": "holdalls",
+              "title": "Holdalls"
+            },
+            {
+              "slug": "tote-bags",
+              "title": "Tote bags"
+            },
+            {
+              "slug": "laptop-bags",
+              "title": "Laptop bags"
+            },
+            {
+              "slug": "messenger-bags",
+              "title": "Messenger bags"
+            },
+            {
+              "slug": "wash-bags",
+              "title": "Wash bags"
+            },
+            {
+              "slug": "suitcases",
+              "title": "Suitcases"
+            }
+          ]
+        },
+        {
           "slug": "fragrance",
-          "title": "Fragrance & Grooming",
+          "title": "Fragrance",
           "subcategories": [
             {
               "slug": "aftershave",
-              "title": "Aftershave & cologne"
+              "title": "Aftershave"
+            },
+            {
+              "slug": "cologne",
+              "title": "Cologne"
+            },
+            {
+              "slug": "body-spray",
+              "title": "Body spray"
             },
             {
               "slug": "deodorant",
@@ -397,26 +368,6 @@
             {
               "slug": "gift-sets",
               "title": "Gift sets"
-            },
-            {
-              "slug": "skincare",
-              "title": "Skincare"
-            },
-            {
-              "slug": "shaving",
-              "title": "Shaving"
-            },
-            {
-              "slug": "beard-care",
-              "title": "Beard care"
-            },
-            {
-              "slug": "hair-care",
-              "title": "Hair care"
-            },
-            {
-              "slug": "body-care",
-              "title": "Body care"
             }
           ]
         }
@@ -425,6 +376,7 @@
     {
       "slug": "women",
       "title": "Women",
+      "unisex": true,
       "categories": [
         {
           "slug": "clothing",
@@ -510,7 +462,7 @@
             },
             {
               "slug": "knitted-dresses",
-              "title": "Knitted dresses"
+              "title": "Jumper dresses"
             },
             {
               "slug": "occasion-dresses",
@@ -552,7 +504,7 @@
             },
             {
               "slug": "rain-jackets",
-              "title": "Rain jackets"
+              "title": "Raincoats"
             },
             {
               "slug": "faux-fur",
@@ -590,7 +542,7 @@
             },
             {
               "slug": "flats",
-              "title": "Flats"
+              "title": "Flat shoes"
             },
             {
               "slug": "sandals",
@@ -612,7 +564,7 @@
         },
         {
           "slug": "activewear",
-          "title": "Activewear",
+          "title": "Sportswear",
           "subcategories": [
             {
               "slug": "leggings",
@@ -649,124 +601,6 @@
             {
               "slug": "running",
               "title": "Running"
-            }
-          ]
-        },
-        {
-          "slug": "bags",
-          "title": "Bags & Purses",
-          "subcategories": [
-            {
-              "slug": "handbags",
-              "title": "Handbags"
-            },
-            {
-              "slug": "shoulder-bags",
-              "title": "Shoulder bags"
-            },
-            {
-              "slug": "crossbody-bags",
-              "title": "Crossbody bags"
-            },
-            {
-              "slug": "tote-bags",
-              "title": "Tote bags"
-            },
-            {
-              "slug": "backpacks",
-              "title": "Backpacks"
-            },
-            {
-              "slug": "clutch-bags",
-              "title": "Clutch bags"
-            },
-            {
-              "slug": "purses",
-              "title": "Purses & cardholders"
-            },
-            {
-              "slug": "bum-bags",
-              "title": "Bum bags"
-            },
-            {
-              "slug": "luggage",
-              "title": "Luggage"
-            }
-          ]
-        },
-        {
-          "slug": "accessories",
-          "title": "Accessories",
-          "subcategories": [
-            {
-              "slug": "sunglasses",
-              "title": "Sunglasses"
-            },
-            {
-              "slug": "hats-beanies",
-              "title": "Hats & beanies"
-            },
-            {
-              "slug": "scarves",
-              "title": "Scarves"
-            },
-            {
-              "slug": "belts",
-              "title": "Belts"
-            },
-            {
-              "slug": "hair-accessories",
-              "title": "Hair accessories"
-            },
-            {
-              "slug": "gloves",
-              "title": "Gloves"
-            },
-            {
-              "slug": "socks-tights",
-              "title": "Socks & tights"
-            },
-            {
-              "slug": "keyrings",
-              "title": "Keyrings"
-            }
-          ]
-        },
-        {
-          "slug": "jewellery-watches",
-          "title": "Jewellery & Watches",
-          "subcategories": [
-            {
-              "slug": "necklaces",
-              "title": "Necklaces"
-            },
-            {
-              "slug": "earrings",
-              "title": "Earrings"
-            },
-            {
-              "slug": "bracelets",
-              "title": "Bracelets"
-            },
-            {
-              "slug": "rings",
-              "title": "Rings"
-            },
-            {
-              "slug": "anklets",
-              "title": "Anklets"
-            },
-            {
-              "slug": "jewellery-sets",
-              "title": "Jewellery sets"
-            },
-            {
-              "slug": "watches",
-              "title": "Watches"
-            },
-            {
-              "slug": "smart-watches",
-              "title": "Smart watches"
             }
           ]
         },
@@ -813,8 +647,96 @@
           ]
         },
         {
+          "slug": "accessories",
+          "title": "Accessories",
+          "subcategories": [
+            {
+              "slug": "jewellery",
+              "title": "Jewellery"
+            },
+            {
+              "slug": "watches",
+              "title": "Watches"
+            },
+            {
+              "slug": "sunglasses",
+              "title": "Sunglasses"
+            },
+            {
+              "slug": "hats-beanies",
+              "title": "Hats & beanies"
+            },
+            {
+              "slug": "scarves",
+              "title": "Scarves"
+            },
+            {
+              "slug": "belts",
+              "title": "Belts"
+            },
+            {
+              "slug": "hair-accessories",
+              "title": "Hair accessories"
+            },
+            {
+              "slug": "gloves",
+              "title": "Gloves"
+            },
+            {
+              "slug": "socks-tights",
+              "title": "Socks & tights"
+            },
+            {
+              "slug": "keyrings",
+              "title": "Keyrings"
+            }
+          ]
+        },
+        {
+          "slug": "bags",
+          "title": "Bags & Purses",
+          "subcategories": [
+            {
+              "slug": "handbags",
+              "title": "Handbags"
+            },
+            {
+              "slug": "shoulder-bags",
+              "title": "Shoulder bags"
+            },
+            {
+              "slug": "crossbody-bags",
+              "title": "Cross-body bags"
+            },
+            {
+              "slug": "tote-bags",
+              "title": "Tote bags"
+            },
+            {
+              "slug": "backpacks",
+              "title": "Rucksacks & backpacks"
+            },
+            {
+              "slug": "clutch-bags",
+              "title": "Clutch bags"
+            },
+            {
+              "slug": "purses",
+              "title": "Purses & cardholders"
+            },
+            {
+              "slug": "bum-bags",
+              "title": "Bum bags"
+            },
+            {
+              "slug": "luggage",
+              "title": "Suitcases & luggage"
+            }
+          ]
+        },
+        {
           "slug": "fragrance",
-          "title": "Fragrance & Beauty",
+          "title": "Fragrance",
           "subcategories": [
             {
               "slug": "perfume",
@@ -825,28 +747,181 @@
               "title": "Body mist"
             },
             {
-              "slug": "gift-sets",
-              "title": "Gift sets"
-            },
-            {
               "slug": "deodorant",
               "title": "Deodorant"
             },
             {
-              "slug": "skincare",
-              "title": "Skincare"
+              "slug": "gift-sets",
+              "title": "Gift sets"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "electronics",
+      "title": "Electronics",
+      "unisex": false,
+      "categories": [
+        {
+          "slug": "phones-tablets",
+          "title": "Phones & Tablets",
+          "subcategories": [
+            {
+              "slug": "mobile-phones",
+              "title": "Mobile phones"
             },
             {
-              "slug": "make-up",
-              "title": "Make-up"
+              "slug": "tablets",
+              "title": "Tablets"
             },
             {
-              "slug": "hair-care",
-              "title": "Hair care"
+              "slug": "phone-cases",
+              "title": "Phone cases"
             },
             {
-              "slug": "body-care",
-              "title": "Body care"
+              "slug": "screen-protectors",
+              "title": "Screen protectors"
+            },
+            {
+              "slug": "chargers-cables",
+              "title": "Chargers & cables"
+            },
+            {
+              "slug": "power-banks",
+              "title": "Power banks"
+            }
+          ]
+        },
+        {
+          "slug": "audio",
+          "title": "Headphones & Speakers",
+          "subcategories": [
+            {
+              "slug": "headphones",
+              "title": "Headphones"
+            },
+            {
+              "slug": "earbuds",
+              "title": "Earbuds"
+            },
+            {
+              "slug": "speakers",
+              "title": "Speakers"
+            },
+            {
+              "slug": "soundbars",
+              "title": "Soundbars"
+            }
+          ]
+        },
+        {
+          "slug": "wearables",
+          "title": "Smart Watches",
+          "subcategories": [
+            {
+              "slug": "smart-watches",
+              "title": "Smart watches"
+            },
+            {
+              "slug": "fitness-trackers",
+              "title": "Fitness trackers"
+            },
+            {
+              "slug": "watch-straps",
+              "title": "Straps & accessories"
+            }
+          ]
+        },
+        {
+          "slug": "gaming",
+          "title": "Gaming",
+          "subcategories": [
+            {
+              "slug": "consoles",
+              "title": "Consoles"
+            },
+            {
+              "slug": "games",
+              "title": "Games"
+            },
+            {
+              "slug": "controllers",
+              "title": "Controllers"
+            },
+            {
+              "slug": "gaming-headsets",
+              "title": "Gaming headsets"
+            },
+            {
+              "slug": "gaming-accessories",
+              "title": "Gaming accessories"
+            }
+          ]
+        },
+        {
+          "slug": "computing",
+          "title": "Laptops & Computing",
+          "subcategories": [
+            {
+              "slug": "laptops",
+              "title": "Laptops"
+            },
+            {
+              "slug": "monitors",
+              "title": "Monitors"
+            },
+            {
+              "slug": "keyboards-mice",
+              "title": "Keyboards & mice"
+            },
+            {
+              "slug": "storage",
+              "title": "Storage & memory"
+            }
+          ]
+        },
+        {
+          "slug": "cameras",
+          "title": "Cameras",
+          "subcategories": [
+            {
+              "slug": "cameras",
+              "title": "Cameras"
+            },
+            {
+              "slug": "action-cameras",
+              "title": "Action cameras"
+            },
+            {
+              "slug": "instant-cameras",
+              "title": "Instant cameras"
+            },
+            {
+              "slug": "camera-accessories",
+              "title": "Camera accessories"
+            }
+          ]
+        },
+        {
+          "slug": "tv-home",
+          "title": "TV & Smart Home",
+          "subcategories": [
+            {
+              "slug": "tvs",
+              "title": "TVs"
+            },
+            {
+              "slug": "streaming-devices",
+              "title": "Streaming devices"
+            },
+            {
+              "slug": "smart-speakers",
+              "title": "Smart speakers"
+            },
+            {
+              "slug": "smart-home",
+              "title": "Smart home"
             }
           ]
         }

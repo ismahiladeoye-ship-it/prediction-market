@@ -106,15 +106,15 @@ const Wishlist = () => {
       await dispatch(addToCart({ productId: product._id, quantity: 1 })).unwrap();
       dispatch(removeWishlistItem(product._id));
       toast({
-        title: 'Moved to your bag.',
-        description: 'Open your bag to check out.',
+        title: 'Product moved to cart.',
+        description: 'You can view your cart to proceed.',
         status: 'success',
         duration: 3000,
         isClosable: true,
       });
     } catch (err) {
       toast({
-        title: 'Could not add this to your bag.',
+        title: 'Error adding product to cart.',
         description: typeof err === 'string' ? err : 'Something went wrong.',
         status: 'error',
         duration: 3000,
@@ -144,7 +144,7 @@ const Wishlist = () => {
                 <Unavailable>Currently unavailable</Unavailable>
               ) : (
                 <MoveToBagButton onClick={() => handleAddToCart(product)}>
-                  {product?.sizes?.length ? 'Choose size' : 'Move to bag'}
+                  {product?.sizes?.length ? 'Choose Size' : 'Move to Cart'}
                 </MoveToBagButton>
               )}
             </ProductCard>

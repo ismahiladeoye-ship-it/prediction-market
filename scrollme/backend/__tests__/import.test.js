@@ -160,10 +160,12 @@ describe('spreadsheet import', () => {
     const { agent } = await admin();
     const csv = require('node:fs').readFileSync(require('node:path').join(__dirname, '../../public/templates/product-upload-template.csv'), 'utf8');
     // The photos named in the template, chosen but not yet uploaded (as in the preview).
-    const photos = Object.fromEntries(['trk-black-front.jpg', 'trk-black-back.jpg', 'hoodie-oat-front.jpg', 'gelnyc-black-side.jpg'].map((n) => [n, null]));
+    const photos = Object.fromEntries(
+      ['trk-black-front.jpg', 'trk-black-back.jpg', 'hoodie-oat-front.jpg', 'gelnyc-black-side.jpg', 'wh1000xm5-black.jpg'].map((n) => [n, null])
+    );
     const res = await agent.post('/api/admin/products/import').send({ csv, dryRun: true, photos });
     expect(res.body.rows.flatMap((r) => r.errors)).toEqual([]);
-    expect(res.body.summary).toEqual({ create: 3, update: 0, errors: 0 });
+    expect(res.body.summary).toEqual({ create: 4, update: 0, errors: 0 });
   });
 
   it('is admin-only', async () => {
