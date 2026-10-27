@@ -6,6 +6,7 @@ const mailer = require('../services/mailer');
 const googleAuth = require('../services/googleAuth');
 const { badRequest, unauthorized, conflict, HttpError } = require('../utils/httpError');
 const logger = require('../utils/logger');
+const { afterResponse } = require('../utils/background');
 
 // Real bcrypt hash of a random string, compared against when the user does not exist.
 const DUMMY_HASH = '$2b$12$QRwGchrL8LjfV4hGSmigAup8WIdSYopb8y.uAszQLu8qei1DpUXMK';
@@ -104,13 +105,15 @@ exports.forgotPassword = async (req, res) => {
     const link = `${getConfig().APP_URL}/reset-password#token=${token}`;
     // Not awaited: waiting for the mail server would make the response slower
     // for registered addresses and reveal which emails have accounts.
-    mailer
-      .sendMail({
-        to: user.email,
-        subject: 'Reset your Get It Sourced password',
-        text: `Hi ${user.firstName},\n\nUse this link within 30 minutes to choose a new password:\n${link}\n\nIf you did not ask for this, you can ignore this email.`,
-      })
-      .catch((err) => logger.error('password_reset_mail_failed', { err }));
+    afterResponse(
+      mailer
+        .sendMail({
+          to: user.email,
+          subject: 'Reset your Get It Sourced password',
+          text: `Hi ${user.firstName},\n\nUse this link within 30 minutes to choose a new password:\n${link}\n\nIf you did not ask for this, you can ignore this email.`,
+        })
+        .catch((err) => logger.error('password_reset_mail_failed', { err }))
+    );
   }
   // Identical response whether or not the address is registered.
   res.status(200).json({ message: 'If an account exists for that email, a reset link has been sent.' });

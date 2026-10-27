@@ -110,6 +110,14 @@ In the admin:
 
 ## 8. Turn on emails
 
+Emails the shop sends: password-reset links, order confirmations, shipping and refund updates, and new-order and contact-form alerts to you. They need an email-sending service. For example, with **Resend** (free up to 100 emails a day):
+
+1. Sign up at resend.com, **Domains → Add domain** `getitsourced.com`, and add the DNS records it shows in Cloudflare (*DNS only*, grey cloud). Wait until Resend says *Verified*.
+2. **API keys → Create** a key with *Sending access*.
+3. In Vercel add `SMTP_URL` = `smtps://resend:YOUR_API_KEY@smtp.resend.com:465` (mark it *Sensitive*) and redeploy.
+
+The default sender is `Get It Sourced <no-reply@getitsourced.com>`; set `MAIL_FROM` to change it. Any service with SMTP works the same way.
+
 Add these variables, then redeploy:
 
 | Name | Value |
