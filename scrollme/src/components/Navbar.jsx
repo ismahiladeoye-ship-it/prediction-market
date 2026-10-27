@@ -392,7 +392,7 @@ const Navbar = () => {
   };
 
   const cartLink = (
-    <IconLink to='/cart' aria-label={`Cart, ${totalQuantity || 0} ${totalQuantity === 1 ? 'item' : 'items'}`}>
+    <IconLink to='/cart' aria-label={`Bag, ${totalQuantity || 0} ${totalQuantity === 1 ? 'item' : 'items'}`}>
       <HiOutlineShoppingBag size={24} aria-hidden='true' />
       <CartCount aria-hidden='true'>({totalQuantity || 0})</CartCount>
     </IconLink>

@@ -67,6 +67,46 @@ const PLACEMENTS = {
   deodorant: ['fragrance', 'deodorant'],
 };
 
+// The sample shop's size: enough to browse every menu without a huge database.
+const SAMPLE_SIZE = 2000;
+
+// The source is an Indian retailer's catalogue; product names use British English here.
+const BRITISH = [
+  [/\bTrack ?Pants\b/gi, 'Joggers'],
+  [/\bPants\b/g, 'Trousers'],
+  [/\bSneakers\b/gi, 'Trainers'],
+  [/\bSneaker\b/gi, 'Trainer'],
+  [/\bSweaters\b/gi, 'Jumpers'],
+  [/\bSweater\b/gi, 'Jumper'],
+  [/\bPajamas\b/gi, 'Pyjamas'],
+  [/\bPajama\b/gi, 'Pyjama'],
+  [/\bNight ?Suits?\b/gi, 'Pyjama Set'],
+  [/\bPanties\b/gi, 'Knickers'],
+  [/\bInnerwear Vests?\b/gi, 'Vest'],
+  [/\bFlip Flops\b/gi, 'Flip-Flops'],
+  [/\bT-?shirts?\b/gi, (m) => (/s$/i.test(m) ? 'T-shirts' : 'T-shirt')],
+  [/\bJewelry\b/gi, 'Jewellery'],
+  [/\bColor/g, 'Colour'], // Colored, Colorblocked...
+];
+const britishName = (name) => BRITISH.reduce((n, [pattern, replacement]) => n.replace(pattern, replacement), String(name || ''));
+
+// Takes products in turn from each department/category/subcategory so even a
+// small sample (the e2e tests use the first 400) covers every menu.
+const spread = (products, size) => {
+  const groups = new Map();
+  for (const p of products) {
+    const key = `${p.department}/${p.category}/${p.subcategory}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(p);
+  }
+  const queues = [...groups.values()];
+  const out = [];
+  for (let i = 0; out.length < size && queues.some((q) => i < q.length); i += 1) {
+    for (const q of queues) if (i < q.length && out.length < size) out.push(q[i]);
+  }
+  return out;
+};
+
 // The source's gender tag ("men-clothing", "unisex-accessories"...).
 const departmentOf = (tags) => {
   const tag = tags.find((t) => /^(men|women|unisex)-/.test(t));
@@ -93,32 +133,35 @@ const splitList = (value) =>
     .filter(Boolean);
 
 const buildProducts = () =>
-  raw.flatMap((src, i) => {
-    const gen = generated[i] || {};
-    const tags = splitList(src.tags);
-    const placement = placementOf(departmentOf(tags), String(src.product_tag || '').toLowerCase());
-    if (!placement) return [];
-    const sizes = splitList(src.sizes).filter((s) => !/^one ?size$/i.test(s));
-    return {
-      name: src.product_name,
-      description: src.meta_description || gen.description || '',
-      price: src.marked_price,
-      discounted_price: src.discounted_price,
-      ...placement,
-      brand: src.brand_tag,
-      imageUrl: src.img_link,
-      stock: Number.isInteger(gen.stock) ? gen.stock : 25,
-      weight: gen.weight || 0,
-      dimensions: gen.dimensions,
-      material: gen.material,
-      color: gen.color,
-      sizes,
-      tags,
-      ratings: { averageRating: Number(src.rating) || 0, numberOfReviews: Number(src.rating_count) || 0 },
-      isActive: true,
-      createdAt: gen.createdAt ? new Date(gen.createdAt) : new Date(),
-      updatedAt: gen.updatedAt ? new Date(gen.updatedAt) : new Date(),
-    };
-  });
+  spread(
+    raw.flatMap((src, i) => {
+      const gen = generated[i] || {};
+      const tags = splitList(src.tags);
+      const placement = placementOf(departmentOf(tags), String(src.product_tag || '').toLowerCase());
+      if (!placement) return [];
+      const sizes = splitList(src.sizes).filter((s) => !/^one ?size$/i.test(s));
+      return {
+        name: britishName(src.product_name),
+        description: src.meta_description || gen.description || '',
+        price: src.marked_price,
+        discounted_price: src.discounted_price,
+        ...placement,
+        brand: src.brand_tag,
+        imageUrl: src.img_link,
+        stock: Number.isInteger(gen.stock) ? gen.stock : 25,
+        weight: gen.weight || 0,
+        dimensions: gen.dimensions,
+        material: gen.material,
+        color: gen.color,
+        sizes,
+        tags,
+        ratings: { averageRating: Number(src.rating) || 0, numberOfReviews: Number(src.rating_count) || 0 },
+        isActive: true,
+        createdAt: gen.createdAt ? new Date(gen.createdAt) : new Date(),
+        updatedAt: gen.updatedAt ? new Date(gen.updatedAt) : new Date(),
+      };
+    }),
+    SAMPLE_SIZE
+  );
 
 module.exports = buildProducts;
