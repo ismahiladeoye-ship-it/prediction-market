@@ -4,8 +4,8 @@ const { placementProblem } = require('../../api/config/taxonomy');
 
 // Source product types -> [category, subcategory] in config/taxonomy.json, per
 // department (one entry = same in both; "electronics" = that department for
-// everyone). Other types (kidswear, sarees, homeware, make-up...) are left out
-// of the sample shop.
+// everyone). Other types (kidswear, sarees, jewellery, homeware, make-up...)
+// are left out of the sample shop.
 const PLACEMENTS = {
   tshirts: ['clothing', 't-shirts'],
   shirts: { men: ['clothing', 'shirts'], women: ['clothing', 'shirts-blouses'] },
@@ -44,11 +44,6 @@ const PLACEMENTS = {
   watches: ['accessories', 'watches'],
   'smart-watches': { electronics: ['wearables', 'smart-watches'] },
   headphones: { electronics: ['audio', 'headphones'] },
-  earrings: ['accessories', 'jewellery'],
-  'necklace-and-chains': ['accessories', 'jewellery'],
-  bracelet: ['accessories', 'jewellery'],
-  ring: ['accessories', 'jewellery'],
-  'jewellery-set': { women: ['accessories', 'jewellery'] },
   sunglasses: ['accessories', 'sunglasses'],
   belts: ['accessories', 'belts'],
   caps: { men: ['accessories', 'caps'], women: ['accessories', 'hats-beanies'] },
@@ -87,7 +82,6 @@ const BRITISH = [
   [/\bInnerwear Vests?\b/gi, 'Vest'],
   [/\bFlip Flops\b/gi, 'Flip-Flops'],
   [/\bT-?shirts?\b/gi, (m) => (/s$/i.test(m) ? 'T-shirts' : 'T-shirt')],
-  [/\bJewelry\b/gi, 'Jewellery'],
   [/\bColor/g, 'Colour'], // Colored, Colorblocked...
 ];
 const britishName = (name) => BRITISH.reduce((n, [pattern, replacement]) => n.replace(pattern, replacement), String(name || ''));

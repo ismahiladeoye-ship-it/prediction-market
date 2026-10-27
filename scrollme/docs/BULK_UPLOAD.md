@@ -17,7 +17,7 @@
 | `brand` | | `Fear of God Essentials` | |
 | `department` | new products | `Men` | `Men`, `Women`, `Unisex` (shown under Men and Women) or `Electronics`. *Men's, Mens, Ladies, Womens, Tech* also work. The column can also be called `gender`. |
 | `category` | new products | `Clothing` | One of the categories below, e.g. *Clothing, Shoes & Boots, Coats & Jackets, Gaming*. A subcategory on its own works too (*Hoodies*, *Trainers*, *Headphones*): the right category is filled in. |
-| `subcategory` | | `Tracksuits` | Optional, from the list below. Everyday names work: *Tees, Hoodie, Jumper, Puffer, Beanie, Rucksack, Chain, Perfume, Phone, Charger*… |
+| `subcategory` | | `Tracksuits` | Optional, from the list below. Everyday names work: *Tees, Hoodie, Jumper, Puffer, Beanie, Rucksack, Perfume, Phone, Charger*… |
 | `price` | new products | `185.00` | In pounds; `£` and commas are fine. |
 | `stock` | new products | `6` | Whole number. |
 | `sizes` | | `S\|M\|L\|XL` | Separate with `\|`. Leave empty for one-size items. |
@@ -45,7 +45,7 @@ Products are shown under **Men**, **Women** and **Electronics** (the menus on th
 | Sportswear | Gym tops, Gym shorts, Joggers, Hoodies, Tracksuits, Track tops, Base layers, Running, Swim shorts, Sports socks |
 | Suits & Tailoring | Suits, Blazers, Waistcoats, Formal shirts, Suit trousers, Ties & bow ties |
 | Underwear & Nightwear | Boxers, Trunks, Briefs, Vests, Pyjamas, Loungewear, Dressing gowns, Thermals |
-| Accessories | Caps, Hats & beanies, Watches, Jewellery, Belts, Wallets & cardholders, Sunglasses, Scarves, Gloves, Socks |
+| Accessories | Caps, Hats & beanies, Watches, Belts, Wallets & cardholders, Sunglasses, Scarves, Gloves, Socks |
 | Bags & Luggage | Rucksacks & backpacks, Cross-body bags, Bum bags, Holdalls, Tote bags, Laptop bags, Messenger bags, Wash bags, Suitcases |
 | Fragrance | Aftershave, Cologne, Body spray, Deodorant, Gift sets |
 
@@ -59,7 +59,7 @@ Products are shown under **Men**, **Women** and **Electronics** (the menus on th
 | Shoes & Boots | Trainers, Ankle boots, Knee-high boots, Slippers, Heels, Flat shoes, Sandals, Loafers, Mules, Sliders & flip-flops |
 | Sportswear | Leggings, Sports bras, Gym tops, Joggers, Hoodies, Shorts, Tracksuits, Jackets, Running |
 | Lingerie & Nightwear | Bras, Knickers, Lingerie sets, Shapewear, Pyjamas, Nightdresses, Loungewear, Dressing gowns, Swimwear |
-| Accessories | Jewellery, Watches, Sunglasses, Hats & beanies, Scarves, Belts, Hair accessories, Gloves, Socks & tights, Keyrings |
+| Accessories | Watches, Sunglasses, Hats & beanies, Scarves, Belts, Hair accessories, Gloves, Socks & tights, Keyrings |
 | Bags & Purses | Handbags, Shoulder bags, Cross-body bags, Tote bags, Rucksacks & backpacks, Clutch bags, Purses & cardholders, Bum bags, Suitcases & luggage |
 | Fragrance | Perfume, Body mist, Deodorant, Gift sets |
 
