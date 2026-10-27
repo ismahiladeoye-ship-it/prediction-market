@@ -56,8 +56,9 @@ export const storeConfig = {
     },
   ],
   // Home page, one entry per collection in display order: a card in "Shop by
-  // collection" and a row of its products with shortcuts to some categories.
-  // Collections and shortcuts with no products are hidden.
+  // collection" and a row of its products with shortcut buttons. A shortcut opens
+  // a category, or with `search` the collection's search results (e.g. a brand).
+  // Collections and category shortcuts with no products are hidden.
   homeCollections: [
     {
       collection: 'clothing',
@@ -74,10 +75,11 @@ export const storeConfig = {
       collection: 'footwear',
       img: pexels(7193634, 900),
       shortcuts: [
-        { label: 'Trainers', category: 'sports-shoes' },
-        { label: 'Casual shoes', category: 'casual-shoes' },
-        { label: 'Boots', category: 'boots' },
-        { label: 'Sandals', category: 'sandals' },
+        { label: 'ASICS', search: 'asics' },
+        { label: 'UGG Tasman', search: 'ugg tasman' },
+        // Not "lv": searches match inside words (silver, velvet).
+        { label: 'LV', search: 'louis vuitton' },
+        { label: 'Dior B30', search: 'dior b30' },
       ],
     },
     {

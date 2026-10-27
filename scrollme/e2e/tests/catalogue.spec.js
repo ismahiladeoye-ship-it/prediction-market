@@ -53,6 +53,12 @@ test.describe('catalogue', () => {
     await expect(page).toHaveURL(/\/collections\/clothing\?category=jackets$/);
     await expect(page.getByRole('heading', { level: 1, name: 'Clothing' })).toBeVisible();
 
+    // Footwear's buttons are brand searches within the collection.
+    await page.goto('/');
+    await page.getByRole('navigation', { name: 'Footwear categories' }).getByRole('link', { name: 'UGG Tasman' }).click();
+    await expect(page).toHaveURL(/\/collections\/footwear\?q=ugg%20tasman$/);
+    await expect(page.getByRole('heading', { level: 1, name: 'Footwear' })).toBeVisible();
+
     await page.goto('/');
     await page.getByRole('link', { name: 'View all Accessories' }).click();
     await expect(page).toHaveURL(/\/collections\/accessories$/);
