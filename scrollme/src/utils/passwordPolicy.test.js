@@ -2,7 +2,7 @@ import { passwordHint, passwordProblems } from './passwordPolicy';
 
 it('matches the API password rules', () => {
   expect(passwordProblems('Str0ng!Pass')).toEqual([]);
-  expect(passwordProblems('password123')).toEqual(['an uppercase letter', 'a special character']);
+  expect(passwordProblems('password123')).toEqual(['a capital letter', 'a symbol']);
   expect(passwordHint('abc')).toMatch(/at least 8 characters/);
 });
 

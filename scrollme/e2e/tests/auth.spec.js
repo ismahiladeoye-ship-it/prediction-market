@@ -33,22 +33,29 @@ test.describe('accounts', () => {
     await page.getByLabel('Password', { exact: true }).fill('password');
     await page.getByLabel('Confirm password').fill('password');
     await page.getByRole('button', { name: 'CREATE' }).click();
-    await expect(page.locator('form [role=alert]')).toContainText('Password needs');
+    await expect(page.getByText(/^Password needs a capital letter/)).toBeVisible();
+    await expect(page.locator('form [role=alert]')).toContainText('marked in red');
+    await expect(page.getByLabel('Password', { exact: true })).toBeFocused();
   });
 
-  test('explains a rejected sign-up under the form and accepts phone apostrophes', async ({ page }) => {
+  test('explains a rejected sign-up under each box and accepts phone apostrophes', async ({ page }) => {
     const id = Date.now();
     await page.goto('/register');
-    await expect(page.getByRole('list', { name: 'Sign-up guidelines' })).toContainText('not your email address');
+    // Guidance sits under each box; the password checklist ticks off as you type.
+    await expect(page.getByText('No spaces or @')).toBeVisible();
     await page.getByLabel('First name').fill('Shaq');
     await page.getByLabel('Last name').fill('O’Neal');
     await page.getByLabel('Username').fill(`shaq${id}@example.com`);
     await page.getByLabel('Email').fill(`shaq${id}@example.com`);
     await page.getByLabel('Password', { exact: true }).fill('Str0ng!Passw0rd');
+    await expect(page.getByRole('list', { name: 'Your password needs' }).getByText('(done)')).toHaveCount(5);
     await page.getByLabel('Confirm password').fill('Str0ng!Passw0rd');
+    await expect(page.getByText('Passwords match.')).toBeVisible();
     await page.getByRole('button', { name: 'CREATE' }).click();
-    // The reason stays on the page after the pop-up closes.
-    await expect(page.locator('form [role=alert]')).toContainText('not your email address');
+    // The problem is shown under the box itself, which is outlined in red.
+    await expect(page.getByText('Use a username here, not your email address')).toBeVisible();
+    await expect(page.getByLabel('Username')).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.locator('form [role=alert]')).toContainText('marked in red');
 
     await page.getByLabel('Username').fill(`shaq${id}`);
     await page.getByRole('button', { name: 'CREATE' }).click();

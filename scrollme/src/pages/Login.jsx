@@ -49,11 +49,28 @@ const Input = styled.input`
   flex: 1;
   min-width: 40%;
   margin: 10px 0;
-  padding: 10px;
+  padding: 12px;
   margin-bottom: 15px;
-  border: 1px solid #ccc;
+  /* 16px stops iPhones zooming in when the box is tapped. */
+  font-size: 16px;
+  border: 1px solid #bbb;
   border-radius: 4px;
   box-sizing: border-box;
+`;
+
+const Label = styled.label`
+  margin-top: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  & + input {
+    margin-top: 6px;
+  }
+`;
+
+const FieldHint = styled.p`
+  margin: -8px 0 6px;
+  font-size: 13px;
+  color: #555;
 `;
 
 const Button = styled.button`
@@ -253,22 +270,28 @@ const Login = () => {
         <br />
         <Title>SIGN IN</Title>
         <Form onSubmit={(e) => handleSubmit(e)}>
+          <Label htmlFor='login-username'>Username or email</Label>
           <Input
-            placeholder='username or email'
+            id='login-username'
             name='username'
             type='text'
             autoComplete='username'
-            aria-label='Username or email'
+            autoCapitalize='none'
+            autoCorrect='off'
+            spellCheck={false}
+            aria-describedby='login-username-hint'
             required
           />
-          <Input placeholder='password' name='password' type='password' autoComplete='current-password' aria-label='Password' required />
+          <FieldHint id='login-username-hint'>The username or email address you signed up with.</FieldHint>
+          <Label htmlFor='login-password'>Password</Label>
+          <Input id='login-password' name='password' type='password' autoComplete='current-password' required />
           {error && <ErrorText role='alert'>{error}</ErrorText>}
           <Button type='submit' disabled={submitting}>
             {submitting ? 'SIGNING IN…' : 'LOGIN'}
           </Button>
-          <Link to='/forgot-password'>DO NOT YOU REMEMBER THE PASSWORD?</Link>
+          <Link to='/forgot-password'>FORGOTTEN YOUR PASSWORD?</Link>
           <Link to='/register' state={location.state}>
-            CREATE A NEW ACCOUNT
+            NEW HERE? CREATE AN ACCOUNT
           </Link>
         </Form>
         <GoogleSignInButton onSuccess={() => navigate(redirectTo, { replace: true })} onMfaRequired={() => setStep('code')} />
