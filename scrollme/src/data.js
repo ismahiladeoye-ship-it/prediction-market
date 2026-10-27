@@ -1,4 +1,5 @@
 const pexels = (id, w = 1600) => `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=${w}`;
+const unsplash = (id, w = 1600) => `https://images.unsplash.com/${id}?auto=format&fit=crop&q=70&w=${w}`;
 
 // Everything a shop owner is likely to edit, in one place.
 export const storeConfig = {
@@ -13,8 +14,9 @@ export const storeConfig = {
   ],
   // Show the hero photos in black and white, to match the store's monochrome look.
   heroMono: true,
-  // Home page hero. Photos: Pexels licence (free for commercial use), product only (no
-  // people) and no visible brand logos.
+  // Home page hero. Photos: Pexels or Unsplash licence (free for commercial use), product
+  // only (no people). The footwear slide shows ASICS GEL trainers (Unsplash, Indrajeet
+  // Choudhary), which read as black in the monochrome hero.
   heroSlides: [
     {
       id: 'footwear',
@@ -22,8 +24,8 @@ export const storeConfig = {
       subtitle: 'Fresh pairs, ready to ship',
       cta: 'Shop',
       link: '/collections/footwear',
-      img: pexels(19577865),
-      position: 'center 55%',
+      img: unsplash('photo-1572710029599-1e1ffe84493f'),
+      position: 'center 40%',
     },
     {
       id: 'outerwear',
