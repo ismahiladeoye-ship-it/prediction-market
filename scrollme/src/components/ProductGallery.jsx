@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import ProductTile from './ProductTile';
-import { listCategoriesAPI, listCollectionsAPI, listProductsAPI } from '../services/products/productService';
+import { listCategoriesAPI, listProductsAPI } from '../services/products/productService';
 import { getErrorMessage } from '../api/client';
-import { humanize } from '../utils/format';
+import { categoriesOf, categoryTitle, countIn, departments, subcategoriesOf } from '../utils/taxonomy';
 import { Box, Button, Checkbox, Flex, HStack, Input, InputGroup, InputLeftAddon, Select, Spinner, Text } from '@chakra-ui/react';
 
 const Title = styled.h1`
@@ -16,6 +16,57 @@ const Title = styled.h1`
   padding: 32px 16px 8px;
   text-align: center;
   word-break: break-word;
+`;
+
+const Crumbs = styled.nav`
+  padding: 24px 16px 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted, #6b6b6b);
+  ol {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  li + li::before {
+    content: '/';
+    margin-right: 6px;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
+`;
+
+// Quick links to the categories (or subcategories) of the page.
+const Chips = styled.nav`
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 8px 16px 4px;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  @media (min-width: 900px) {
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 8px 32px 4px;
+  }
+  a {
+    flex-shrink: 0;
+    padding: 8px 16px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+  a:hover {
+    border-color: var(--ink);
+  }
 `;
 
 const Grid = styled.div`
@@ -37,19 +88,47 @@ const SORTS = [
   ['name', 'Name (A–Z)'],
 ];
 
+// A labelled filter dropdown; options are [value, label] pairs.
+const FilterSelect = ({ label, value, onChange, allLabel, options }) => (
+  <Box minW={{ base: '100%', sm: '200px' }}>
+    <Text fontSize='sm' fontWeight={600} mb={1}>
+      {label}
+    </Text>
+    <Select bg='white' value={value} onChange={(e) => onChange(e.target.value)} aria-label={label}>
+      <option value=''>{allLabel}</option>
+      {options.map(([v, l]) => (
+        <option key={v} value={v}>
+          {l}
+        </option>
+      ))}
+    </Select>
+  </Box>
+);
+
 // Catalogue grid. All filters live in the URL so results can be shared,
-// bookmarked and restored with the Back button. `category` fixes the category
-// (used by the /:categorySlug pages).
-const ProductGallery = ({ category: fixedCategory, collection, title, notFound = false }) => {
+// bookmarked and restored with the Back button. The department, category and
+// subcategory props fix those filters (the /men/... and /women/... pages).
+const ProductGallery = ({
+  department: fixedDepartment,
+  category: fixedCategory,
+  subcategory: fixedSubcategory,
+  title,
+  breadcrumbs = [],
+  links = [],
+  notFound = false,
+  notFoundText = 'This page does not exist',
+}) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [data, setData] = useState({ products: [], totalPages: 0, totalProducts: 0 });
-  const [categories, setCategories] = useState([]);
+  const [counts, setCounts] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const page = Math.max(parseInt(searchParams.get('page'), 10) || 1, 1);
   const q = searchParams.get('q') || '';
+  const department = fixedDepartment || searchParams.get('department') || '';
   const category = fixedCategory || searchParams.get('category') || '';
+  const subcategory = fixedSubcategory || searchParams.get('subcategory') || '';
   const sort = searchParams.get('sort') || 'newest';
   const minPrice = searchParams.get('minPrice') || '';
   const maxPrice = searchParams.get('maxPrice') || '';
@@ -80,8 +159,9 @@ const ProductGallery = ({ category: fixedCategory, collection, title, notFound =
         page,
         limit: PAGE_SIZE,
         q,
-        collection,
+        department,
         category,
+        subcategory,
         sort,
         minPrice,
         maxPrice,
@@ -93,20 +173,18 @@ const ProductGallery = ({ category: fixedCategory, collection, title, notFound =
     } finally {
       setLoading(false);
     }
-  }, [page, q, collection, category, sort, minPrice, maxPrice, inStock, notFound]);
+  }, [page, q, department, category, subcategory, sort, minPrice, maxPrice, inStock, notFound]);
 
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
 
-  // Category choices: every category, or only those inside the current collection.
+  // Product counts for the filter choices.
   useEffect(() => {
-    if (fixedCategory) return;
-    const load = collection
-      ? listCollectionsAPI().then((all) => (all.find((c) => c.slug === collection)?.categories || []).map((slug) => ({ slug })))
-      : listCategoriesAPI();
-    load.then(setCategories).catch(() => setCategories([]));
-  }, [fixedCategory, collection]);
+    listCategoriesAPI()
+      .then(setCounts)
+      .catch(() => setCounts(null));
+  }, []);
 
   const goToPage = (p) => {
     updateParams({ page: p > 1 ? p : '' }, false);
@@ -118,29 +196,74 @@ const ProductGallery = ({ category: fixedCategory, collection, title, notFound =
     updateParams(priceDraft);
   };
 
-  const heading = title || (q ? `Results for “${q}”` : category ? humanize(category) : 'Products Gallery');
-  const hasFilters = Boolean(q || (!fixedCategory && category) || minPrice || maxPrice || inStock);
+  const withCount = (label, where) => (counts ? `${label} (${countIn(counts, { department, ...where })})` : label);
+  const categoryOptions = categoriesOf(department).map((c) => [c.slug, withCount(c.title, { category: c.slug })]);
+  const subcategoryOptions = category
+    ? subcategoriesOf(department, category).map((sc) => [sc.slug, withCount(sc.title, { category, subcategory: sc.slug })])
+    : [];
+
+  const heading = title || (q ? `Results for “${q}”` : category ? categoryTitle(department, category) : 'Products Gallery');
+  const hasFilters = Boolean(
+    q ||
+      (!fixedDepartment && department) ||
+      (!fixedCategory && category) ||
+      (!fixedSubcategory && subcategory) ||
+      minPrice ||
+      maxPrice ||
+      inStock
+  );
 
   return (
     <React.Fragment>
+      {breadcrumbs.length > 0 && (
+        <Crumbs aria-label='Breadcrumb'>
+          <ol>
+            {breadcrumbs.map((b, i) => (
+              <li key={b.to || b.label}>
+                {i < breadcrumbs.length - 1 ? <Link to={b.to}>{b.label}</Link> : <span aria-current='page'>{b.label}</span>}
+              </li>
+            ))}
+          </ol>
+        </Crumbs>
+      )}
       <Title>{heading}</Title>
+      {links.length > 0 && (
+        <Chips aria-label={`${heading} categories`}>
+          {links.map((l) => (
+            <Link key={l.to} to={l.to}>
+              {l.label}
+            </Link>
+          ))}
+        </Chips>
+      )}
       <Box px={{ base: 4, md: 8 }} py={4} minHeight='60vh'>
         <Flex as='section' aria-label='Filters' gap={3} wrap='wrap' align='flex-end' mb={6}>
+          {!fixedDepartment && (
+            <FilterSelect
+              label='Department'
+              allLabel='Men & Women'
+              value={department}
+              onChange={(v) => updateParams({ department: v })}
+              options={departments.map((d) => [d.slug, d.title])}
+            />
+          )}
           {!fixedCategory && (
-            <Box minW={{ base: '100%', sm: '200px' }}>
-              <Text fontSize='sm' fontWeight={600} mb={1}>
-                Category
-              </Text>
-              <Select bg='white' value={category} onChange={(e) => updateParams({ category: e.target.value })} aria-label='Category'>
-                <option value=''>All categories</option>
-                {categories.map((c) => (
-                  <option key={c.slug} value={c.slug}>
-                    {humanize(c.slug)}
-                    {c.count !== undefined ? ` (${c.count})` : ''}
-                  </option>
-                ))}
-              </Select>
-            </Box>
+            <FilterSelect
+              label='Category'
+              allLabel='All categories'
+              value={category}
+              onChange={(v) => updateParams({ category: v, subcategory: '' })}
+              options={categoryOptions}
+            />
+          )}
+          {!fixedSubcategory && category && subcategoryOptions.length > 0 && (
+            <FilterSelect
+              label='Subcategory'
+              allLabel={`All ${categoryTitle(department, category).toLowerCase()}`}
+              value={subcategory}
+              onChange={(v) => updateParams({ subcategory: v })}
+              options={subcategoryOptions}
+            />
           )}
           <Box minW={{ base: '100%', sm: '180px' }}>
             <Text fontSize='sm' fontWeight={600} mb={1}>
@@ -216,7 +339,7 @@ const ProductGallery = ({ category: fixedCategory, collection, title, notFound =
         ) : data.products.length === 0 ? (
           <Box textAlign='center' mt={10}>
             <Text fontSize='xl' fontWeight={600}>
-              {notFound ? 'This collection does not exist' : 'No products found'}
+              {notFound ? notFoundText : 'No products found'}
             </Text>
             <Text mt={2} color='gray.600'>
               Try a different search or remove some filters.

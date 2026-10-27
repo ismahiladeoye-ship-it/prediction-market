@@ -79,7 +79,9 @@ const fillAddress = async (page) => {
 // Adds a product through the admin API (the request context signs in as the admin).
 const createProduct = async (request, fields) => {
   await apiLoginAdmin(request);
-  const res = await request.post('/api/admin/products', { data: { category: 'tshirts', stock: 20, sizes: [], ...fields } });
+  const res = await request.post('/api/admin/products', {
+    data: { department: 'unisex', category: 'clothing', subcategory: 't-shirts', stock: 20, sizes: [], ...fields },
+  });
   expect(res.status()).toBe(201);
   return (await res.json()).product;
 };

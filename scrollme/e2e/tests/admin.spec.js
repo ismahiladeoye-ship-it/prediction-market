@@ -75,8 +75,8 @@ test.describe('administration', () => {
   test('admin bulk uploads products from a spreadsheet with photos', async ({ page }) => {
     const sku = `E2E-TRK-${Date.now()}`;
     const csv = [
-      'sku,name,brand,category,price,stock,sizes,colour,images,active',
-      `${sku},E2E Relaxed Tracksuit ${sku},Fear of God Essentials,Tracksuits,185,4,S|M|L,Black,front.jpg|back.jpg,yes`,
+      'sku,name,brand,department,category,price,stock,sizes,colour,images,active',
+      `${sku},E2E Relaxed Tracksuit ${sku},Fear of God Essentials,Men,Tracksuits,185,4,S|M|L,Black,front.jpg|back.jpg,yes`,
     ].join('\n');
     await login(page, ADMIN);
     await page.goto('/admin/products');
@@ -97,8 +97,9 @@ test.describe('administration', () => {
     await page.getByRole('button', { name: 'Import 1 products' }).click();
     await expect(page.getByText('Imported 1 new and updated 0 existing product(s)').first()).toBeVisible({ timeout: 30000 });
 
-    // Live in the shop, with both photos.
-    await page.goto(`/products?q=${sku}`);
+    // Live in the shop under Men › Clothing › Tracksuits, with both photos.
+    await page.goto(`/men/clothing/tracksuits?q=${sku}`);
+    await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toContainText('Tracksuits');
     await page
       .getByRole('link', { name: `E2E Relaxed Tracksuit ${sku}` })
       .first()
@@ -167,7 +168,7 @@ test.describe('administration', () => {
     await expect(first.getByRole('img', { name: 'Cover image 1 preview' })).toHaveAttribute('src', /^\/api\/uploads\/[a-f0-9]{32}\.webp$/);
     await first.getByRole('textbox', { name: 'Heading', exact: true }).fill('Our shoe restock is here');
     await first.getByLabel('Text under the heading').fill('New pairs this week');
-    await first.getByLabel('Button goes to').selectOption({ label: 'Footwear' });
+    await first.getByLabel('Button goes to').selectOption({ label: 'Men · Shoes & Boots' });
     await page.getByRole('group', { name: 'Cover image 4' }).getByRole('button', { name: 'Remove' }).click();
     await page.getByText('Show cover images in black and white').click();
     await page.getByRole('button', { name: 'Save cover images' }).click();
@@ -176,7 +177,7 @@ test.describe('administration', () => {
     await page.goto('/');
     const featured = page.locator('[aria-label="Featured"]');
     await expect(featured.getByRole('heading', { level: 1, name: 'Our shoe restock is here' })).toBeVisible();
-    await expect(featured.getByRole('link', { name: 'Shop' })).toHaveAttribute('href', '/collections/footwear');
+    await expect(featured.getByRole('link', { name: 'Shop' })).toHaveAttribute('href', '/men/shoes-boots');
     const backgrounds = await featured.evaluate((el) =>
       [...el.querySelectorAll('[aria-hidden="true"]')]
         .map((d) => `${getComputedStyle(d).backgroundImage} ${getComputedStyle(d).filter}`)

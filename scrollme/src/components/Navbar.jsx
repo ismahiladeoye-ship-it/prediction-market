@@ -5,6 +5,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useToast } from '@chakra-ui/react';
 import {
   HiChevronDown,
+  HiChevronLeft,
+  HiChevronRight,
   HiOutlineBars3,
   HiOutlineHeart,
   HiOutlineMagnifyingGlass,
@@ -15,7 +17,7 @@ import {
 import Logo from './Logo';
 import { selectIsAdmin } from '../store/slices/userSlice';
 import { signOut } from '../store/session';
-import { collections } from '../data';
+import { categoryLink, departmentLink, departments, findCategory, findDepartment, subcategoryLink } from '../utils/taxonomy';
 
 const DESKTOP = '@media (min-width: 900px)';
 
@@ -122,33 +124,56 @@ const Nav = styled.nav`
   }
 `;
 
-const ShopMenu = styled.div`
-  position: relative;
+// Desktop: Men / Women open a panel with every category and its subcategories.
+const MegaPanel = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  padding: 24px 32px 32px;
+  background: var(--paper);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.1);
+  z-index: 60;
 `;
 
-const Dropdown = styled.ul`
-  position: absolute;
-  top: calc(100% + 16px);
-  left: -16px;
-  min-width: 220px;
-  padding: 8px;
-  list-style: none;
-  background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.12);
-  z-index: 60;
-  a {
-    display: block;
-    padding: 11px 12px;
-    border-radius: 8px;
+const MegaAll = styled(Link)`
+  display: inline-block;
+  margin-bottom: 18px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--ink);
+`;
+
+const MegaGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 26px 24px;
+  h3 a {
     font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
+    font-weight: 700;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
   }
+  ul {
+    list-style: none;
+    margin: 10px 0 0;
+    padding: 0;
+  }
+  li a {
+    display: block;
+    padding: 4px 0;
+    font-size: 14px;
+    color: var(--muted, #555);
+  }
   a:hover {
-    background: var(--soft);
+    color: var(--ink);
+    text-decoration: underline;
   }
 `;
 
@@ -235,6 +260,52 @@ const DrawerList = styled.ul`
   }
 `;
 
+// Phone menu: Men / Women switch, then categories that open their subcategories.
+const DeptTabs = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  margin: 16px 24px 0;
+  border-bottom: 1px solid var(--line);
+  button {
+    padding: 14px 0;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  button[aria-pressed='true'] {
+    border-bottom-color: var(--ink);
+  }
+`;
+
+const CategoryList = styled(DrawerList)`
+  margin-top: 8px;
+  a,
+  button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 19px;
+    padding: 16px 0;
+  }
+  .back {
+    justify-content: flex-start;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .all {
+    font-weight: 600;
+  }
+`;
+
 const CartCount = styled.span`
   font-size: 15px;
 `;
@@ -249,15 +320,20 @@ const Navbar = () => {
   const toast = useToast();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [shopOpen, setShopOpen] = useState(false);
-  const shopMenu = useRef(null);
+  // Desktop panel ('men' / 'women' / null) and the phone menu's department and open category.
+  const [megaOpen, setMegaOpen] = useState(null);
+  const megaButtons = useRef(null);
+  const megaPanel = useRef(null);
+  const [drawerDept, setDrawerDept] = useState(departments[0].slug);
+  const [drawerCategory, setDrawerCategory] = useState(null);
   const [search, setSearch] = useState('');
   const searchInput = useRef(null);
 
   // Close the menu on navigation and keep the search box in sync with the URL.
   useEffect(() => {
     setMenuOpen(false);
-    setShopOpen(false);
+    setMegaOpen(null);
+    setDrawerCategory(null);
     const q = location.pathname === '/products' ? new URLSearchParams(location.search).get('q') || '' : '';
     setSearch(q);
     if (!q) setSearchOpen(false);
@@ -278,18 +354,18 @@ const Navbar = () => {
     if (searchOpen) searchInput.current?.focus();
   }, [searchOpen]);
 
-  // Close the Shop menu on a click elsewhere or Escape.
+  // Close the Men / Women panel on a click elsewhere or Escape.
   useEffect(() => {
-    if (!shopOpen) return undefined;
-    const onDown = (e) => !shopMenu.current?.contains(e.target) && setShopOpen(false);
-    const onKey = (e) => e.key === 'Escape' && setShopOpen(false);
+    if (!megaOpen) return undefined;
+    const onDown = (e) => !megaButtons.current?.contains(e.target) && !megaPanel.current?.contains(e.target) && setMegaOpen(null);
+    const onKey = (e) => e.key === 'Escape' && setMegaOpen(null);
     document.addEventListener('mousedown', onDown);
     document.addEventListener('keydown', onKey);
     return () => {
       document.removeEventListener('mousedown', onDown);
       document.removeEventListener('keydown', onKey);
     };
-  }, [shopOpen]);
+  }, [megaOpen]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -355,23 +431,19 @@ const Navbar = () => {
           <Logo stacked size='1.9rem' />
         </LogoSlot>
         <Nav aria-label='Main'>
-          <ShopMenu ref={shopMenu}>
-            <NavButton type='button' aria-expanded={shopOpen} aria-controls='shop-menu' onClick={() => setShopOpen((o) => !o)}>
-              Shop <HiChevronDown size={14} aria-hidden='true' />
-            </NavButton>
-            {shopOpen && (
-              <Dropdown id='shop-menu'>
-                {collections.map((c) => (
-                  <li key={c.slug}>
-                    <Link to={`/collections/${c.slug}`}>{c.title}</Link>
-                  </li>
-                ))}
-                <li>
-                  <Link to='/products'>All products</Link>
-                </li>
-              </Dropdown>
-            )}
-          </ShopMenu>
+          <span ref={megaButtons} style={{ display: 'contents' }}>
+            {departments.map((d) => (
+              <NavButton
+                key={d.slug}
+                type='button'
+                aria-expanded={megaOpen === d.slug}
+                aria-controls={`menu-${d.slug}`}
+                onClick={() => setMegaOpen((o) => (o === d.slug ? null : d.slug))}
+              >
+                {d.title} <HiChevronDown size={14} aria-hidden='true' />
+              </NavButton>
+            ))}
+          </span>
           <NavLink to='/about'>About</NavLink>
           <NavLink to='/contact-us'>Contact</NavLink>
           {isAdmin && <NavLink to='/admin'>Admin</NavLink>}
@@ -401,6 +473,28 @@ const Navbar = () => {
         </Side>
       </Row>
 
+      {megaOpen && (
+        <MegaPanel id={`menu-${megaOpen}`} ref={megaPanel} role='region' aria-label={`${findDepartment(megaOpen).title} categories`}>
+          <MegaAll to={departmentLink(megaOpen)}>Shop all {findDepartment(megaOpen).title}</MegaAll>
+          <MegaGrid>
+            {findDepartment(megaOpen).categories.map((c) => (
+              <div key={c.slug}>
+                <h3>
+                  <Link to={categoryLink(megaOpen, c.slug)}>{c.title}</Link>
+                </h3>
+                <ul>
+                  {c.subcategories.map((sc) => (
+                    <li key={sc.slug}>
+                      <Link to={subcategoryLink(megaOpen, c.slug, sc.slug)}>{sc.title}</Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </MegaGrid>
+        </MegaPanel>
+      )}
+
       {searchOpen && searchForm}
 
       {menuOpen && (
@@ -416,65 +510,111 @@ const Navbar = () => {
             </LogoSlot>
             <Side $end>{cartLink}</Side>
           </DrawerRow>
-          <DrawerList>
-            <li>
-              <Link to='/'>Home</Link>
-            </li>
-            <li>
-              <Link to='/contact-us'>Contact</Link>
-            </li>
-            <li>
-              <Link to='/about'>About us</Link>
-            </li>
-            {collections.map((c) => (
-              <li key={c.slug}>
-                <Link to={`/collections/${c.slug}`}>{c.title}</Link>
-              </li>
-            ))}
-            <li>
-              <Link to='/products'>All products</Link>
-            </li>
-            <li>
-              <Link to='/wishlist'>Wishlist</Link>
-            </li>
-            <li>
+          <DeptTabs aria-label='Department'>
+            {departments.map((d) => (
               <button
+                key={d.slug}
                 type='button'
+                aria-pressed={drawerDept === d.slug}
                 onClick={() => {
-                  setMenuOpen(false);
-                  setSearchOpen(true);
+                  setDrawerDept(d.slug);
+                  setDrawerCategory(null);
                 }}
               >
-                Search
+                {d.title}
               </button>
-            </li>
-            {isAuthenticated ? (
-              <>
-                <li>
-                  <Link to='/account'>Account</Link>
+            ))}
+          </DeptTabs>
+          {drawerCategory ? (
+            <CategoryList aria-label={`${findCategory(drawerDept, drawerCategory).title} subcategories`}>
+              <li>
+                <button type='button' className='back' onClick={() => setDrawerCategory(null)}>
+                  <HiChevronLeft size={18} aria-hidden='true' /> {findDepartment(drawerDept).title}
+                </button>
+              </li>
+              <li>
+                <Link className='all' to={categoryLink(drawerDept, drawerCategory)}>
+                  Shop all {findCategory(drawerDept, drawerCategory).title}
+                </Link>
+              </li>
+              {findCategory(drawerDept, drawerCategory).subcategories.map((sc) => (
+                <li key={sc.slug}>
+                  <Link to={subcategoryLink(drawerDept, drawerCategory, sc.slug)}>{sc.title}</Link>
                 </li>
-                {isAdmin && (
-                  <li>
-                    <Link to='/admin'>Admin</Link>
-                  </li>
-                )}
-                <li>
-                  <button type='button' onClick={handleLogout}>
-                    Log out
+              ))}
+            </CategoryList>
+          ) : (
+            <CategoryList aria-label={`${findDepartment(drawerDept).title} categories`}>
+              <li>
+                <Link className='all' to={departmentLink(drawerDept)}>
+                  Shop all {findDepartment(drawerDept).title}
+                </Link>
+              </li>
+              {findDepartment(drawerDept).categories.map((c) => (
+                <li key={c.slug}>
+                  <button type='button' onClick={() => setDrawerCategory(c.slug)}>
+                    {c.title} <HiChevronRight size={20} aria-hidden='true' />
                   </button>
                 </li>
-              </>
-            ) : (
-              <>
-                <li>
-                  <Link to='/login'>Login</Link>
-                </li>
-                <li>
-                  <Link to='/register'>Create account</Link>
-                </li>
-              </>
-            )}
-          </DrawerList>
+              ))}
+            </CategoryList>
+          )}
+          {!drawerCategory && (
+            <DrawerList>
+              <li>
+                <Link to='/'>Home</Link>
+              </li>
+              <li>
+                <Link to='/contact-us'>Contact</Link>
+              </li>
+              <li>
+                <Link to='/about'>About us</Link>
+              </li>
+              <li>
+                <Link to='/products'>All products</Link>
+              </li>
+              <li>
+                <Link to='/wishlist'>Wishlist</Link>
+              </li>
+              <li>
+                <button
+                  type='button'
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setSearchOpen(true);
+                  }}
+                >
+                  Search
+                </button>
+              </li>
+              {isAuthenticated ? (
+                <>
+                  <li>
+                    <Link to='/account'>Account</Link>
+                  </li>
+                  {isAdmin && (
+                    <li>
+                      <Link to='/admin'>Admin</Link>
+                    </li>
+                  )}
+                  <li>
+                    <button type='button' onClick={handleLogout}>
+                      Log out
+                    </button>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li>
+                    <Link to='/login'>Login</Link>
+                  </li>
+                  <li>
+                    <Link to='/register'>Create account</Link>
+                  </li>
+                </>
+              )}
+            </DrawerList>
+          )}
         </Drawer>
       )}
     </Header>

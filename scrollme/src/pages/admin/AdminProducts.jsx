@@ -23,7 +23,8 @@ import {
 } from '@chakra-ui/react';
 import { listAdminProductsAPI, adjustStockAPI, deactivateProductAPI, updateProductAPI } from '../../services/admin/adminService';
 import { getErrorMessage } from '../../api/client';
-import { formatPrice, humanize } from '../../utils/format';
+import { formatPrice } from '../../utils/format';
+import { placementLabel } from '../../utils/taxonomy';
 import { imageSrc, onImageError } from '../../utils/imageFallback';
 import ProductFormModal from './ProductFormModal';
 
@@ -161,7 +162,7 @@ const AdminProducts = () => {
                         </Box>
                       </HStack>
                     </Td>
-                    <Td>{humanize(p.category)}</Td>
+                    <Td>{placementLabel(p)}</Td>
                     <Td isNumeric>{formatPrice(p.price)}</Td>
                     <Td isNumeric>
                       <Text as='span' color={p.stock <= 5 ? 'red.500' : undefined} fontWeight={p.stock <= 5 ? 700 : undefined}>

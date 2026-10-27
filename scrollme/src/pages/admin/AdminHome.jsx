@@ -25,14 +25,17 @@ import {
 import { getHomeContentAPI } from '../../services/site/siteService';
 import { resetHomeContentAPI, saveHomeContentAPI, uploadPhotoAPI } from '../../services/admin/adminService';
 import { getErrorMessage } from '../../api/client';
-import { collections } from '../../data';
+import { categoryLink, departmentLink, departments } from '../../utils/taxonomy';
 import { FOCUS_POSITIONS, starterHero } from '../../utils/heroSlides';
 
 const MAX_SLIDES = 6;
 const MAX_PHOTO_BYTES = 15 * 1024 * 1024;
 const OTHER = 'other';
 const LINKS = [
-  ...collections.map((c) => ({ value: `/collections/${c.slug}`, label: c.title })),
+  ...departments.flatMap((d) => [
+    { value: departmentLink(d.slug), label: d.title },
+    ...d.categories.map((c) => ({ value: categoryLink(d.slug, c.slug), label: `${d.title} · ${c.title}` })),
+  ]),
   { value: '/products', label: 'All products' },
   { value: '/contact-us', label: 'Contact us (sourcing requests)' },
 ];
@@ -321,7 +324,7 @@ const AdminHome = () => {
       </Heading>
       <Text color='gray.600' mb={4} maxW='720px'>
         The large photos at the top of the home page. Use photos of your own stock, like a fresh restock or this week&apos;s drop, and point
-        each button to the collection it shows.
+        each button to the category it shows.
       </Text>
       {!custom && (
         <Alert status='info' borderRadius='md' mb={4}>

@@ -18,7 +18,8 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useSelector } from 'react-redux';
 import { toggleWishlist } from '../store/slices/wishlistSlice';
 import { getErrorMessage } from '../api/client';
-import { formatPrice, humanize } from '../utils/format';
+import { formatPrice } from '../utils/format';
+import { placementLabel } from '../utils/taxonomy';
 import { imageSrc, onImageError } from '../utils/imageFallback';
 import { HiOutlineArrowPath, HiOutlineCheckCircle, HiOutlineTruck } from 'react-icons/hi2';
 import { storeConfig } from '../data';
@@ -117,7 +118,7 @@ const Product = () => {
       case 'weight':
         return capitalizeFirstChar('weight');
       case 'category':
-        return `${capitalizeFirstChar('category')} Name`;
+        return capitalizeFirstChar('category');
       default:
         return null;
     }
@@ -133,7 +134,7 @@ const Product = () => {
           <DetailContainer key={d}>
             {' '}
             <ProductDetailInfo>{getDetailHeading(d)}</ProductDetailInfo>
-            <ProductDetailInfo>{d === 'category' ? humanize(product[d]) : product[d]}</ProductDetailInfo>
+            <ProductDetailInfo>{d === 'category' ? placementLabel(product) : product[d]}</ProductDetailInfo>
           </DetailContainer>
         );
       });

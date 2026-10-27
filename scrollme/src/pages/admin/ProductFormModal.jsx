@@ -17,6 +17,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Select,
   SimpleGrid,
   Text,
   Textarea,
@@ -24,12 +25,15 @@ import {
 } from '@chakra-ui/react';
 import { createProductAPI, updateProductAPI, uploadPhotoAPI } from '../../services/admin/adminService';
 import { getErrorMessage } from '../../api/client';
+import { categoriesOf, departments, subcategoriesOf } from '../../utils/taxonomy';
 
 const EMPTY = {
   sku: '',
   name: '',
   brand: '',
+  department: '',
   category: '',
+  subcategory: '',
   price: '',
   stock: '',
   images: [],
@@ -46,7 +50,9 @@ const toForm = (p) =>
         sku: p.sku || '',
         name: p.name || '',
         brand: p.brand || '',
+        department: p.department || '',
         category: p.category || '',
+        subcategory: p.subcategory || '',
         price: p.price ?? '',
         stock: p.stock ?? '',
         images: p.images?.length ? p.images : p.imageUrl ? [p.imageUrl] : [],
@@ -62,7 +68,8 @@ const toForm = (p) =>
 const validate = (f) => {
   const e = {};
   if (f.name.trim().length < 2) e.name = 'Name is required';
-  if (!/^[a-z0-9-]+$/.test(f.category.trim().toLowerCase())) e.category = 'Use a slug such as t-shirts';
+  if (!f.department) e.department = 'Choose Men, Women or Unisex';
+  if (!f.category) e.category = 'Choose a category';
   if (f.price === '' || Number(f.price) < 0 || Number.isNaN(Number(f.price))) e.price = 'Enter a price of 0 or more';
   if (f.stock === '' || !Number.isInteger(Number(f.stock)) || Number(f.stock) < 0) e.stock = 'Enter a whole number of 0 or more';
   if (f.sku && !/^[A-Za-z0-9._/-]{1,64}$/.test(f.sku.trim())) e.sku = 'Letters, numbers, dots, dashes, slashes and underscores only';
@@ -122,7 +129,9 @@ const ProductFormModal = ({ isOpen, onClose, product, onSaved }) => {
       ...(form.sku.trim() ? { sku: form.sku.trim() } : {}),
       name: form.name.trim(),
       brand: form.brand.trim() || undefined,
-      category: form.category.trim().toLowerCase(),
+      department: form.department,
+      category: form.category,
+      subcategory: form.subcategory,
       price: Number(form.price),
       stock: Number(form.stock),
       images: form.images,
@@ -148,6 +157,35 @@ const ProductFormModal = ({ isOpen, onClose, product, onSaved }) => {
     }
   };
 
+  // Changing the department or category clears choices that no longer fit.
+  const choose = (key) => (e) => {
+    const value = e.target.value;
+    setForm((f) => {
+      const next = { ...f, [key]: value };
+      if (key === 'department' && !categoriesOf(value === 'unisex' ? '' : value).some((c) => c.slug === f.category)) {
+        next.category = '';
+        next.subcategory = '';
+      }
+      if (key === 'category') next.subcategory = '';
+      return next;
+    });
+  };
+  const deptForLists = form.department === 'unisex' ? '' : form.department;
+
+  const pick = (key, label, options, { isRequired, placeholder, isDisabled } = {}) => (
+    <FormControl isInvalid={Boolean(errors[key])} isRequired={isRequired} isDisabled={isDisabled}>
+      <FormLabel>{label}</FormLabel>
+      <Select value={form[key]} onChange={choose(key)} placeholder={placeholder}>
+        {options.map(([value, text]) => (
+          <option key={value} value={value}>
+            {text}
+          </option>
+        ))}
+      </Select>
+      <FormErrorMessage>{errors[key]}</FormErrorMessage>
+    </FormControl>
+  );
+
   const field = (key, label, { isRequired, ...props } = {}) => (
     <FormControl isInvalid={Boolean(errors[key])} isRequired={isRequired}>
       <FormLabel>{label}</FormLabel>
@@ -167,7 +205,22 @@ const ProductFormModal = ({ isOpen, onClose, product, onSaved }) => {
             {field('name', 'Name', { isRequired: true })}
             {field('sku', 'SKU', { placeholder: 'Your code, e.g. ESS-TRK-BLK-01' })}
             {field('brand', 'Brand')}
-            {field('category', 'Category slug', { isRequired: true, placeholder: 'e.g. tshirts' })}
+            {pick('department', 'Department', [...departments.map((d) => [d.slug, d.title]), ['unisex', 'Unisex (Men and Women)']], {
+              isRequired: true,
+              placeholder: 'Choose…',
+            })}
+            {pick(
+              'category',
+              'Category',
+              categoriesOf(deptForLists).map((c) => [c.slug, c.title]),
+              { isRequired: true, placeholder: 'Choose…', isDisabled: !form.department }
+            )}
+            {pick(
+              'subcategory',
+              'Subcategory',
+              form.category ? subcategoriesOf(deptForLists, form.category).map((sc) => [sc.slug, sc.title]) : [],
+              { placeholder: 'None', isDisabled: !form.category }
+            )}
             {field('price', 'Price', { isRequired: true, type: 'number', min: 0, step: '0.01' })}
             {field('stock', 'Stock', { isRequired: true, type: 'number', min: 0, step: 1 })}
             {field('color', 'Colour')}

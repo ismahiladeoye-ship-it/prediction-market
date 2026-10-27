@@ -5,7 +5,7 @@ import Register from './pages/Register';
 import Login from './pages/Login';
 import Cart from './pages/Cart';
 import Wishlist from './pages/Wishlist';
-import { Routes, Route, Link } from 'react-router-dom';
+import { Routes, Route, Link, Navigate } from 'react-router-dom';
 import ProtectedRoute from './utils/ProtectedRoute';
 import { lazy, Suspense } from 'react';
 import ContactUsPage from './pages/ContactUsPage';
@@ -13,9 +13,10 @@ import ComingSoon from './pages/ComingSoon';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import useAuthCheck from './hooks/useAuthCheck';
+import { departments } from './utils/taxonomy';
 const LazyAllProducts = lazy(() => import('./pages/AllProducts'));
 const LazyCategoryProducts = lazy(() => import('./pages/CategoryProducts'));
-const LazyCollectionProducts = lazy(() => import('./pages/CollectionProducts'));
+const LazyDepartmentProducts = lazy(() => import('./pages/DepartmentProducts'));
 const LazyAbout = lazy(() => import('./pages/About'));
 const LazyCheckout = lazy(() => import('./pages/Checkout'));
 const LazyMockPayment = lazy(() => import('./pages/MockPayment'));
@@ -74,7 +75,15 @@ function App() {
             <Route path='security' element={<LazyAdminSecurity />} />
           </Route>
           <Route path='/products' element={<LazyAllProducts />} />
-          <Route path='/collections/:slug' element={<LazyCollectionProducts />} />
+          {departments.map((d) => (
+            <Route key={d.slug} path={`/${d.slug}`}>
+              <Route index element={<LazyDepartmentProducts department={d.slug} />} />
+              <Route path=':category' element={<LazyDepartmentProducts department={d.slug} />} />
+              <Route path=':category/:subcategory' element={<LazyDepartmentProducts department={d.slug} />} />
+            </Route>
+          ))}
+          {/* Old collection links (before Men and Women). */}
+          <Route path='/collections/*' element={<Navigate to='/products' replace />} />
           <Route path='/about' element={<LazyAbout />} />
           <Route path='/terms' element={<LazyTerms />} />
           <Route path='/privacy' element={<LazyPrivacy />} />

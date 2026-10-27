@@ -99,7 +99,7 @@ describe('photos on Vercel', () => {
       expect(options).toMatchObject({ access: 'public', contentType: 'image/webp', addRandomSuffix: false, token: 'vercel_blob_rw_test' });
 
       // Bulk upload accepts photos stored there.
-      const csv = 'sku,name,category,price,stock,images\nBLOB-1,Blob Tee,tshirts,20,3,front.jpg';
+      const csv = 'sku,name,department,category,price,stock,images\nBLOB-1,Blob Tee,men,tshirts,20,3,front.jpg';
       const imported = await agent.post('/api/admin/products/import').send({ csv, dryRun: false, photos: { 'front.jpg': res.body.url } });
       expect(imported.status).toBe(200);
       expect((await Product.findOne({ sku: 'BLOB-1' }).lean()).images).toEqual([res.body.url]);

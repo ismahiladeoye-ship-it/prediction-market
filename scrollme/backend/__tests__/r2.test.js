@@ -70,7 +70,7 @@ describe('photos in an S3 bucket (Cloudflare R2)', () => {
       expect(Buffer.isBuffer(call.init.body)).toBe(true);
       expect(call.opts).toMatchObject({ accessKeyId: 'AKIAEXAMPLE', service: 's3', region: 'auto' });
 
-      const csv = 'sku,name,category,price,stock,images\nR2-1,R2 Tee,tshirts,20,3,front.jpg';
+      const csv = 'sku,name,department,category,price,stock,images\nR2-1,R2 Tee,men,tshirts,20,3,front.jpg';
       const imported = await agent.post('/api/admin/products/import').send({ csv, dryRun: false, photos: { 'front.jpg': res.body.url } });
       expect(imported.status).toBe(200);
       expect((await Product.findOne({ sku: 'R2-1' }).lean()).images).toEqual([res.body.url]);
