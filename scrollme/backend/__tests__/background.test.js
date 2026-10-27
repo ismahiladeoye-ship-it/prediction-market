@@ -22,7 +22,7 @@ describe('emails sent after the response', () => {
     expect((await request(ctx.app).post('/api/auth/forgot-password').send({ email: user.email })).status).toBe(200);
     expect(waitUntil).toHaveBeenCalledTimes(1);
     await waitUntil.mock.calls[0][0];
-    expect(mailSpy).toHaveBeenCalledWith(expect.objectContaining({ to: user.email, subject: 'Reset your Get It Sourced password' }));
+    expect(mailSpy).toHaveBeenCalledWith(expect.objectContaining({ to: user.email, subject: expect.stringContaining('password reset code') }));
   });
 
   it('does not wait on anything for an unknown address', async () => {

@@ -8,6 +8,7 @@ const BACKEND = path.resolve(__dirname, '../backend');
 const BUILD = path.resolve(__dirname, '../build');
 const WEB_PORT = Number(process.env.E2E_WEB_PORT || 3100);
 const API_PORT = Number(process.env.E2E_API_PORT || 8090);
+const MAIL_PORT = Number(process.env.E2E_MAIL_PORT || 8091);
 
 (async () => {
   if (!fs.existsSync(path.join(BUILD, 'index.html'))) throw new Error('Run "npm run build" in scrollme/ first');
@@ -25,6 +26,8 @@ const API_PORT = Number(process.env.E2E_API_PORT || 8090);
     APP_URL: `http://localhost:${WEB_PORT}`,
     PAYMENT_PROVIDER: 'mock',
     RATE_LIMIT_ENABLED: 'false',
+    // As in production once email is set up: new accounts confirm their address.
+    EMAIL_VERIFICATION: 'on',
     TAX_RATE: '0.1',
     LOG_LEVEL: 'warn',
     UPLOAD_DIR: fs.mkdtempSync(path.join(os.tmpdir(), 'scrollme-e2e-uploads-')),
@@ -50,6 +53,23 @@ const API_PORT = Number(process.env.E2E_API_PORT || 8090);
     password: 'Passw0rd!e2e',
     roles: ['user', 'admin'],
   });
+
+  // Keeps every email sent so the tests can read the 6-digit codes:
+  // GET http://localhost:8091/?to=name@example.com lists the messages to that address.
+  const mailer = require(path.join(BACKEND, 'api/services/mailer'));
+  const outbox = [];
+  const sendMail = mailer.sendMail;
+  mailer.sendMail = async (message) => {
+    outbox.push(message);
+    return sendMail(message);
+  };
+  require('node:http')
+    .createServer((req, res) => {
+      const to = new URL(req.url, 'http://localhost').searchParams.get('to');
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(outbox.filter((m) => m.to === to)));
+    })
+    .listen(MAIL_PORT);
 
   createApp().listen(API_PORT, () => console.log(`API on ${API_PORT}`));
   require('./static-server')(BUILD, API_PORT).listen(WEB_PORT, () => console.log(`Storefront on http://localhost:${WEB_PORT}`));

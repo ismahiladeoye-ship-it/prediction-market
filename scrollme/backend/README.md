@@ -47,12 +47,14 @@ Auth column: — public, **U** signed-in user, **A** admin who completed two-fac
 | `GET /api/health` | — | Liveness |
 | `GET /api/ready` | — | Readiness (database ping) |
 | `GET /api/cron/release-expired` | `Authorization: Bearer $CRON_SECRET` | Vercel Cron backstop: releases stock held by expired unpaid orders → `{ released }`; 404 unless `CRON_SECRET` is set and matches |
-| `POST /api/auth/register` | — | Create account, starts session. 10 sign-ups per hour per IP |
+| `POST /api/auth/register` | — | Create account, starts session. 10 sign-ups per hour per IP. When email confirmation is on, answers `verificationRequired: true` and emails a 6-digit code |
+| `POST /api/auth/verify-email` | U | `{ code }`: confirms the account's email address. Accounts that have not confirmed cannot place orders (403 `EMAIL_UNVERIFIED`) |
+| `POST /api/auth/resend-verification` | U | Emails a new confirmation code (replaces the old one). 5 per hour per account |
 | `POST /api/auth/login` | — | `{ username, password }` (username or email) |
 | `POST /api/auth/logout` | — | Ends session and revokes all refresh tokens |
 | `POST /api/auth/refresh-token` | cookie | Rotates tokens |
 | `GET /api/auth/me`, `GET /api/auth/status` | U | Current user |
-| `POST /api/auth/forgot-password` / `reset-password` | — | Emailed, single-use, 30-minute token. Reset emails: 3 per hour per address and 10 per hour per IP (same reply whether or not the address has an account) |
+| `POST /api/auth/forgot-password` / `reset-password` | — | `{ email }` emails a 6-digit code; `{ email, code, password }` sets the new password and signs out every device. Codes are single use, last 15 minutes and stop working after 5 wrong tries; a new code replaces the old one. Reset emails: 3 per hour per address and 10 per hour per IP (same reply whether or not the address has an account) |
 | `POST /api/auth/google` | — | Firebase ID token → session (needs `FIREBASE_PROJECT_ID`) |
 | `POST /api/auth/mfa/verify` | pending cookie | Second sign-in step: `{ code }` (6-digit code or recovery code). When two-factor is on, `login`/`google` answer `{ mfaRequired: true }` and set only a 5-minute `mfaPending` cookie |
 | `GET /api/auth/mfa` | U | `{ enabled, required, verified, recoveryCodesLeft }` |

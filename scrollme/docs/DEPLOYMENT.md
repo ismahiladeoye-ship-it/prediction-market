@@ -87,7 +87,7 @@ Without Docker: build the storefront (`npm ci && npm run build`), serve `build/`
 - [ ] `NODE_ENV=production`; secrets generated, not copied from examples; `.env` not committed.
 - [ ] `GET /api/ready` returns `{"status":"ok","db":"connected"}`.
 - [ ] Stripe test purchase for each enabled payment method; webhook deliveries succeed in the Stripe dashboard.
-- [ ] Password reset email arrives (SMTP configured).
+- [ ] Sign-up confirmation code and password-reset code emails arrive (SMTP configured).
 - [ ] First admin created; demo users absent (`db.users.find({username:"johndoe"})` is empty).
 - [ ] Backup job scheduled and one restore rehearsed ([OPERATIONS.md](OPERATIONS.md)).
 - [ ] Logs collected from both containers.

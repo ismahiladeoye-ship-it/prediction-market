@@ -4,7 +4,7 @@ const User = require('../api/models/userModel');
 const mailer = require('../api/services/mailer');
 const googleAuth = require('../api/services/googleAuth');
 const { resetConfig } = require('../api/config/env');
-const { useTestApp, createUser, signedInAgent, STRONG_PASSWORD, TEST_MFA_SECRET } = require('./helpers/setup');
+const { useTestApp, createUser, signedInAgent, STRONG_PASSWORD, TEST_MFA_SECRET, emailedCode } = require('./helpers/setup');
 
 const ctx = useTestApp();
 
@@ -139,9 +139,9 @@ describe('signing in with two-factor', () => {
     await enableFor(agent);
     const spy = jest.spyOn(mailer, 'sendMail').mockResolvedValue({ delivered: true });
     await request(ctx.app).post('/api/auth/forgot-password').send({ email: user.email });
-    const token = spy.mock.calls[0][0].text.match(/token=([a-f0-9]{64})/)[1];
+    const code = await emailedCode(spy, user.email);
     spy.mockRestore();
-    expect((await request(ctx.app).post('/api/auth/reset-password').send({ token, password: 'N3w!Password' })).status).toBe(200);
+    expect((await request(ctx.app).post('/api/auth/reset-password').send({ email: user.email, code, password: 'N3w!Password' })).status).toBe(200);
     const res = await request(ctx.app).post('/api/auth/login').send({ username: user.username, password: 'N3w!Password' });
     expect(res.body.mfaRequired).toBe(true);
     expect(cookie(res, 'accessToken')).toBeUndefined();

@@ -10,6 +10,7 @@ import OrderStatusBadge from '../components/OrderStatusBadge';
 import { listOrdersAPI } from '../services/orders/orderService';
 import { getErrorMessage } from '../api/client';
 import { formatDate, formatPrice } from '../utils/format';
+import ConfirmEmailNotice from '../components/auth/ConfirmEmailNotice';
 
 const Account = () => {
   const user = useSelector((state) => state.user);
@@ -30,6 +31,7 @@ const Account = () => {
       <Navbar />
       <Wrapper>
         <Title>MY ACCOUNT</Title>
+        <ConfirmEmailNotice />
         <Profile>
           <p>
             <strong>{user.name}</strong>

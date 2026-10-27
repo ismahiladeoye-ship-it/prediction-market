@@ -5,12 +5,12 @@ import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Triangle } from 'react-loader-spinner';
 import { useToast } from '@chakra-ui/react';
-import { HiCheckCircle, HiOutlineCheckCircle } from 'react-icons/hi2';
 import Logo from '../components/Logo';
 import GoogleSignInButton from '../components/GoogleSignInButton';
 import { startSession } from '../store/session';
 import { getErrorMessage } from '../api/client';
-import { PASSWORD_RULES, passwordHint } from '../utils/passwordPolicy';
+import { passwordHint } from '../utils/passwordPolicy';
+import PasswordChecklist from '../components/auth/PasswordChecklist';
 
 const LoaderOverlay = styled.div`
   position: fixed;
@@ -98,33 +98,6 @@ const Hint = styled.p`
   line-height: 1.45;
   color: ${({ $error, $ok }) => ($error ? '#c53030' : $ok ? '#276749' : '#555')};
   font-weight: ${({ $error }) => ($error ? 600 : 400)};
-`;
-
-const Rules = styled.ul`
-  list-style: none;
-  margin: 8px 0 0;
-  padding: 0;
-  font-size: 13px;
-  li {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 2px 0;
-    color: #666;
-  }
-  li[data-met='true'] {
-    color: #276749;
-  }
-`;
-
-// Read out by screen readers only.
-const VisuallyHidden = styled.span`
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
 `;
 
 const ShowPassword = styled.label`
@@ -234,6 +207,11 @@ const Register = () => {
     try {
       const res = await UserRegistrationAPI(formData);
       await dispatch(startSession(res.user));
+      if (res.verificationRequired) {
+        // New accounts confirm their email with the 6-digit code just sent.
+        navigate('/verify-email', { replace: true, state: { from } });
+        return;
+      }
       toast({
         title: 'Registration Successful!',
         description: res.message || 'You have successfully registered. Welcome!',
@@ -324,18 +302,7 @@ const Register = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-              <Rules id='register-password-rules' aria-label='Your password needs'>
-                {PASSWORD_RULES.map((rule) => {
-                  const met = rule.test(password);
-                  return (
-                    <li key={rule.label} data-met={met}>
-                      {met ? <HiCheckCircle size={16} aria-hidden='true' /> : <HiOutlineCheckCircle size={16} aria-hidden='true' />}
-                      {rule.label}
-                      {met && <VisuallyHidden> (done)</VisuallyHidden>}
-                    </li>
-                  );
-                })}
-              </Rules>
+              <PasswordChecklist id='register-password-rules' password={password} />
               {errors.password && (
                 <Hint id='register-password-hint' $error>
                   {errors.password}

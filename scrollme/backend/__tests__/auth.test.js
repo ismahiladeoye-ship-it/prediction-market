@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const mailer = require('../api/services/mailer');
 const googleAuth = require('../api/services/googleAuth');
 const { resetConfig } = require('../api/config/env');
-const { useTestApp, createUser, STRONG_PASSWORD } = require('./helpers/setup');
+const { useTestApp, createUser, emailedCode, STRONG_PASSWORD } = require('./helpers/setup');
 
 const ctx = useTestApp();
 
@@ -135,7 +135,7 @@ describe('login and session', () => {
 });
 
 describe('password reset', () => {
-  it('resets the password with the emailed token and revokes old sessions', async () => {
+  it('resets the password with the emailed 6-digit code and revokes old sessions', async () => {
     const user = await createUser();
     const spy = jest.spyOn(mailer, 'sendMail').mockResolvedValue({ delivered: true });
     const agent = request.agent(ctx.app);
@@ -143,19 +143,45 @@ describe('password reset', () => {
 
     const res = await request(ctx.app).post('/api/auth/forgot-password').send({ email: user.email });
     expect(res.status).toBe(200);
-    const token = spy.mock.calls[0][0].text.match(/token=([a-f0-9]{64})/)[1];
+    const code = await emailedCode(spy, user.email);
+    expect(code).toMatch(/^\d{6}$/);
+    expect(spy.mock.calls[0][0].subject).toBe(`${code} is your Get It Sourced password reset code`);
+    expect(spy.mock.calls[0][0].text).toContain(`Your code: ${code}`);
 
-    const weak = await request(ctx.app).post('/api/auth/reset-password').send({ token, password: 'weak' });
-    expect(weak.status).toBe(400);
-
-    const ok = await request(ctx.app).post('/api/auth/reset-password').send({ token, password: 'N3w!Password' });
+    const reset = (fields) =>
+      request(ctx.app)
+        .post('/api/auth/reset-password')
+        .send({ email: user.email, ...fields });
+    expect((await reset({ code, password: 'weak' })).status).toBe(400);
+    expect((await reset({ code: code === '000000' ? '111111' : '000000', password: 'N3w!Password' })).status).toBe(400);
+    // Spaces typed in the code are fine.
+    const ok = await reset({ code: `${code.slice(0, 3)} ${code.slice(3)}`, password: 'N3w!Password' });
     expect(ok.status).toBe(200);
     expect((await agent.get('/api/auth/me')).status).toBe(401);
 
     const login = await request(ctx.app).post('/api/auth/login').send({ username: user.username, password: 'N3w!Password' });
     expect(login.status).toBe(200);
-    // Token is single-use.
-    expect((await request(ctx.app).post('/api/auth/reset-password').send({ token, password: 'An0ther!Pass' })).status).toBe(400);
+    // A code works once.
+    expect((await reset({ code, password: 'An0ther!Pass' })).status).toBe(400);
+    spy.mockRestore();
+  });
+
+  it('stops accepting a code after 5 wrong guesses or 15 minutes', async () => {
+    const user = await createUser();
+    const spy = jest.spyOn(mailer, 'sendMail').mockResolvedValue({ delivered: true });
+    const reset = (code) => request(ctx.app).post('/api/auth/reset-password').send({ email: user.email, code, password: 'N3w!Password' });
+
+    await request(ctx.app).post('/api/auth/forgot-password').send({ email: user.email });
+    const code = await emailedCode(spy, user.email);
+    const wrong = code === '123456' ? '654321' : '123456';
+    for (let i = 0; i < 5; i += 1) expect((await reset(wrong)).body.message).toMatch(/wrong or has expired/);
+    expect((await reset(code)).status).toBe(400);
+
+    spy.mockClear();
+    await request(ctx.app).post('/api/auth/forgot-password').send({ email: user.email });
+    const fresh = await emailedCode(spy, user.email);
+    await User.updateOne({ _id: user._id }, { $set: { 'passwordReset.expiresAt': new Date(Date.now() - 1000) } });
+    expect((await reset(fresh)).status).toBe(400);
     spy.mockRestore();
   });
 
@@ -163,6 +189,10 @@ describe('password reset', () => {
     const spy = jest.spyOn(mailer, 'sendMail');
     const res = await request(ctx.app).post('/api/auth/forgot-password').send({ email: 'nobody@example.com' });
     expect(res.status).toBe(200);
+    expect(
+      (await request(ctx.app).post('/api/auth/reset-password').send({ email: 'nobody@example.com', code: '123456', password: 'N3w!Password' })).body.message
+    ).toMatch(/wrong or has expired/);
+    await new Promise((r) => setTimeout(r, 50));
     expect(spy).not.toHaveBeenCalled();
     spy.mockRestore();
   });

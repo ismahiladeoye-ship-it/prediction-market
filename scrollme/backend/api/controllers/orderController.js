@@ -57,6 +57,10 @@ const loadOwnOrder = async (req) => {
 };
 
 exports.checkout = async (req, res) => {
+  // Order emails must reach the customer, so a new account confirms its address first.
+  if (req.user.emailVerified === false) {
+    throw forbidden('Please confirm your email address before placing an order. We emailed you a 6-digit code.', 'EMAIL_UNVERIFIED');
+  }
   const { order, checkoutUrl } = await createOrderFromCart(req.user, req.body);
   res.status(201).json({ order: serializeOrder(order), checkoutUrl });
 };

@@ -11,7 +11,7 @@ import { lazy, Suspense } from 'react';
 import ContactUsPage from './pages/ContactUsPage';
 import ComingSoon from './pages/ComingSoon';
 import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
+import VerifyEmail from './pages/VerifyEmail';
 import useAuthCheck from './hooks/useAuthCheck';
 import { departments } from './utils/taxonomy';
 const LazyAllProducts = lazy(() => import('./pages/AllProducts'));
@@ -91,7 +91,9 @@ function App() {
           <Route path='/delivery' element={<LazyDelivery />} />
           <Route path='/login' element={<Login />} />
           <Route path='/forgot-password' element={<ForgotPassword />} />
-          <Route path='/reset-password' element={<ResetPassword />} />
+          {/* Reset links from before 6-digit codes. */}
+          <Route path='/reset-password' element={<Navigate to='/forgot-password' replace />} />
+          <Route path='/verify-email' element={protect(<VerifyEmail />)} />
           <Route path='/register' element={<Register />} />
           <Route path='/contact-us' element={<ContactUsPage />} />
           <Route path='/comingsoon' element={<ComingSoon />} />
