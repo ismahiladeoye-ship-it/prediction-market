@@ -7,7 +7,7 @@ export const storeConfig = {
   // Rotating messages in the bar above the header. Only state what is true:
   // keep the delivery wording in line with FREE_SHIPPING_THRESHOLD and SHIP_TO_COUNTRIES in the API.
   announcements: ['FREE UK DELIVERY ON ORDERS OVER £100', '30-DAY RETURNS', 'PAY WITH CARD, APPLE PAY, PAYPAL OR KLARNA'],
-  // Shown under "Add to cart" on product pages (icon: delivery, returns or check).
+  // Shown under "Add to bag" on product pages (icon: delivery, returns or check).
   perks: [
     { icon: 'delivery', text: 'Free UK delivery over £100' },
     { icon: 'returns', text: '30-day returns' },

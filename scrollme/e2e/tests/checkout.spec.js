@@ -4,8 +4,8 @@ const { login, chooseSize, findProduct, createProduct, fillAddress, money } = re
 const addToCart = async (page, product) => {
   await page.goto(`/${product.category}/${product._id}`);
   if (product.sizes.length) await chooseSize(page, product.sizes[0]);
-  await page.getByRole('button', { name: 'ADD TO CART' }).click();
-  await expect(page.getByText('Product added to cart.')).toBeVisible();
+  await page.getByRole('button', { name: 'ADD TO BAG' }).click();
+  await expect(page.getByText('Added to your bag.')).toBeVisible();
 };
 
 test.describe('cart and checkout', () => {
@@ -32,11 +32,11 @@ test.describe('cart and checkout', () => {
   test('requires a size and sign-in before adding to the cart', async ({ page, request }) => {
     const product = await findProduct(request, 'inStock=true&category=clothing&subcategory=t-shirts');
     await page.goto(`/${product.category}/${product._id}`);
-    await page.getByRole('button', { name: 'ADD TO CART' }).click();
+    await page.getByRole('button', { name: 'ADD TO BAG' }).click();
     await expect(page).toHaveURL(/\/login$/);
     await login(page);
     await page.goto(`/${product.category}/${product._id}`);
-    await page.getByRole('button', { name: 'ADD TO CART' }).click();
+    await page.getByRole('button', { name: 'ADD TO BAG' }).click();
     await expect(page.getByText('Please choose a size.')).toBeVisible();
   });
 

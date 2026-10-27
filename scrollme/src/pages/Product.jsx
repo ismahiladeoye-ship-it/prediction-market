@@ -67,7 +67,7 @@ const Product = () => {
 
   const addCurrentToCart = async () => {
     if (!isAuthenticated) {
-      toast({ title: 'Please sign in to add items to your cart.', status: 'info', duration: 3000, isClosable: true });
+      toast({ title: 'Please sign in to add items to your bag.', status: 'info', duration: 3000, isClosable: true });
       navigate('/login', { state: { from: location } });
       return false;
     }
@@ -81,7 +81,7 @@ const Product = () => {
       return true;
     } catch (err) {
       toast({
-        title: 'Error adding product to cart.',
+        title: 'Could not add this to your bag.',
         description: typeof err === 'string' ? err : 'Something went wrong.',
         status: 'error',
         duration: 3000,
@@ -96,8 +96,8 @@ const Product = () => {
   const handleAddToCart = async () => {
     if (await addCurrentToCart()) {
       toast({
-        title: 'Product added to cart.',
-        description: 'You can view your cart to proceed.',
+        title: 'Added to your bag.',
+        description: 'Open your bag to check out.',
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -254,7 +254,7 @@ const Product = () => {
           <FilterContainer>
             {product?.color && (
               <Filter>
-                <FilterTitle>Color</FilterTitle>
+                <FilterTitle>Colour</FilterTitle>
                 <FilterColor color={product.color.toLowerCase()} title={product.color} aria-label={`Colour: ${product.color}`} />
                 <ColorName>{product.color}</ColorName>
               </Filter>
@@ -282,7 +282,7 @@ const Product = () => {
           <AddContainer>
             <ActionButtons>
               <Button $primary onClick={handleAddToCart} disabled={outOfStock || adding}>
-                {outOfStock ? 'OUT OF STOCK' : 'ADD TO CART'}
+                {outOfStock ? 'OUT OF STOCK' : 'ADD TO BAG'}
               </Button>
               <Button onClick={handleBuyNow} disabled={outOfStock || adding}>
                 BUY NOW
