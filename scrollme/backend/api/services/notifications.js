@@ -3,6 +3,7 @@ const mailer = require('./mailer');
 const { getConfig } = require('../config/env');
 const { getShopDetails, notifyAddress } = require('./shopDetails');
 const logger = require('../utils/logger');
+const { afterResponse } = require('../utils/background');
 
 // Emails to customers (order confirmation, shipped, refunded) and alerts to
 // the shop owner (new order, new contact message). Sending never blocks or
@@ -268,4 +269,11 @@ const notifyNewMessage = async (msg) => {
   }
 };
 
-module.exports = { notifyOrderPaid, notifyOrderStatus, notifyNewMessage, render, escapeHtml };
+// Callers do not wait for emails; afterResponse keeps them sending on Vercel.
+module.exports = {
+  notifyOrderPaid: (order) => afterResponse(notifyOrderPaid(order)),
+  notifyOrderStatus: (order) => afterResponse(notifyOrderStatus(order)),
+  notifyNewMessage: (msg) => afterResponse(notifyNewMessage(msg)),
+  render,
+  escapeHtml,
+};
