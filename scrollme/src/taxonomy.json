@@ -274,10 +274,6 @@
               "title": "Watches"
             },
             {
-              "slug": "jewellery",
-              "title": "Jewellery"
-            },
-            {
               "slug": "belts",
               "title": "Belts"
             },
@@ -650,10 +646,6 @@
           "slug": "accessories",
           "title": "Accessories",
           "subcategories": [
-            {
-              "slug": "jewellery",
-              "title": "Jewellery"
-            },
             {
               "slug": "watches",
               "title": "Watches"
