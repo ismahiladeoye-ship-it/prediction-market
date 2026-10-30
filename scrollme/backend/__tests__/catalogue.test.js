@@ -89,6 +89,23 @@ describe('product catalogue', () => {
     );
   });
 
+  it('lists the other colours of the same item on its product page', async () => {
+    const headphones = { name: 'Studio Headphones', brand: 'apple', department: 'electronics', category: 'audio', subcategory: 'headphones', sizes: [] };
+    const midnight = await createProduct({ ...headphones, color: 'Midnight', createdAt: new Date('2025-01-01') });
+    const blue = await createProduct({ ...headphones, color: 'Blue', stock: 0, createdAt: new Date('2025-01-02') });
+    await createProduct({ ...headphones, color: 'Orange', isActive: false });
+    await createProduct({ ...headphones, brand: 'sony', color: 'Black' });
+
+    const res = await request(ctx.app).get(`/api/product/${blue.id}`);
+    expect(res.body.colours).toEqual([
+      { _id: midnight.id, color: 'Midnight', category: 'audio', inStock: true },
+      { _id: blue.id, color: 'Blue', category: 'audio', inStock: false },
+    ]);
+    // An item that comes in one colour has no colour choices.
+    const single = await createProduct({ name: 'Plain Tee', color: 'White' });
+    expect((await request(ctx.app).get(`/api/product/${single.id}`)).body.colours).toEqual([]);
+  });
+
   it('returns product details, 404 for unknown/inactive/malformed ids', async () => {
     const list = await request(ctx.app).get('/api/product/list');
     const id = list.body.products[0]._id;

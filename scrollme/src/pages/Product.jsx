@@ -21,6 +21,7 @@ import { getErrorMessage } from '../api/client';
 import { formatPrice } from '../utils/format';
 import { placementLabel } from '../utils/taxonomy';
 import { imageSrc, onImageError } from '../utils/imageFallback';
+import { swatchColour } from '../utils/colourSwatch';
 import { HiOutlineArrowPath, HiOutlineCheckCircle, HiOutlineTruck } from 'react-icons/hi2';
 import { storeConfig } from '../data';
 
@@ -255,7 +256,27 @@ const Product = () => {
             {product?.color && (
               <Filter>
                 <FilterTitle>Colour</FilterTitle>
-                <FilterColor color={product.color.toLowerCase()} title={product.color} aria-label={`Colour: ${product.color}`} />
+                {product.colours?.length > 1 ? (
+                  // The same item in its other colours, each its own product page.
+                  <Swatches aria-label='Colours'>
+                    {product.colours.map((c) => (
+                      <li key={c._id}>
+                        <SwatchLink
+                          to={`/${c.category}/${c._id}`}
+                          replace
+                          aria-label={`${c.color}${c.inStock ? '' : ', out of stock'}`}
+                          aria-current={c._id === product._id ? 'true' : undefined}
+                          title={c.inStock ? c.color : `${c.color} (out of stock)`}
+                          $colour={swatchColour(c.color)}
+                          $selected={c._id === product._id}
+                          $soldOut={!c.inStock}
+                        />
+                      </li>
+                    ))}
+                  </Swatches>
+                ) : (
+                  <FilterColor color={swatchColour(product.color)} title={product.color} aria-label={`Colour: ${product.color}`} />
+                )}
                 <ColorName>{product.color}</ColorName>
               </Filter>
             )}
@@ -476,6 +497,42 @@ const FilterColor = styled.div`
   background-color: ${(props) => props.color};
   margin: 0px 5px;
   cursor: pointer;
+`;
+
+const Swatches = styled.ul`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+`;
+
+// A round colour swatch; the chosen colour has a ring, sold-out ones are crossed through.
+const SwatchLink = styled(RouterLink)`
+  display: block;
+  position: relative;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: ${({ $colour }) => $colour};
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  box-shadow: ${({ $selected }) => ($selected ? '0 0 0 2px #fff, 0 0 0 4px #111' : 'none')};
+  opacity: ${({ $soldOut }) => ($soldOut ? 0.45 : 1)};
+  &::after {
+    content: '';
+    display: ${({ $soldOut }) => ($soldOut ? 'block' : 'none')};
+    position: absolute;
+    left: 50%;
+    top: -2px;
+    bottom: -2px;
+    border-left: 1.5px solid #111;
+    transform: rotate(45deg);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+  }
 `;
 
 const SizePills = styled.div`

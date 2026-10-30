@@ -93,7 +93,18 @@ exports.listBrands = async (req, res) => {
 exports.getProductById = async (req, res) => {
   const product = await Product.findOne({ _id: req.params.productId, isActive: true }).select(PUBLIC_FIELDS).lean();
   if (!product) throw notFound('Product not found');
-  res.status(200).json(product);
+  // The same item in other colours: products on sale with the same brand and name.
+  const colours = product.color
+    ? await Product.find({ isActive: true, brand: product.brand ?? null, name: product.name, color: { $nin: [null, ''] } })
+        .select('color category stock')
+        .sort({ createdAt: 1, _id: 1 })
+        .limit(12)
+        .lean()
+    : [];
+  res.status(200).json({
+    ...product,
+    colours: colours.length > 1 ? colours.map((c) => ({ _id: c._id, color: c.color, category: c.category, inStock: c.stock > 0 })) : [],
+  });
 };
 
 exports.buildFilter = buildFilter;
