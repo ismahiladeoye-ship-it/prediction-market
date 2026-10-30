@@ -112,21 +112,24 @@ In the admin:
 
 Emails the shop sends: 6-digit codes (to confirm a new account's email and to reset a password), order confirmations, shipping and refund updates, and new-order and contact-form alerts to you. They need an email-sending service. For example, with **Resend** (free up to 100 emails a day):
 
-1. Sign up at resend.com, **Domains → Add domain** `getitsourced.com`, and add the DNS records it shows in Cloudflare (*DNS only*, grey cloud). Wait until Resend says *Verified*.
-2. **API keys → Create** a key with *Sending access*.
-3. In Vercel add `SMTP_URL` = `smtps://resend:YOUR_API_KEY@smtp.resend.com:465` (mark it *Sensitive*) and redeploy.
+1. Sign up at resend.com, **Domains → Add domain** `getitsourced.com` (region Ireland), then tap **Auto configure** to add its DNS records in Cloudflare, or add them by hand (*DNS only*, grey cloud, for the CNAMEs). Wait until sending shows *Verified*.
+2. **API keys → Create** a key with *Sending access* for that domain.
+3. In Vercel add `RESEND_API_KEY` = the key on its own (mark it *Sensitive*, Production) and redeploy.
 
-The default sender is `Get It Sourced <no-reply@getitsourced.com>`; set `MAIL_FROM` to change it. Any service with SMTP works the same way.
+The default sender is `Get It Sourced <no-reply@getitsourced.com>`; set `MAIL_FROM` to change it (the domain must be verified in Resend).
 
-Add these variables, then redeploy:
+Any other email service works through SMTP instead: add `SMTP_URL` in the form `smtps://USERNAME:PASSWORD@smtp.example.com:465`. If the username or password contains symbols such as `@`, `:` or `/`, URL-encode them. If both are set, `RESEND_API_KEY` is used.
 
 | Name | Value |
 | --- | --- |
-| `SMTP_URL` | from your email service, in the form `smtps://USERNAME:PASSWORD@smtp.example.com:465`. If the username or password contains symbols such as `@`, `:` or `/`, ask the service for an SMTP key without them, or URL-encode them. |
+| `RESEND_API_KEY` | the Resend key on its own, e.g. `re_…` |
+| `SMTP_URL` | instead of `RESEND_API_KEY`, for another email service |
 | `MAIL_FROM` | e.g. `Get It Sourced <orders@your-domain.co.uk>`; the domain must be verified with the email service |
 | `NOTIFY_EMAIL` | optional: where new-order and contact-form alerts go. Defaults to the contact email in *Shop details*. |
 
-Once `SMTP_URL` is set, new accounts must confirm their email address with a 6-digit code before they can place an order (accounts made before then, and Google sign-ins, count as confirmed). To change that, add `EMAIL_VERIFICATION` = `off` (never ask) or `on` (always ask); the default, `auto`, asks only when email is set up.
+Once email is set up, new accounts must confirm their email address with a 6-digit code before they can place an order (accounts made before then, and Google sign-ins, count as confirmed). To change that, add `EMAIL_VERIFICATION` = `off` (never ask) or `on` (always ask); the default, `auto`, asks only when email is set up.
+
+If emails don't arrive, check the logs (**Vercel → Logs**, search `failed`). `Missing credentials` means the key is missing from `SMTP_URL`; `RESEND_API_KEY` avoids that.
 
 Test it: create an account (the code should arrive within a minute; check spam the first time), then use **Forgotten your password?** on the sign-in page, then place another test order: you should get the confirmation, and the shop email gets the new-order alert.
 
