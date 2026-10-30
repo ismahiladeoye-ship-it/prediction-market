@@ -147,7 +147,7 @@ exports.stats = async (req, res) => {
     setup: {
       shopAddress: Boolean(shop.address),
       shopEmail: Boolean(shop.email),
-      emailSending: Boolean(config.SMTP_URL),
+      emailSending: config.emailConfigured,
       // On Vercel, photos need a connected Blob store.
       photoStorage: Boolean(config.r2) || Boolean(config.BLOB_READ_WRITE_TOKEN) || !config.onVercel,
       payments: config.PAYMENT_PROVIDER === 'mock' ? 'mock' : String(config.STRIPE_SECRET_KEY || '').startsWith('sk_live_') ? 'live' : 'test',

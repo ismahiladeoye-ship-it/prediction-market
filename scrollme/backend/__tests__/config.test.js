@@ -45,6 +45,31 @@ describe('configuration', () => {
     expect(loadConfig({ ...base, STRIPE_SECRET_KEY: 'sk_test_123' }).STRIPE_SECRET_KEY).toBe('sk_test_123');
   });
 
+  it('turns on email (and sign-up codes) with a Resend API key or an SMTP address', () => {
+    expect(loadConfig(base)).toMatchObject({ emailConfigured: false, emailVerificationRequired: false });
+    expect(loadConfig({ ...base, RESEND_API_KEY: '  ' }).emailConfigured).toBe(false);
+    const resend = loadConfig({ ...base, RESEND_API_KEY: ' re_test_123\n' });
+    expect(resend).toMatchObject({ RESEND_API_KEY: 're_test_123', emailConfigured: true, emailVerificationRequired: true });
+    expect(loadConfig({ ...base, SMTP_URL: 'smtps://u:p@smtp.example.com:465' }).emailConfigured).toBe(true);
+    expect(loadConfig({ ...base, RESEND_API_KEY: 're_test_123', EMAIL_VERIFICATION: 'off' }).emailVerificationRequired).toBe(false);
+  });
+
+  it('sends through Resend with just its API key, ahead of SMTP_URL', async () => {
+    const saved = { ...process.env };
+    Object.assign(process.env, { RESEND_API_KEY: 're_test_123', SMTP_URL: 'smtps://resend:@smtp.resend.com:465' });
+    try {
+      await jest.isolateModulesAsync(async () => {
+        const nodemailer = require('nodemailer');
+        const create = jest.spyOn(nodemailer, 'createTransport').mockReturnValue({ sendMail: jest.fn().mockResolvedValue({}) });
+        const result = await require('../api/services/mailer').sendMail({ to: 'a@example.com', subject: 'Hi', text: 'Hi' });
+        expect(result).toEqual({ delivered: true });
+        expect(create).toHaveBeenCalledWith({ host: 'smtp.resend.com', port: 465, secure: true, auth: { user: 'resend', pass: 're_test_123' } });
+      });
+    } finally {
+      process.env = saved;
+    }
+  });
+
   it('uses secure cookies by default in production', () => {
     const c = loadConfig(prod);
     expect(c.cookieSecure).toBe(true);

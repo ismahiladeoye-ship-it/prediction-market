@@ -2,11 +2,15 @@ const nodemailer = require('nodemailer');
 const { getConfig } = require('../config/env');
 const logger = require('../utils/logger');
 
+// Resend's SMTP server from just its API key, or any service from SMTP_URL.
+const transportOptions = ({ RESEND_API_KEY, SMTP_URL }) =>
+  RESEND_API_KEY ? { host: 'smtp.resend.com', port: 465, secure: true, auth: { user: 'resend', pass: RESEND_API_KEY } } : SMTP_URL;
+
 let transport;
 const getTransport = () => {
-  const { SMTP_URL } = getConfig();
-  if (!SMTP_URL) return null;
-  if (!transport) transport = nodemailer.createTransport(SMTP_URL);
+  const options = transportOptions(getConfig());
+  if (!options) return null;
+  if (!transport) transport = nodemailer.createTransport(options);
   return transport;
 };
 
