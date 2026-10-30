@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { findProduct } = require('./helpers');
+const { findProduct, createProduct } = require('./helpers');
 
 test.describe('catalogue', () => {
   test('home page shows the store sections and real products @phone', async ({ page }) => {
@@ -131,5 +131,28 @@ test.describe('catalogue', () => {
     }
     await page.goto('/tshirts/507f1f77bcf86cd799439011');
     await expect(page.getByText('Product not found')).toBeVisible();
+  });
+
+  test('switches between the colours of the same item', async ({ page, request }) => {
+    // Cheap, so the other tests (which pick the newest product over £50) never choose these.
+    const item = {
+      name: `E2E Studio Headphones ${Date.now()}`,
+      brand: 'Apple',
+      department: 'electronics',
+      category: 'audio',
+      subcategory: 'headphones',
+      price: 5,
+    };
+    const midnight = await createProduct(request, { ...item, color: 'Midnight' });
+    const blue = await createProduct(request, { ...item, color: 'Blue', stock: 0 });
+
+    await page.goto(`/${midnight.category}/${midnight._id}`);
+    const colours = page.getByRole('list', { name: 'Colours' });
+    await expect(colours.getByRole('link')).toHaveCount(2);
+    await expect(colours.getByRole('link', { name: 'Midnight' })).toHaveAttribute('aria-current', 'true');
+    await colours.getByRole('link', { name: 'Blue, out of stock' }).click();
+    await expect(page).toHaveURL(new RegExp(`/audio/${blue._id}$`));
+    await expect(page.getByText('Out of stock', { exact: true })).toBeVisible();
+    await expect(colours.getByRole('link', { name: 'Blue, out of stock' })).toHaveAttribute('aria-current', 'true');
   });
 });
