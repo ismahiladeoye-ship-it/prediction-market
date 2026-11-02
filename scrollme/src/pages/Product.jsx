@@ -61,7 +61,7 @@ const Product = () => {
     fetchProduct();
   }, [productId]);
 
-  const outOfStock = product && product.stock <= 0;
+  const outOfStock = product?.inStock === false;
   const saving = product ? retailSaving(product.price, product.retailPrice) : null;
   const photos = product?.images?.length ? product.images : [product?.imageUrl];
   const mainPhoto = photos[photo] || photos[0];
@@ -266,9 +266,8 @@ const Product = () => {
           ) : (
             <Price>{formatPrice(product?.price)}</Price>
           )}
-          <StockInfo low={product.stock < 10}>
-            {outOfStock ? 'Out of stock' : product.stock < 10 ? `Only ${product.stock} left in stock` : 'In stock'}
-          </StockInfo>
+          {/* Customers only see whether it is in stock; how many is for admins. */}
+          <StockInfo low={outOfStock}>{outOfStock ? 'Out of stock' : 'In stock'}</StockInfo>
           <FilterContainer>
             {product?.color && (
               <Filter>

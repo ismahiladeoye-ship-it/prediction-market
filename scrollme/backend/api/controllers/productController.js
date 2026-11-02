@@ -14,6 +14,10 @@ const SORTS = {
 
 const PUBLIC_FIELDS = '-__v';
 
+// Customers see whether an item can be bought, never how many are left: stock
+// counts are for the shop's admins only (the admin API keeps them).
+const toPublic = ({ stock, ...product }) => ({ ...product, inStock: stock > 0 });
+
 // Builds the Mongo filter for the public catalogue (and the admin list).
 const buildFilter = (query, { includeInactive = false } = {}) => {
   const filter = includeInactive ? {} : { isActive: true };
@@ -56,7 +60,8 @@ const paginate = async (filter, query) => {
 // Controller to list products with search, filters, sorting and pagination
 exports.listProducts = async (req, res) => {
   const query = req.validatedQuery;
-  res.status(200).json(await paginate(buildFilter(query), query));
+  const result = await paginate(buildFilter(query), query);
+  res.status(200).json({ ...result, products: result.products.map(toPublic) });
 };
 
 // Active products counted by department, category and subcategory. The
@@ -102,10 +107,11 @@ exports.getProductById = async (req, res) => {
         .lean()
     : [];
   res.status(200).json({
-    ...product,
+    ...toPublic(product),
     colours: colours.length > 1 ? colours.map((c) => ({ _id: c._id, color: c.color, category: c.category, inStock: c.stock > 0 })) : [],
   });
 };
 
 exports.buildFilter = buildFilter;
+exports.toPublic = toPublic;
 exports.paginate = paginate;

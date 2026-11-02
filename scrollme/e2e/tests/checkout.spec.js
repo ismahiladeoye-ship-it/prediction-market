@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { login, chooseSize, findProduct, createProduct, fillAddress, money } = require('./helpers');
+const { login, chooseSize, findProduct, createProduct, stockOf, fillAddress, money } = require('./helpers');
 
 const addToCart = async (page, product) => {
   await page.goto(`/${product.category}/${product._id}`);
@@ -42,7 +42,7 @@ test.describe('cart and checkout', () => {
 
   test('full purchase with card: validation, decline, success, history and stock @phone', async ({ page, request }) => {
     const product = await findProduct(request, 'inStock=true&minPrice=200');
-    const before = product.stock;
+    const before = await stockOf(request, product._id);
     await login(page);
     await addToCart(page, product);
     await page.goto('/checkout');
@@ -80,8 +80,7 @@ test.describe('cart and checkout', () => {
     await page.goto('/account');
     await expect(page.getByText(orderNumber)).toBeVisible();
 
-    const after = await (await request.get(`/api/product/${product._id}`)).json();
-    expect(after.stock).toBe(before - 1);
+    expect(await stockOf(request, product._id)).toBe(before - 1);
 
     // The purchased line left the cart.
     await page.goto('/cart');

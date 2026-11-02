@@ -159,13 +159,16 @@ test.describe('catalogue', () => {
       subcategory: 'headphones',
       price: 5,
     };
-    const midnight = await createProduct(request, { ...item, color: 'Midnight' });
+    const midnight = await createProduct(request, { ...item, color: 'Midnight', stock: 3 });
     const blue = await createProduct(request, { ...item, color: 'Blue', stock: 0 });
 
     await page.goto(`/${midnight.category}/${midnight._id}`);
     const colours = page.getByRole('list', { name: 'Colours' });
     await expect(colours.getByRole('link')).toHaveCount(2);
     await expect(colours.getByRole('link', { name: 'Midnight' })).toHaveAttribute('aria-current', 'true');
+    // Only 3 left, but shoppers just see "In stock": how many is for admins.
+    await expect(page.getByText('In stock', { exact: true })).toBeVisible();
+    await expect(page.getByText(/left in stock|\d+ left/i)).toHaveCount(0);
     await colours.getByRole('link', { name: 'Blue, out of stock' }).click();
     await expect(page).toHaveURL(new RegExp(`/audio/${blue._id}$`));
     await expect(page.getByText('Out of stock', { exact: true })).toBeVisible();

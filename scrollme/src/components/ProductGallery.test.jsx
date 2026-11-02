@@ -14,7 +14,7 @@ const product = (id, extra = {}) => ({
   brand: 'brand',
   category: 'shirts',
   price: 10,
-  stock: 3,
+  inStock: true,
   description: 'desc',
   ratings: { averageRating: 4, numberOfReviews: 2 },
   ...extra,
@@ -30,14 +30,16 @@ describe('ProductGallery', () => {
 
   it('passes URL filters to the API and renders products', async () => {
     listProductsAPI.mockResolvedValue({
-      products: [product('1'), product('2', { description: undefined, ratings: undefined })],
+      products: [product('1'), product('2', { description: undefined, ratings: undefined, inStock: false })],
       totalPages: 1,
       totalProducts: 2,
     });
     renderWithProviders(<ProductGallery />, { route: '/products?q=shirt&sort=price_asc&page=1' });
     expect(await screen.findByText('Product 1')).toBeInTheDocument();
     expect(screen.getByText('Product 2')).toBeInTheDocument();
-    expect(screen.getAllByText('Only 3 left')).toHaveLength(2);
+    // Shoppers see "Sold out" or nothing, never how many are left.
+    expect(screen.getAllByText('Sold out')).toHaveLength(1);
+    expect(screen.queryByText(/left/)).not.toBeInTheDocument();
     expect(listProductsAPI).toHaveBeenCalledWith(expect.objectContaining({ q: 'shirt', sort: 'price_asc', page: 1 }));
     expect(screen.getByText('Results for “shirt”')).toBeInTheDocument();
   });

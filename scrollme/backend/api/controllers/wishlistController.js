@@ -1,14 +1,16 @@
 const User = require('../models/userModel');
 const Product = require('../models/productModel');
 const { notFound } = require('../utils/httpError');
+const { toPublic } = require('./productController');
 
 const MAX_ITEMS = 200;
 const FIELDS = 'name imageUrl price color category brand stock sizes isActive';
 
 const view = async (userId) => {
   const user = await User.findById(userId).populate({ path: 'wishlist', select: FIELDS }).lean();
-  // Deleted products drop out; inactive ones are kept but flagged.
-  return { items: (user?.wishlist || []).filter(Boolean) };
+  // Deleted products drop out; inactive ones are kept but flagged. Stock
+  // counts are for admins only, so shoppers just see whether it is in stock.
+  return { items: (user?.wishlist || []).filter(Boolean).map(toPublic) };
 };
 
 exports.getWishlist = async (req, res) => {

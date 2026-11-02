@@ -5,6 +5,9 @@ const { getConfig } = require('../config/env');
 const { fromCents } = require('../utils/money');
 const { badRequest, notFound, conflict } = require('../utils/httpError');
 
+// Stock counts stay private to the shop's admins, so shoppers are never told how many are left.
+const TOO_MANY = "Sorry, we don't have that many in stock right now. Please choose fewer.";
+
 // Keeps carts (and every request that prices them) bounded.
 const MAX_CART_LINES = 50;
 
@@ -45,7 +48,7 @@ const buildCartView = async (cart, deliveryMethod = 'standard') => {
       image: product.imageUrl,
       size: item.size || '',
       quantity: item.quantity,
-      stock: product.stock,
+      inStock: product.stock > 0,
       unitPriceCents: unit,
       price: fromCents(unit),
       lineTotal: fromCents(unit * item.quantity),
@@ -54,7 +57,7 @@ const buildCartView = async (cart, deliveryMethod = 'standard') => {
       issues.push({
         productId: product._id,
         size: line.size,
-        message: product.stock === 0 ? `${product.name} is out of stock` : `Only ${product.stock} of ${product.name} left in stock`,
+        message: product.stock <= 0 ? `${product.name} is out of stock` : `We don't have ${item.quantity} of ${product.name} right now. Please choose fewer.`,
       });
     }
     lines.push(line);
@@ -99,7 +102,7 @@ exports.addToCart = async (req, res) => {
   const newQty = (existing?.quantity || 0) + quantity;
   if (newQty > 20) throw badRequest('You can buy at most 20 of one item');
   if (newQty > product.stock) {
-    throw conflict(product.stock === 0 ? 'This product is out of stock' : `Only ${product.stock} left in stock`);
+    throw conflict(product.stock <= 0 ? 'This product is out of stock' : TOO_MANY);
   }
   if (!existing && cart.items.length >= MAX_CART_LINES) throw badRequest(`Your bag can hold up to ${MAX_CART_LINES} different items`);
   if (existing) existing.quantity = newQty;
@@ -116,7 +119,7 @@ exports.updateCartItem = async (req, res) => {
   if (!item) throw notFound('Item not found in cart');
   const product = await Product.findById(productId).lean();
   if (product && quantity > product.stock) {
-    throw conflict(product.stock === 0 ? 'This product is out of stock' : `Only ${product.stock} left in stock`);
+    throw conflict(product.stock <= 0 ? 'This product is out of stock' : TOO_MANY);
   }
   item.quantity = quantity;
   await cart.save();

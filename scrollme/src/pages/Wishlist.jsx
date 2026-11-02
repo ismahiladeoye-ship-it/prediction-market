@@ -140,7 +140,7 @@ const Wishlist = () => {
               </Link>
               <Title>{product?.name}</Title>
               <Price>{formatPrice(product?.price)}</Price>
-              {product?.isActive === false || product?.stock === 0 ? (
+              {product?.isActive === false || product?.inStock === false ? (
                 <Unavailable>Currently unavailable</Unavailable>
               ) : (
                 <MoveToBagButton onClick={() => handleAddToCart(product)}>
