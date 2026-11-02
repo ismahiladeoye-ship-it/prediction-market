@@ -18,7 +18,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useSelector } from 'react-redux';
 import { toggleWishlist } from '../store/slices/wishlistSlice';
 import { getErrorMessage } from '../api/client';
-import { formatPrice } from '../utils/format';
+import { formatPrice, retailSaving } from '../utils/format';
 import { placementLabel } from '../utils/taxonomy';
 import { imageSrc, onImageError } from '../utils/imageFallback';
 import { swatchColour } from '../utils/colourSwatch';
@@ -62,6 +62,7 @@ const Product = () => {
   }, [productId]);
 
   const outOfStock = product && product.stock <= 0;
+  const saving = product ? retailSaving(product.price, product.retailPrice) : null;
   const photos = product?.images?.length ? product.images : [product?.imageUrl];
   const mainPhoto = photos[photo] || photos[0];
   const needsSize = Boolean(product?.sizes?.length);
@@ -248,7 +249,23 @@ const Product = () => {
             <ProductReview>{product?.ratings?.numberOfReviews || 0} reviews</ProductReview>
           </ProductRating>
           <Desc>{product?.description}</Desc>
-          <Price>{formatPrice(product?.price)}</Price>
+          {saving ? (
+            <PriceBlock>
+              <RetailLine>
+                Retail price <s>{formatPrice(saving.retail)}</s>
+              </RetailLine>
+              <OurLine>
+                <span>Get It Sourced price</span>
+                <Price>{formatPrice(product.price)}</Price>
+              </OurLine>
+              <SaveLine>
+                You save {formatPrice(saving.amount)} ({saving.percent}%)
+              </SaveLine>
+              <RetailNote>Retail price: what major UK retailers charge for this exact item.</RetailNote>
+            </PriceBlock>
+          ) : (
+            <Price>{formatPrice(product?.price)}</Price>
+          )}
           <StockInfo low={product.stock < 10}>
             {outOfStock ? 'Out of stock' : product.stock < 10 ? `Only ${product.stock} left in stock` : 'In stock'}
           </StockInfo>
@@ -462,6 +479,48 @@ const Desc = styled.p`
 const Price = styled.span`
   font-weight: 700;
   font-size: 26px;
+`;
+
+const PriceBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const RetailLine = styled.span`
+  font-size: 15px;
+  color: var(--muted);
+  s {
+    margin-left: 6px;
+  }
+`;
+
+const OurLine = styled.div`
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+  span:first-child {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+`;
+
+const SaveLine = styled.span`
+  align-self: flex-start;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #e6f4ea;
+  color: #1e6b35;
+  font-size: 14px;
+  font-weight: 700;
+`;
+
+const RetailNote = styled.span`
+  font-size: 12px;
+  color: var(--muted);
 `;
 
 const FilterContainer = styled.div`

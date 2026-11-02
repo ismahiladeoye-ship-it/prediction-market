@@ -4,6 +4,15 @@ const SYMBOL = process.env.REACT_APP_CURRENCY_SYMBOL || '£';
 export const formatPrice = (amount) =>
   `${SYMBOL}${Number(amount || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
+// "You save" against the usual retail price, or null when there is no saving.
+export const retailSaving = (price, retailPrice) => {
+  const retail = Number(retailPrice);
+  const ours = Number(price);
+  if (!Number.isFinite(retail) || !Number.isFinite(ours) || retail <= ours || ours < 0) return null;
+  const amount = Math.round((retail - ours) * 100) / 100;
+  return { retail, amount, percent: Math.round((amount / retail) * 100) };
+};
+
 export const humanize = (slug = '') =>
   slug
     .split('-')

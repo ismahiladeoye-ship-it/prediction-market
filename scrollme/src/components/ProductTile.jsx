@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { HiHeart, HiOutlineHeart } from 'react-icons/hi2';
 import { toggleWishlist } from '../store/slices/wishlistSlice';
-import { formatPrice } from '../utils/format';
+import { formatPrice, retailSaving } from '../utils/format';
 import { imageSrc, onImageError } from '../utils/imageFallback';
 
 const Card = styled.article`
@@ -84,9 +84,23 @@ const Price = styled.p`
   font-weight: 700;
 `;
 
+const Was = styled.s`
+  margin-left: 4px;
+  font-weight: 400;
+  color: var(--muted);
+`;
+
+const Save = styled.span`
+  margin-left: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e6b35;
+`;
+
 // Product card used on the home page and in listings.
 const ProductTile = ({ product }) => {
   const dispatch = useDispatch();
+  const saving = retailSaving(product.price, product.retailPrice);
   const inWishlist = useSelector((state) => state.wishlist.items.some((w) => w._id === product._id));
   const href = `/${product.category || 'product'}/${product._id}`;
   const soldOut = product.stock <= 0;
@@ -106,7 +120,16 @@ const ProductTile = ({ product }) => {
       </Heart>
       {product.brand && <Brand>{product.brand}</Brand>}
       <Name to={href}>{product.name}</Name>
-      <Price>{formatPrice(product.price)}</Price>
+      <Price>
+        {formatPrice(product.price)}
+        {saving && (
+          <>
+            {' '}
+            <Was aria-label={`Retail price ${formatPrice(saving.retail)}`}>{formatPrice(saving.retail)}</Was>
+            <Save>Save {saving.percent}%</Save>
+          </>
+        )}
+      </Price>
     </Card>
   );
 };

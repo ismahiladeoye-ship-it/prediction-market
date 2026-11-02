@@ -156,6 +156,32 @@ describe('spreadsheet import', () => {
     ).toMatch(/stock/);
   });
 
+  it('sets, keeps and clears the retail price shown beside ours', async () => {
+    const { agent } = await admin();
+    const sheet = (rows) => ['sku,name,department,category,subcategory,price,retail_price,stock', ...rows].join('\n');
+    const run = (csv) => agent.post('/api/admin/products/import').send({ csv, dryRun: false });
+    expect(
+      (await run(sheet(['GIS-RET-1,Studio Headphones,electronics,audio,headphones,300,"£499.00",4', 'GIS-RET-2,Plain Tee,men,clothing,t-shirts,20,,5']))).body
+        .summary
+    ).toMatchObject({ create: 2, errors: 0 });
+    expect((await Product.findOne({ sku: 'GIS-RET-1' }).lean()).retailPrice).toBe(499);
+    expect((await Product.findOne({ sku: 'GIS-RET-2' }).lean()).retailPrice).toBeUndefined();
+
+    // A sheet without the column leaves it alone; an empty cell clears it.
+    await run('sku,price\nGIS-RET-1,290');
+    expect(await Product.findOne({ sku: 'GIS-RET-1' }).lean()).toMatchObject({ price: 290, retailPrice: 499 });
+    await run('sku,rrp\nGIS-RET-1,');
+    expect((await Product.findOne({ sku: 'GIS-RET-1' }).lean()).retailPrice).toBeNull();
+
+    const bad = await agent.post('/api/admin/products/import').send({ csv: sheet(['GIS-RET-3,Cap,men,accessories,hats-beanies,10,ten,1']), dryRun: true });
+    expect(bad.body.rows[0].errors.join(' ')).toMatch(/retailPrice: "ten" is not a number/);
+
+    // The shop's product page gets it.
+    const id = (await Product.findOne({ sku: 'GIS-RET-2' })).id;
+    await agent.patch(`/api/admin/products/${id}`).send({ retailPrice: 25 });
+    expect((await request(ctx.app).get(`/api/product/${id}`)).body).toMatchObject({ price: 20, retailPrice: 25 });
+  });
+
   it('accepts the downloadable template as it is', async () => {
     const { agent } = await admin();
     const csv = require('node:fs').readFileSync(require('node:path').join(__dirname, '../../public/templates/product-upload-template.csv'), 'utf8');

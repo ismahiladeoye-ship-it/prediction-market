@@ -133,6 +133,22 @@ test.describe('catalogue', () => {
     await expect(page.getByText('Product not found')).toBeVisible();
   });
 
+  test('shows the retail price crossed out with the saving', async ({ page, request }) => {
+    // Cheap, so the other tests (which pick the newest product over £50) never choose it.
+    const product = await createProduct(request, {
+      name: `E2E Retail Price Tee ${Date.now()}`,
+      department: 'men',
+      category: 'clothing',
+      subcategory: 't-shirts',
+      price: 15,
+      retailPrice: 20,
+    });
+    await page.goto(`/${product.category}/${product._id}`);
+    await expect(page.getByText('Retail price £20.00')).toBeVisible();
+    await expect(page.getByText('Get It Sourced price')).toBeVisible();
+    await expect(page.getByText('You save £5.00 (25%)')).toBeVisible();
+  });
+
   test('switches between the colours of the same item', async ({ page, request }) => {
     // Cheap, so the other tests (which pick the newest product over £50) never choose these.
     const item = {
