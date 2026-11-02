@@ -198,7 +198,8 @@ test.describe('catalogue', () => {
     await page.getByRole('button', { name: 'Size guide' }).click();
     const guide = page.getByRole('dialog', { name: "Men's shoe size guide" });
     await expect(guide).toBeVisible();
-    await expect(guide.getByRole('columnheader', { name: 'EU' })).toBeVisible();
+    await expect(guide.getByText('Foot length (cm)')).toBeVisible();
+    await expect(guide.getByText('How to measure your foot')).toBeVisible();
     await guide.getByRole('button', { name: 'Close' }).click();
     await expect(guide).toBeHidden();
   });
