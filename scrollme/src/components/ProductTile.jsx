@@ -103,14 +103,14 @@ const ProductTile = ({ product }) => {
   const saving = retailSaving(product.price, product.retailPrice);
   const inWishlist = useSelector((state) => state.wishlist.items.some((w) => w._id === product._id));
   const href = `/${product.category || 'product'}/${product._id}`;
-  const soldOut = product.stock <= 0;
+  const soldOut = product.inStock === false;
 
   return (
     <Card>
       <ImageLink to={href} aria-label={product.name}>
         <img src={imageSrc(product.imageUrl)} alt='' loading='lazy' onError={onImageError} />
       </ImageLink>
-      {soldOut ? <Badge>Sold out</Badge> : product.stock < 5 ? <Badge>Only {product.stock} left</Badge> : null}
+      {soldOut && <Badge>Sold out</Badge>}
       <Heart
         type='button'
         aria-label={inWishlist ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}

@@ -86,6 +86,14 @@ const createProduct = async (request, fields) => {
   return (await res.json()).product;
 };
 
+// A product's exact stock. Only admins can see it, so this asks the admin API.
+const stockOf = async (request, productId) => {
+  await apiLoginAdmin(request);
+  const res = await request.get(`/api/admin/products/${productId}`);
+  expect(res.status()).toBe(200);
+  return (await res.json()).stock;
+};
+
 const MAIL_PORT = Number(process.env.E2E_MAIL_PORT || 8091);
 
 // The 6-digit code in the latest email to `to` whose subject matches `subject`
@@ -108,4 +116,4 @@ const emailedCode = async (request, to, subject) => {
 // Matches the storefront's price format, e.g. £1,699.00.
 const money = (n) => `£${n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-module.exports = { SEEDED, ADMIN, NEW_ADMIN, login, totpCode, emailedCode, chooseSize, findProduct, createProduct, fillAddress, money };
+module.exports = { SEEDED, ADMIN, NEW_ADMIN, login, totpCode, emailedCode, chooseSize, findProduct, createProduct, stockOf, fillAddress, money };

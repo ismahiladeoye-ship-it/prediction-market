@@ -158,7 +158,7 @@ describe('cart', () => {
     await agent.post('/api/cart/add').send({ productId: product.id, quantity: 3 });
     await product.updateOne({ stock: 1 });
     const res = await agent.get('/api/cart');
-    expect(res.body.issues[0].message).toMatch(/Only 1/);
+    expect(res.body.issues[0].message).toMatch(/don't have 3 of/);
     await product.updateOne({ isActive: false });
     const gone = await agent.get('/api/cart');
     expect(gone.body.items).toEqual([]);

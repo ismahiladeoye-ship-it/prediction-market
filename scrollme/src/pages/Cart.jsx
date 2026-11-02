@@ -270,12 +270,13 @@ const Cart = () => {
   const isEmpty = cartItems.length === 0;
   const canCheckout = !isEmpty && issues.length === 0;
 
-  // Always show the server's current prices and stock.
+  // Always show the server's current prices and availability.
   useEffect(() => {
     dispatch(viewCart());
   }, [dispatch]);
 
-  const handleQuantityChange = (item, quantity) => {
+  // Resolves to false when the server refused the change (e.g. not enough stock).
+  const handleQuantityChange = (item, quantity) =>
     dispatch(updateCartItem({ productId: item.productId, size: item.size, quantity }))
       .unwrap()
       .then(() => {
@@ -287,6 +288,7 @@ const Cart = () => {
             </Box>
           ),
         });
+        return true;
       })
       .catch((error) => {
         toast({
@@ -299,8 +301,8 @@ const Cart = () => {
           ),
         });
         dispatch(viewCart());
+        return false;
       });
-  };
 
   const handleRemoveFromCart = (item, { silent = false } = {}) =>
     dispatch(deleteCartItem({ productId: item.productId, size: item.size }))
@@ -396,7 +398,6 @@ const Cart = () => {
                     <CartItemActions
                       key={item.quantity}
                       initialQuantity={item.quantity}
-                      maxQuantity={Math.min(item.stock, 20)}
                       onChange={(newQuantity) => handleQuantityChange(item, newQuantity)}
                       onRemove={() => handleRemoveFromCart(item)}
                       onSaveForLater={() => handleSaveForLater(item)}
@@ -501,19 +502,22 @@ const ActionLink = styled.button`
 const CartItemActions = ({ initialQuantity, maxQuantity = 20, onChange, onRemove, onSaveForLater }) => {
   const [quantity, setQuantity] = useState(initialQuantity || 1);
 
+  // Shoppers aren't told how many are in stock, so the server has the final say:
+  // a refused change puts the number back.
+  const change = (newQuantity) => {
+    setQuantity(newQuantity);
+    Promise.resolve(onChange(newQuantity)).then((ok) => {
+      if (ok === false) setQuantity(initialQuantity || 1);
+    });
+  };
+
   const handleIncrement = () => {
     if (quantity >= maxQuantity) return;
-    const newQuantity = quantity + 1;
-    setQuantity(newQuantity);
-    onChange(newQuantity);
+    change(quantity + 1);
   };
 
   const handleDecrement = () => {
-    if (quantity > 1) {
-      const newQuantity = quantity - 1;
-      setQuantity(newQuantity);
-      onChange(newQuantity);
-    }
+    if (quantity > 1) change(quantity - 1);
   };
 
   return (

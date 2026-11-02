@@ -16,7 +16,7 @@ const toItem = (product) => ({
   color: product.color,
   category: product.category,
   sizes: product.sizes || [],
-  stock: product.stock,
+  inStock: product.inStock,
   isActive: product.isActive !== false,
 });
 
