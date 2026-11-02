@@ -22,6 +22,7 @@ import { formatPrice, retailSaving } from '../utils/format';
 import { placementLabel } from '../utils/taxonomy';
 import { imageSrc, onImageError } from '../utils/imageFallback';
 import { swatchBackground } from '../utils/colourSwatch';
+import SizeGuide from '../components/SizeGuide';
 import { HiOutlineArrowPath, HiOutlineCheckCircle, HiOutlineTruck } from 'react-icons/hi2';
 import { storeConfig } from '../data';
 
@@ -298,7 +299,10 @@ const Product = () => {
             )}
             {needsSize && (
               <Filter>
-                <FilterTitle $block>Size</FilterTitle>
+                <SizeHeader>
+                  <FilterTitle>Size</FilterTitle>
+                  {product.category === 'shoes-boots' && <SizeGuide department={product.department} />}
+                </SizeHeader>
                 <SizePills role='radiogroup' aria-label='Size'>
                   {product.sizes.map((s) => (
                     <SizePill
@@ -591,6 +595,13 @@ const SwatchLink = styled(RouterLink)`
     outline: 2px solid var(--accent);
     outline-offset: 4px;
   }
+`;
+
+const SizeHeader = styled.div`
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  width: 100%;
 `;
 
 const SizePills = styled.div`
