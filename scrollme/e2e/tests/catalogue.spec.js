@@ -174,4 +174,33 @@ test.describe('catalogue', () => {
     await expect(page.getByText('Out of stock', { exact: true })).toBeVisible();
     await expect(colours.getByRole('link', { name: 'Blue, out of stock' })).toHaveAttribute('aria-current', 'true');
   });
+
+  test('shoe colourways link by model name and the size guide opens', async ({ page, request }) => {
+    const shoe = {
+      brand: 'E2E Footwear',
+      department: 'men',
+      category: 'shoes-boots',
+      subcategory: 'trainers',
+      sizes: ['8', '9', '10'],
+      price: 5,
+    };
+    const model = `E2E Court Trainers ${Date.now()}`;
+    const black = await createProduct(request, { ...shoe, name: `${model} – Black/White`, color: 'Black/White' });
+    const green = await createProduct(request, { ...shoe, name: `${model} – Green`, color: 'Green' });
+
+    await page.goto(`/${black.category}/${black._id}`);
+    const colours = page.getByRole('list', { name: 'Colours' });
+    await expect(colours.getByRole('link')).toHaveCount(2);
+    await colours.getByRole('link', { name: 'Green' }).click();
+    await expect(page).toHaveURL(new RegExp(`/shoes-boots/${green._id}$`));
+    await expect(page.getByRole('heading', { name: `${model} – Green` })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Size guide' }).click();
+    const guide = page.getByRole('dialog', { name: "Men's shoe size guide" });
+    await expect(guide).toBeVisible();
+    await expect(guide.getByText('Foot length (cm)')).toBeVisible();
+    await expect(guide.getByText('How to measure your foot')).toBeVisible();
+    await guide.getByRole('button', { name: 'Close' }).click();
+    await expect(guide).toBeHidden();
+  });
 });

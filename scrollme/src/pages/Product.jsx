@@ -21,7 +21,8 @@ import { getErrorMessage } from '../api/client';
 import { formatPrice, retailSaving } from '../utils/format';
 import { placementLabel } from '../utils/taxonomy';
 import { imageSrc, onImageError } from '../utils/imageFallback';
-import { swatchColour } from '../utils/colourSwatch';
+import { swatchBackground } from '../utils/colourSwatch';
+import SizeGuide from '../components/SizeGuide';
 import { HiOutlineArrowPath, HiOutlineCheckCircle, HiOutlineTruck } from 'react-icons/hi2';
 import { storeConfig } from '../data';
 
@@ -283,7 +284,7 @@ const Product = () => {
                           aria-label={`${c.color}${c.inStock ? '' : ', out of stock'}`}
                           aria-current={c._id === product._id ? 'true' : undefined}
                           title={c.inStock ? c.color : `${c.color} (out of stock)`}
-                          $colour={swatchColour(c.color)}
+                          $colour={swatchBackground(c.color)}
                           $selected={c._id === product._id}
                           $soldOut={!c.inStock}
                         />
@@ -291,14 +292,17 @@ const Product = () => {
                     ))}
                   </Swatches>
                 ) : (
-                  <FilterColor color={swatchColour(product.color)} title={product.color} aria-label={`Colour: ${product.color}`} />
+                  <FilterColor color={swatchBackground(product.color)} title={product.color} aria-label={`Colour: ${product.color}`} />
                 )}
                 <ColorName>{product.color}</ColorName>
               </Filter>
             )}
             {needsSize && (
               <Filter>
-                <FilterTitle $block>Size</FilterTitle>
+                <SizeHeader>
+                  <FilterTitle>Size</FilterTitle>
+                  {product.category === 'shoes-boots' && <SizeGuide department={product.department} />}
+                </SizeHeader>
                 <SizePills role='radiogroup' aria-label='Size'>
                   {product.sizes.map((s) => (
                     <SizePill
@@ -552,7 +556,7 @@ const FilterColor = styled.div`
   height: 20px;
   border-radius: 50%;
   border: 1px solid #ddd;
-  background-color: ${(props) => props.color};
+  background: ${(props) => props.color};
   margin: 0px 5px;
   cursor: pointer;
 `;
@@ -573,7 +577,7 @@ const SwatchLink = styled(RouterLink)`
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background-color: ${({ $colour }) => $colour};
+  background: ${({ $colour }) => $colour};
   border: 1px solid rgba(0, 0, 0, 0.18);
   box-shadow: ${({ $selected }) => ($selected ? '0 0 0 2px #fff, 0 0 0 4px #111' : 'none')};
   opacity: ${({ $soldOut }) => ($soldOut ? 0.45 : 1)};
@@ -591,6 +595,13 @@ const SwatchLink = styled(RouterLink)`
     outline: 2px solid var(--accent);
     outline-offset: 4px;
   }
+`;
+
+const SizeHeader = styled.div`
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  width: 100%;
 `;
 
 const SizePills = styled.div`
