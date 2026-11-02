@@ -134,12 +134,12 @@ test.describe('catalogue', () => {
   });
 
   test('shows the retail price crossed out with the saving', async ({ page, request }) => {
-    // Cheap, so the other tests (which pick the newest product over £50) never choose it.
+    // Cheap earbuds: the other tests pick T-shirts or the newest product over £50, never these.
     const product = await createProduct(request, {
-      name: `E2E Retail Price Tee ${Date.now()}`,
-      department: 'men',
-      category: 'clothing',
-      subcategory: 't-shirts',
+      name: `E2E Retail Price Earbuds ${Date.now()}`,
+      department: 'electronics',
+      category: 'audio',
+      subcategory: 'earbuds',
       price: 15,
       retailPrice: 20,
     });
