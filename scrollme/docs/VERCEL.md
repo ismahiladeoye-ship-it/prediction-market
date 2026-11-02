@@ -84,6 +84,10 @@ If you see something else:
 
 ## 5. Make yourself the admin
 
+**Easiest:** sign up on the shop with your own email, add a Vercel variable `ADMIN_EMAILS` = that email (several can be separated by commas) and redeploy. Sign out and back in: the account becomes an admin. Then open **`/admin`** and set up two-step sign-in as in step 3 below. Once you are in, you can delete the variable (and redeploy); your account stays an admin.
+
+**Or by hand in the database:**
+
 1. On the shop, **Sign up** with your own email address and a strong password.
 2. In Atlas: **Browse Collections** → `getitsourced` → `users` → find your account → *Edit* (pencil). Change `roles` so it contains both values — `["user", "admin"]` — and click *Update*.
 3. On the shop, sign out, sign back in and open **`/admin`**. Set up two-step sign-in: scan the QR code with your authenticator app, enter the code, and **save the ten recovery codes** somewhere safe (they are the only way in if you lose your phone).
