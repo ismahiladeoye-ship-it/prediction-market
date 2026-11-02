@@ -4,10 +4,22 @@ const { getConfig } = require('../config/env');
 const { REFRESH_COOKIE, setAuthCookies, clearAuthCookies, verifyRefreshToken, setMfaPendingCookie, clearMfaPendingCookie } = require('../services/tokens');
 const { issueCode, checkCode, sendCode } = require('../services/emailCodes');
 const googleAuth = require('../services/googleAuth');
+const logger = require('../utils/logger');
 const { badRequest, unauthorized, conflict, HttpError } = require('../utils/httpError');
 
 // Real bcrypt hash of a random string, compared against when the user does not exist.
 const DUMMY_HASH = '$2b$12$QRwGchrL8LjfV4hGSmigAup8WIdSYopb8y.uAszQLu8qei1DpUXMK';
+
+// The shop owner's way in without editing the database: an account whose email
+// is in ADMIN_EMAILS (and confirmed) is made an admin when it signs in. The admin
+// pages still need two-factor sign-in, set up on the first visit.
+const grantConfiguredAdmin = async (user) => {
+  if (!getConfig().adminEmails.includes(user.email) || user.emailVerified === false) return;
+  if (user.roles.includes('admin') || user.roles.includes('super_admin')) return;
+  await User.updateOne({ _id: user._id }, { $addToSet: { roles: 'admin' } });
+  user.roles.push('admin');
+  logger.info('admin_granted_from_config', { userId: String(user._id) });
+};
 
 // After a correct password (or Google): accounts with two-factor get a
 // short-lived "code needed" cookie instead of a session.
@@ -53,6 +65,7 @@ exports.login = async (req, res) => {
   // Same message and a hash comparison either way, so responses do not reveal which usernames exist.
   const ok = user ? await user.comparePassword(password) : await User.hydrate({ password: DUMMY_HASH }).comparePassword(password);
   if (!user || !ok) throw unauthorized('Invalid username or password');
+  await grantConfiguredAdmin(user);
   beginSession(res, user, 'Logged in successfully');
 };
 
@@ -173,5 +186,6 @@ exports.googleLogin = async (req, res) => {
       emailVerified: true,
     });
   }
+  await grantConfiguredAdmin(user);
   beginSession(res, user, 'Logged in successfully');
 };

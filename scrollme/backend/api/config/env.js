@@ -20,6 +20,8 @@ const schema = z.object({
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().positive().default(7),
   BCRYPT_ROUNDS: z.coerce.number().int().min(4).max(15).default(12),
   CLIENT_ORIGINS: z.string().default('http://localhost:3000'),
+  // Accounts with these emails become admins when they next sign in (comma-separated).
+  ADMIN_EMAILS: z.string().default(''),
   APP_URL: z.string().url().default('http://localhost:3000'),
   COOKIE_SECURE: z.enum(['true', 'false']).optional(),
   COOKIE_SAMESITE: z.enum(['lax', 'strict', 'none']).default('lax'),
@@ -146,6 +148,13 @@ function loadConfig(source = process.env) {
       .createHash('sha256')
       .update(env.MFA_SECRET_KEY || `mfa-dev:${env.JWT_SECRET}`)
       .digest(),
+    adminEmails: [
+      ...new Set(
+        env.ADMIN_EMAILS.split(',')
+          .map((e) => e.trim().toLowerCase())
+          .filter(Boolean)
+      ),
+    ],
     shipToCountries: [...new Set(env.SHIP_TO_COUNTRIES.split(',').map((c) => c.trim().toUpperCase()))],
     clientOrigins: [...new Set([...env.CLIENT_ORIGINS.split(','), ...platformOrigins(source)].map((o) => o.trim()).filter(Boolean))],
     onVercel: Boolean(source.VERCEL),
