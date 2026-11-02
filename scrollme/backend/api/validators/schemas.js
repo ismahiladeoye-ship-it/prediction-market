@@ -291,6 +291,8 @@ const productFields = {
   description: z.string().trim().max(5000).optional(),
   price: z.coerce.number().min(0).max(1000000),
   discounted_price: z.coerce.number().min(0).max(1000000).optional(),
+  // Usual price at major UK retailers; empty clears it.
+  retailPrice: z.preprocess((v) => (v === '' ? null : v), z.union([z.null(), z.coerce.number().min(0).max(1000000)])).optional(),
   department: z.enum(PRODUCT_DEPARTMENTS, { message: 'Department must be men, women, unisex or electronics' }),
   category: z
     .string()

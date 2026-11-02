@@ -19,6 +19,9 @@ const COLUMNS = {
   subcategory: 'subcategory',
   sub_category: 'subcategory',
   price: 'price',
+  retail_price: 'retailPrice',
+  rrp: 'retailPrice',
+  was_price: 'retailPrice',
   stock: 'stock',
   quantity: 'stock',
   sizes: 'sizes',
@@ -108,6 +111,7 @@ const toProduct = (record, { photos, dryRun, isUpdate }) => {
   }
   if (!isUpdate && !raw.department) errors.push('department: add Men, Women or Unisex');
   if (has(record, 'price')) raw.price = toNumber(record.price);
+  if (has(record, 'retailPrice')) raw.retailPrice = record.retailPrice === '' ? null : toNumber(record.retailPrice);
   if (has(record, 'stock')) raw.stock = toNumber(record.stock);
   if (has(record, 'sizes')) raw.sizes = list(record.sizes);
   if (has(record, 'color')) raw.color = record.color;
@@ -115,7 +119,7 @@ const toProduct = (record, { photos, dryRun, isUpdate }) => {
   if (has(record, 'description')) raw.description = record.description;
   if (has(record, 'tags')) raw.tags = list(record.tags);
   if (has(record, 'isActive') && record.isActive !== '') raw.isActive = toBoolean(record.isActive);
-  for (const key of ['price', 'stock']) {
+  for (const key of ['price', 'stock', 'retailPrice']) {
     if (Number.isNaN(raw[key])) {
       errors.push(`${key}: "${record[key]}" is not a number`);
       delete raw[key];
@@ -127,6 +131,7 @@ const toProduct = (record, { photos, dryRun, isUpdate }) => {
   }
   // Blank optional text cells are simply left out on new products.
   for (const key of ['brand', 'subcategory', 'color', 'material', 'description']) if (raw[key] === '' && !isUpdate) delete raw[key];
+  if (raw.retailPrice === null && !isUpdate) delete raw.retailPrice;
 
   if (has(record, 'images')) {
     const { images, errors: imageErrors, found } = resolveImages(list(record.images), photos, dryRun);

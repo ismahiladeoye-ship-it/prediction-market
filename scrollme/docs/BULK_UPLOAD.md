@@ -19,6 +19,7 @@
 | `category` | new products | `Clothing` | One of the categories below, e.g. *Clothing, Shoes & Boots, Coats & Jackets, Gaming*. A subcategory on its own works too (*Hoodies*, *Trainers*, *Headphones*): the right category is filled in. |
 | `subcategory` | | `Tracksuits` | Optional, from the list below. Everyday names work: *Tees, Hoodie, Jumper, Puffer, Beanie, Rucksack, Perfume, Phone, Charger*… |
 | `price` | new products | `185.00` | In pounds; `£` and commas are fine. |
+| `retail_price` | no | `379.00` | The usual price of this exact item at major UK retailers. When it is higher than `price`, the shop shows it crossed out with "You save". Also accepted as `rrp` or `was_price`. Keep it up to date: an out-of-date retail price can mislead customers. |
 | `stock` | new products | `6` | Whole number. |
 | `sizes` | | `S\|M\|L\|XL` | Separate with `\|`. Leave empty for one-size items. |
 | `colour` | | `Black` | |

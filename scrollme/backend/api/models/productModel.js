@@ -24,6 +24,12 @@ const ProductSchema = new Schema(
       type: Number,
       min: 0,
     },
+    // The usual price of this exact item at major UK retailers. Shown crossed
+    // out beside our price when it is higher.
+    retailPrice: {
+      type: Number,
+      min: 0,
+    },
     // Men, women, electronics or unisex (shown under Men and Women). See config/taxonomy.json.
     department: {
       type: String,

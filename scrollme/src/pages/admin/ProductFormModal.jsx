@@ -35,6 +35,7 @@ const EMPTY = {
   category: '',
   subcategory: '',
   price: '',
+  retailPrice: '',
   stock: '',
   images: [],
   color: '',
@@ -54,6 +55,7 @@ const toForm = (p) =>
         category: p.category || '',
         subcategory: p.subcategory || '',
         price: p.price ?? '',
+        retailPrice: p.retailPrice ?? '',
         stock: p.stock ?? '',
         images: p.images?.length ? p.images : p.imageUrl ? [p.imageUrl] : [],
         color: p.color || '',
@@ -71,6 +73,8 @@ const validate = (f) => {
   if (!f.department) e.department = 'Choose Men, Women or Unisex';
   if (!f.category) e.category = 'Choose a category';
   if (f.price === '' || Number(f.price) < 0 || Number.isNaN(Number(f.price))) e.price = 'Enter a price of 0 or more';
+  if (f.retailPrice !== '' && (Number(f.retailPrice) < 0 || Number.isNaN(Number(f.retailPrice))))
+    e.retailPrice = 'Enter a retail price of 0 or more, or leave it empty';
   if (f.stock === '' || !Number.isInteger(Number(f.stock)) || Number(f.stock) < 0) e.stock = 'Enter a whole number of 0 or more';
   if (f.sku && !/^[A-Za-z0-9._/-]{1,64}$/.test(f.sku.trim())) e.sku = 'Letters, numbers, dots, dashes, slashes and underscores only';
   return e;
@@ -133,6 +137,7 @@ const ProductFormModal = ({ isOpen, onClose, product, onSaved }) => {
       category: form.category,
       subcategory: form.subcategory,
       price: Number(form.price),
+      retailPrice: form.retailPrice === '' ? null : Number(form.retailPrice),
       stock: Number(form.stock),
       images: form.images,
       color: form.color.trim() || undefined,
@@ -221,6 +226,12 @@ const ProductFormModal = ({ isOpen, onClose, product, onSaved }) => {
               { placeholder: 'None', isDisabled: !form.category }
             )}
             {field('price', 'Price', { isRequired: true, type: 'number', min: 0, step: '0.01' })}
+            {field('retailPrice', 'Retail price (optional)', {
+              type: 'number',
+              min: 0,
+              step: '0.01',
+              placeholder: 'Usual price at major UK retailers',
+            })}
             {field('stock', 'Stock', { isRequired: true, type: 'number', min: 0, step: 1 })}
             {field('color', 'Colour')}
             {field('material', 'Material')}
