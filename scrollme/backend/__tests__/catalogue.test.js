@@ -106,6 +106,22 @@ describe('product catalogue', () => {
     expect((await request(ctx.app).get(`/api/product/${single.id}`)).body.colours).toEqual([]);
   });
 
+  it('links colourways named "Model – Colour" (shoes) on their product pages', async () => {
+    const shoe = { brand: 'adidas', department: 'men', category: 'shoes-boots', subcategory: 'trainers', sizes: ['8', '9'] };
+    const black = await createProduct({ ...shoe, name: 'Samba Suede Trainers – Black/White', color: 'Black/White', createdAt: new Date('2025-01-01') });
+    const green = await createProduct({ ...shoe, name: 'Samba Suede Trainers – Green', color: 'Green', createdAt: new Date('2025-01-02') });
+    // Different models and other brands are not colourways of this shoe.
+    await createProduct({ ...shoe, name: 'Samba Suede Trainers XL – Green', color: 'Green' });
+    await createProduct({ ...shoe, brand: 'nike', name: 'Samba Suede Trainers – Red', color: 'Red' });
+    await createProduct({ ...shoe, name: 'Samba Suede Trainers – Blue', color: 'Navy' });
+
+    const res = await request(ctx.app).get(`/api/product/${green.id}`);
+    expect(res.body.colours.map((c) => [c._id, c.color])).toEqual([
+      [black.id, 'Black/White'],
+      [green.id, 'Green'],
+    ]);
+  });
+
   it('returns product details, 404 for unknown/inactive/malformed ids', async () => {
     const list = await request(ctx.app).get('/api/product/list');
     const id = list.body.products[0]._id;

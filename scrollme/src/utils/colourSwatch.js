@@ -40,13 +40,32 @@ const NAMED = {
 
 const FALLBACK = '#d0d0d0';
 
-export const swatchColour = (name) => {
-  const key = String(name || '')
-    .trim()
-    .toLowerCase();
+const cssColour = (key) => {
   if (NAMED[key]) return NAMED[key];
   // Any other valid CSS colour name or code ("teal", "#ff6600").
   const probe = document.createElement('span').style;
   probe.color = key;
-  return probe.color ? key : FALLBACK;
+  return probe.color ? key : null;
+};
+
+export const swatchColour = (name) => {
+  const key = String(name || '')
+    .trim()
+    .toLowerCase();
+  if (!key) return FALLBACK;
+  // "Navy Suede", "Tan Leather", "Dark Navy": the first word that is a colour.
+  return cssColour(key) || key.split(/\s+/).map(cssColour).find(Boolean) || FALLBACK;
+};
+
+// The CSS background for a swatch. Two-tone names ("Black/White") are split
+// diagonally between their first two colours.
+export const swatchBackground = (name) => {
+  const colours = [
+    ...new Set(
+      String(name || '')
+        .split('/')
+        .map((part) => swatchColour(part))
+    ),
+  ].slice(0, 2);
+  return colours.length > 1 ? `linear-gradient(135deg, ${colours[0]} 0 50%, ${colours[1]} 50% 100%)` : colours[0] || FALLBACK;
 };

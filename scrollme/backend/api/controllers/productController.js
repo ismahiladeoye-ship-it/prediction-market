@@ -98,14 +98,24 @@ exports.listBrands = async (req, res) => {
 exports.getProductById = async (req, res) => {
   const product = await Product.findOne({ _id: req.params.productId, isActive: true }).select(PUBLIC_FIELDS).lean();
   if (!product) throw notFound('Product not found');
-  // The same item in other colours: products on sale with the same brand and name.
-  const colours = product.color
-    ? await Product.find({ isActive: true, brand: product.brand ?? null, name: product.name, color: { $nin: [null, ''] } })
-        .select('color category stock')
-        .sort({ createdAt: 1, _id: 1 })
-        .limit(12)
-        .lean()
-    : [];
+  // The same item in other colours: products on sale with the same brand and
+  // the same name, or the same name with the colour on the end ("Samba – Black").
+  let colours = [];
+  if (product.color) {
+    const suffix = ` – ${product.color}`;
+    const base = product.name.endsWith(suffix) ? product.name.slice(0, -suffix.length) : product.name;
+    const candidates = await Product.find({
+      isActive: true,
+      brand: product.brand ?? null,
+      color: { $nin: [null, ''] },
+      $or: [{ name: base }, { name: { $regex: `^${escapeRegex(base)} – ` } }],
+    })
+      .select('name color category stock')
+      .sort({ createdAt: 1, _id: 1 })
+      .limit(40)
+      .lean();
+    colours = candidates.filter((c) => c.name === base || c.name === `${base} – ${c.color}`);
+  }
   res.status(200).json({
     ...toPublic(product),
     colours: colours.length > 1 ? colours.map((c) => ({ _id: c._id, color: c.color, category: c.category, inStock: c.stock > 0 })) : [],
