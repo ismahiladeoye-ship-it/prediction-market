@@ -499,7 +499,7 @@ const ActionLink = styled.button`
   }
 `;
 
-const CartItemActions = ({ initialQuantity, maxQuantity = 20, onChange, onRemove, onSaveForLater }) => {
+const CartItemActions = ({ initialQuantity, maxQuantity = 5, onChange, onRemove, onSaveForLater }) => {
   const [quantity, setQuantity] = useState(initialQuantity || 1);
 
   // Shoppers aren't told how many are in stock, so the server has the final say:

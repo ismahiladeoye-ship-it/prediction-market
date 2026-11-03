@@ -1,6 +1,32 @@
 # Get It Sourced — security audit
 
-**Date:** 23 Oct 2026, re-audited 25 Oct 2026 before the Vercel launch · **Scope:** the whole `scrollme/` codebase — API (`backend/`), storefront (`src/`), end-to-end tests, Docker/nginx/CI and Vercel configuration, backup scripts and the git history.
+**Date:** 23 Oct 2026, re-audited 25 Oct 2026 before the Vercel launch and 3 Nov 2026 · **Scope:** the whole `scrollme/` codebase — API (`backend/`), storefront (`src/`), end-to-end tests, Docker/nginx/CI and Vercel configuration, backup scripts and the git history.
+
+## Third review (3 Nov 2026)
+
+**Scope:** the whole shop again. The focus was on what was added since 25 Oct: `ADMIN_EMAILS`, hidden stock counts, colourways, emailed 6-digit codes, the order book, and checkout and payments under bursts of requests. Read-only checks were made against the live site.
+
+**Method:**
+- Each finding was traced to a real request path and proved against a throwaway copy of the API (in-memory database, rate limits on).
+- Each fix has a test that fails on the old code and passes now.
+- The live site was in Stripe test mode, and `ADMIN_EMAILS` held no email address, so no finding could be used against it at the time.
+
+| ID | Finding | Fix | Test |
+| --- | --- | --- | --- |
+| H1 | **`ADMIN_EMAILS` could make a stranger an admin.**<br>Accounts made while email confirmation was off had no confirmation value, and that counted as confirmed. Anyone who registered a listed address before its owner was made an admin when they signed in, and could then set up two-step sign-in with their own phone. | Admin is granted only when the address is proven: a sign-up code, a password reset code or Google.<br>A password reset now always marks the address as confirmed, so an existing owner account qualifies after one reset. | `adminEmails.test.js` "needs proof the address is theirs" |
+| H2 | **Cancelling the same order many times at once gave its stock back many times.**<br>The review turned a stock of 20 into 200 with 10 parallel cancels. The shop would then sell items it does not have. An admin double-clicking Cancel could do the same. | A status change is claimed in one database step (`findOneAndUpdate` on the old status). Only one request can make it, so stock is given back once. | `checkout.test.js` "gives the stock back once…" (customer and admin) |
+| H3 | **The "5 guesses per code" limit could be beaten with parallel requests.**<br>Every request read the guess count before any wrong guess was recorded. With many IP addresses, a password-reset code could be guessed. In the review, 94 wrong guesses were checked against one code. | Each guess is counted before it is checked, in one step. Only 5 guesses per code are ever compared. | `auth.test.js` "counts each guess before checking it" (20 parallel guesses, exactly 5 compared) |
+| M6 | **One account could hold stock indefinitely.**<br>Parallel checkouts got round the 3-unpaid-orders limit (20 orders in the review), and every new payment page renewed the 35-minute hold. | One checkout at a time per account (a lock on the account that lapses after a minute).<br>An unpaid order gets at most 3 new payment pages and cannot be paid more than 2 hours after it was placed. | `checkout.test.js` "places one checkout at a time…", "stops renewing an unpaid order…" |
+| M7 | **One visitor could make the shop send about 65 emails a minute, mostly to strangers.**<br>Resending a confirmation code was limited per account only. A small email plan could be used up, stopping order and reset emails. | New confirmation codes: 5 a day per account and 10 an hour per IP.<br>The whole shop sends at most 30 sign-up codes an hour. Past that, accounts are still made and the code can be asked for again later. | `ratelimit.test.js` "emails to unconfirmed addresses" |
+| L18 | **Customers received admins' status notes and admin account ids** in their order data (not shown on the page). | Customers get each step's status and time only. Admins still see notes. | `checkout.test.js` "shows customers each step…" |
+| L19 | **Exact stock could be worked out in the bag** by trying quantities up to 20. Public product data also carried SKU, weight and parcel size. | At most 5 of one item per bag (below the usual stock of 10).<br>Public product responses leave out SKU, weight and dimensions. | `cart.test.js` "quantity limit", `stockPrivacy.test.js` "leave out internal fields" |
+| L20 | **Reset codes would have been written to the logs** if email was not set up in production (the code is in the email subject). | Logged subjects have 6-digit numbers hidden. | `emailVerification.test.js` "mail logs" |
+| L21 | **Newsletter sign-ups were unlimited**, and the admin list came back in one response. | 10 sign-ups an hour per IP, counting every request. The admin list is paged (up to 500 a page). | `newsletter.test.js` "pages the list", `ratelimit.test.js` newsletter |
+
+**Still true, by design:**
+- Stock is counted per product, not per size, so a shoe can sell in a size that has run out (documented in [BULK_UPLOAD.md](../BULK_UPLOAD.md)).
+- Storefront dependency advisories are all in Create React App's build and test tools. None are in the code sent to browsers; moving to Vite remains the long-term fix.
+- The earlier informational note I13 now reads: up to 3 unpaid orders per account, each holding stock for at most about 2 hours.
 
 ## Re-audit before the Vercel launch (25 Oct 2026)
 

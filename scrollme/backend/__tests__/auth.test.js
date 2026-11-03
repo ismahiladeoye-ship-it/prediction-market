@@ -185,6 +185,24 @@ describe('password reset', () => {
     spy.mockRestore();
   });
 
+  it('counts each guess before checking it, so a burst of guesses gets only 5 tries', async () => {
+    const crypto = require('node:crypto');
+    const user = await createUser();
+    const spy = jest.spyOn(mailer, 'sendMail').mockResolvedValue({ delivered: true });
+    await request(ctx.app).post('/api/auth/forgot-password').send({ email: user.email });
+    const code = await emailedCode(spy, user.email);
+    const wrong = code === '123456' ? '654321' : '123456';
+    const compare = jest.spyOn(crypto, 'timingSafeEqual');
+    const reset = (c) => request(ctx.app).post('/api/auth/reset-password').send({ email: user.email, code: c, password: 'N3w!Password' });
+    const results = await Promise.all(Array.from({ length: 20 }, () => reset(wrong)));
+    expect(results.every((r) => r.status === 400)).toBe(true);
+    expect(compare).toHaveBeenCalledTimes(5);
+    compare.mockRestore();
+    // The code is used up: even the right one is refused now.
+    expect((await reset(code)).status).toBe(400);
+    spy.mockRestore();
+  });
+
   it('answers identically for unknown emails', async () => {
     const spy = jest.spyOn(mailer, 'sendMail');
     const res = await request(ctx.app).post('/api/auth/forgot-password').send({ email: 'nobody@example.com' });

@@ -26,4 +26,15 @@ describe('newsletter', () => {
     const res = await admin.agent.get('/api/newsletter');
     expect(res.body).toMatchObject({ total: 1, subscribers: [{ email: 'a@example.com' }] });
   });
+
+  it('pages the list for admins', async () => {
+    await Subscriber.insertMany(Array.from({ length: 5 }, (_, i) => ({ email: `fan${i}@example.com` })));
+    const admin = await signedInAgent(ctx.app, { roles: ['admin'] });
+    const first = (await admin.agent.get('/api/newsletter?limit=2')).body;
+    expect(first).toMatchObject({ page: 1, limit: 2, total: 5, totalPages: 3 });
+    expect(first.subscribers).toHaveLength(2);
+    const last = (await admin.agent.get('/api/newsletter?limit=2&page=3')).body;
+    expect(last.subscribers).toHaveLength(1);
+    expect((await admin.agent.get('/api/newsletter?limit=5000')).status).toBe(400);
+  });
 });

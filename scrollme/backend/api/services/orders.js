@@ -1,6 +1,7 @@
 const crypto = require('node:crypto');
 const Order = require('../models/orderModel');
 const Cart = require('../models/cartModel');
+const User = require('../models/userModel');
 const { getConfig } = require('../config/env');
 const { buildCartView } = require('../controllers/cartController');
 const { computeTotals, deliveryMethods } = require('./pricing');
@@ -19,6 +20,20 @@ const newOrderNumber = () => `GIS-${Date.now().toString(36).toUpperCase()}-${cry
 // Unpaid orders hold stock, so one account cannot tie up more than this many at once.
 const MAX_UNPAID_ORDERS = 3;
 
+// One checkout at a time per account, so the unpaid-orders limit cannot be got
+// round by sending many checkouts at once. The lock lapses on its own after a
+// minute in case a request dies part-way.
+const CHECKOUT_LOCK_MS = 60 * 1000;
+const lockCheckout = async (userId) => {
+  const now = new Date();
+  const locked = await User.updateOne(
+    { _id: userId, checkoutLockUntil: { $not: { $gt: now } } },
+    { $set: { checkoutLockUntil: new Date(now.getTime() + CHECKOUT_LOCK_MS) } }
+  );
+  if (locked.modifiedCount !== 1) throw conflict('Your order is already being placed. Please wait a moment and check your account.');
+};
+const unlockCheckout = (userId) => User.updateOne({ _id: userId }, { $unset: { checkoutLockUntil: 1 } });
+
 const createOrderFromCart = async (user, { shippingAddress, deliveryMethod, paymentMethod = 'card' }) => {
   const config = getConfig();
   if (!config.paymentMethods.includes(paymentMethod)) throw badRequest('That payment method is not available');
@@ -29,6 +44,16 @@ const createOrderFromCart = async (user, { shippingAddress, deliveryMethod, paym
     const message = config.shipToCountries.join() === 'GB' ? 'We deliver to UK addresses only' : 'We do not deliver to that country';
     throw badRequest(message, [{ field: 'shippingAddress.country', message }]);
   }
+  await lockCheckout(user._id);
+  try {
+    return await placeOrder(user, { shippingAddress, deliveryMethod, paymentMethod });
+  } finally {
+    await unlockCheckout(user._id);
+  }
+};
+
+const placeOrder = async (user, { shippingAddress, deliveryMethod, paymentMethod }) => {
+  const config = getConfig();
   if ((await Order.countDocuments({ userId: user._id, status: 'pending_payment' })) >= MAX_UNPAID_ORDERS) {
     throw conflict('You already have unpaid orders. Pay for or cancel one in your account before placing another.');
   }
@@ -159,27 +184,39 @@ const markOrderPaid = async (orderId, { reference, amountTotal } = {}) => {
   return order;
 };
 
-// Moves an order to a new status if the transition is allowed.
+// Moves an order to a new status if the transition is allowed, and returns the
+// updated order. The change is claimed in one step: when the same change is
+// sent twice at once (a double click, or a burst of cancels), only one request
+// makes it, so stock is given back once.
 const changeStatus = async (order, status, { by, note, trackingNumber } = {}) => {
   if (order.status === status) return order;
-  const allowed = Order.TRANSITIONS[order.status] || [];
-  if (!allowed.includes(status)) throw conflict(`Cannot change an order from ${order.status} to ${status}`);
-  if ((status === 'cancelled' || status === 'refunded') && order.stockReserved && !['shipped', 'delivered'].includes(order.status)) {
-    await releaseStock(order.items);
-    order.stockReserved = false;
-  }
+  const from = order.status;
+  const allowed = Order.TRANSITIONS[from] || [];
+  if (!allowed.includes(status)) throw conflict(`Cannot change an order from ${from} to ${status}`);
+  const release = (status === 'cancelled' || status === 'refunded') && order.stockReserved && !['shipped', 'delivered'].includes(from);
+  const set = { status };
+  if (release) set.stockReserved = false;
   if (status === 'paid') {
-    order.payment.status = 'paid';
-    order.payment.paidAt = order.payment.paidAt || new Date();
+    set['payment.status'] = 'paid';
+    set['payment.paidAt'] = order.payment?.paidAt || new Date();
   }
-  if (status === 'refunded') order.payment.status = 'refunded';
-  if (trackingNumber) order.trackingNumber = trackingNumber;
-  order.status = status;
-  order.statusHistory.push({ status, by, note });
-  await order.save();
-  if (status === 'paid') notifyOrderPaid(order);
-  else notifyOrderStatus(order);
-  return order;
+  if (status === 'refunded') set['payment.status'] = 'refunded';
+  if (trackingNumber) set.trackingNumber = trackingNumber;
+  const updated = await Order.findOneAndUpdate(
+    { _id: order._id, status: from, ...(release ? { stockReserved: true } : {}) },
+    { $set: set, $push: { statusHistory: { status, by, note, at: new Date() } } },
+    { new: true }
+  );
+  if (!updated) {
+    // Another request changed the order first.
+    const current = await Order.findById(order._id);
+    if (current?.status === status) return current;
+    throw conflict('This order was just changed by someone else. Refresh the page and try again.');
+  }
+  if (release) await releaseStock(updated.items);
+  if (status === 'paid') notifyOrderPaid(updated);
+  else notifyOrderStatus(updated);
+  return updated;
 };
 
 // Releases stock held by unpaid orders whose reservation has run out.

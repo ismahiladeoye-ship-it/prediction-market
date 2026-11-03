@@ -42,6 +42,8 @@ const UserSchema = new Schema({
   // Incremented on logout / password change; refresh tokens carrying an older
   // version are rejected, which revokes every outstanding session.
   tokenVersion: { type: Number, default: 0 },
+  // Set while a checkout is being placed (see services/orders.js).
+  checkoutLockUntil: { type: Date, select: false },
   wishlist: [{ type: Schema.Types.ObjectId, ref: 'Product' }],
   // Emailed 6-digit codes (services/emailCodes.js): stored as keyed hashes,
   // valid for 15 minutes and for 5 guesses.

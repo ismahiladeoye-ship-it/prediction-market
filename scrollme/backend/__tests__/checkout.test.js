@@ -3,9 +3,10 @@ const Stripe = require('stripe');
 const Product = require('../api/models/productModel');
 const Order = require('../api/models/orderModel');
 const Cart = require('../api/models/cartModel');
+const User = require('../api/models/userModel');
 const { resetConfig } = require('../api/config/env');
 const { stripeProvider } = require('../api/services/payments');
-const { releaseExpiredOrders, markOrderPaid } = require('../api/services/orders');
+const { releaseExpiredOrders, markOrderPaid, changeStatus } = require('../api/services/orders');
 const { useTestApp, signedInAgent, createProduct } = require('./helpers/setup');
 
 const ctx = useTestApp();
@@ -228,6 +229,89 @@ describe('checkout (mock provider)', () => {
     expect(mine.attention).toBeUndefined();
     const adminView = (await admin.agent.get(`/api/admin/orders/${body.order.id}`)).body.order;
     expect(adminView.attention).toMatch(/needs refunding/);
+  });
+});
+
+// Found by the November security review: requests sent all at once, and
+// payment pages that kept renewing an order's hold on stock.
+describe('checkout under bursts of requests', () => {
+  it('gives the stock back once when the same cancel is sent many times at once', async () => {
+    const product = await createProduct({ sizes: [], stock: 5 });
+    const { agent, user } = await signedInAgent(ctx.app);
+    await fillCart(agent, product, 5);
+    const { body } = await agent.post('/api/orders').send({ shippingAddress: address });
+    expect((await Product.findById(product.id)).stock).toBe(0);
+    // Ten requests that each loaded the order while it was still unpaid.
+    const copies = await Promise.all(Array.from({ length: 10 }, () => Order.findById(body.order.id)));
+    const results = await Promise.allSettled(copies.map((o) => changeStatus(o, 'cancelled', { by: user._id, note: 'Cancelled by customer' })));
+    expect(results.every((r) => r.status === 'fulfilled' && r.value.status === 'cancelled')).toBe(true);
+    expect((await Product.findById(product.id)).stock).toBe(5);
+    // And through the API: a repeat cancel changes nothing.
+    expect((await agent.post(`/api/orders/${body.order.id}/cancel`)).status).toBe(409);
+    expect((await Product.findById(product.id)).stock).toBe(5);
+    const order = await Order.findById(body.order.id);
+    expect(order.statusHistory.filter((h) => h.status === 'cancelled')).toHaveLength(1);
+  });
+
+  it('gives the stock back once when an admin double-clicks Cancel', async () => {
+    const product = await createProduct({ sizes: [], stock: 5 });
+    const { agent } = await signedInAgent(ctx.app);
+    const admin = await signedInAgent(ctx.app, { roles: ['user', 'admin'] });
+    await fillCart(agent, product, 2);
+    const { body } = await agent.post('/api/orders').send({ shippingAddress: address });
+    const cancel = () => admin.agent.patch(`/api/admin/orders/${body.order.id}/status`).send({ status: 'cancelled' });
+    const results = await Promise.all([cancel(), cancel(), cancel()]);
+    expect(results.every((r) => [200, 409].includes(r.status))).toBe(true);
+    expect((await Product.findById(product.id)).stock).toBe(5);
+  });
+
+  it('places one checkout at a time, so a burst cannot get past the unpaid-orders limit', async () => {
+    const product = await createProduct({ sizes: [], stock: 20 });
+    const { agent, user } = await signedInAgent(ctx.app);
+    await fillCart(agent, product, 1);
+    const results = await Promise.all(Array.from({ length: 10 }, () => agent.post('/api/orders').send({ shippingAddress: address })));
+    const placed = results.filter((r) => r.status === 201).length;
+    expect(placed).toBeGreaterThanOrEqual(1);
+    expect(placed).toBeLessThanOrEqual(3);
+    expect(results.filter((r) => r.status !== 201).every((r) => r.status === 409)).toBe(true);
+    expect(await Order.countDocuments({ userId: user._id, status: 'pending_payment' })).toBe(placed);
+    expect((await Product.findById(product.id)).stock).toBe(20 - placed);
+    // The lock is let go afterwards.
+    expect((await User.findById(user._id).select('+checkoutLockUntil')).checkoutLockUntil).toBeUndefined();
+  });
+
+  it('stops renewing an unpaid order after 3 new payment pages or 2 hours', async () => {
+    const product = await createProduct({ sizes: [], stock: 10 });
+    const { agent } = await signedInAgent(ctx.app);
+    await fillCart(agent, product, 1);
+    const first = (await agent.post('/api/orders').send({ shippingAddress: address })).body.order;
+    for (let i = 0; i < 3; i += 1) expect((await agent.post(`/api/orders/${first.id}/pay`).send({})).status).toBe(200);
+    const fourth = await agent.post(`/api/orders/${first.id}/pay`).send({});
+    expect(fourth.status).toBe(409);
+    expect(fourth.body.message).toMatch(/can no longer be paid/);
+
+    const second = (await agent.post('/api/orders').send({ shippingAddress: address })).body.order;
+    await Order.collection.updateOne({ _id: new Order.base.Types.ObjectId(second.id) }, { $set: { createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000) } });
+    expect((await agent.post(`/api/orders/${second.id}/pay`).send({})).status).toBe(409);
+    // Cancelling still gives the stock back.
+    expect((await agent.post(`/api/orders/${second.id}/cancel`)).status).toBe(200);
+  });
+
+  it("shows customers each step of their order, but not admins' notes or ids", async () => {
+    const product = await createProduct({ sizes: [] });
+    const { agent } = await signedInAgent(ctx.app);
+    const admin = await signedInAgent(ctx.app, { roles: ['user', 'admin'] });
+    await fillCart(agent, product, 1);
+    const { body } = await agent.post('/api/orders').send({ shippingAddress: address });
+    await admin.agent.patch(`/api/admin/orders/${body.order.id}/status`).send({ status: 'cancelled', note: 'Suspected card testing' });
+    const mine = (await agent.get(`/api/orders/${body.order.id}`)).body.order;
+    expect(mine.statusHistory.map((h) => Object.keys(h).sort())).toEqual([
+      ['at', 'status'],
+      ['at', 'status'],
+    ]);
+    expect(JSON.stringify(mine)).not.toMatch(/card testing/);
+    const adminView = (await admin.agent.get(`/api/admin/orders/${body.order.id}`)).body.order;
+    expect(adminView.statusHistory[1].note).toBe('Suspected card testing');
   });
 });
 
