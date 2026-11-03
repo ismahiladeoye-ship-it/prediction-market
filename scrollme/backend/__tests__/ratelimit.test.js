@@ -66,6 +66,67 @@ describe('sign-ups', () => {
   });
 });
 
+// Codes and newsletter sign-ups: the shop must not be usable to email strangers in bulk.
+describe('emails to unconfirmed addresses', () => {
+  const withVerification = () => {
+    process.env.EMAIL_VERIFICATION = 'on';
+    resetConfig();
+  };
+  afterEach(() => {
+    delete process.env.EMAIL_VERIFICATION;
+    resetConfig();
+  });
+
+  it('new confirmation codes are limited per IP as well as per account', async () => {
+    withVerification();
+    const ip = 21;
+    const agents = [];
+    for (let i = 0; i < 3; i += 1) {
+      const agent = request.agent(ctx.app);
+      const res = await fromIp(agent.post('/api/auth/register'), 30 + i).send({
+        firstName: 'New',
+        lastName: 'Shopper',
+        username: `resender${i}`,
+        email: `resender${i}@example.com`,
+        password: STRONG_PASSWORD,
+      });
+      expect(res.status).toBe(201);
+      agents.push(agent);
+    }
+    let sent = 0;
+    for (let i = 0; i < 12; i += 1) {
+      const res = await fromIp(agents[i % 3].post('/api/auth/resend-verification'), ip);
+      if (res.status === 200) sent += 1;
+      else expect(res.status).toBe(429);
+    }
+    expect(sent).toBe(10);
+  });
+
+  it('the whole shop sends at most 30 sign-up codes an hour; accounts are still made', async () => {
+    withVerification();
+    const { UNCONFIRMED_EMAILS_PER_HOUR } = require('../api/services/emailCodes');
+    expect(UNCONFIRMED_EMAILS_PER_HOUR).toBe(30);
+    const signUp = (i) =>
+      fromIp(request(ctx.app).post('/api/auth/register'), 100 + Math.floor(i / 9)).send({
+        firstName: 'Bulk',
+        lastName: 'Account',
+        username: `capped${i}`,
+        email: `capped${i}@example.com`,
+        password: STRONG_PASSWORD,
+      });
+    for (let i = 0; i < 32; i += 1) expect((await signUp(i)).status).toBe(201);
+    await settle();
+    expect(mailSpy).toHaveBeenCalledTimes(30);
+  });
+
+  it('newsletter sign-ups count every request: 10 an hour per IP', async () => {
+    for (let i = 0; i < 10; i += 1) {
+      expect((await fromIp(request(ctx.app).post('/api/newsletter'), 40).send({ email: `fan${i}@example.com` })).status).toBe(200);
+    }
+    expect((await fromIp(request(ctx.app).post('/api/newsletter'), 40).send({ email: 'fan10@example.com' })).status).toBe(429);
+  });
+});
+
 describe('shared counters', () => {
   it('are shared by every copy of the API, as on serverless hosting', async () => {
     // Each running copy builds its own store object; the counts live in the database.

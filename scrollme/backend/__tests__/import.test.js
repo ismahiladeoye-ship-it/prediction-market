@@ -101,10 +101,11 @@ describe('spreadsheet import', () => {
     });
 
     // Live under Men's and Women's Clothing straight away (the hoodie is unisex).
-    const skus = async (dept) =>
-      (await request(ctx.app).get(`/api/product/list?department=${dept}&category=clothing&q=Essentials`)).body.products.map((p) => p.sku).sort();
-    expect(await skus('men')).toEqual(['ESS-HOOD-OAT', 'ESS-TRK-BLK']);
-    expect(await skus('women')).toEqual(['ESS-HOOD-OAT']);
+    const ids = async (dept) =>
+      (await request(ctx.app).get(`/api/product/list?department=${dept}&category=clothing&q=Essentials`)).body.products.map((p) => String(p._id)).sort();
+    const hoodie = String((await Product.findOne({ sku: 'ESS-HOOD-OAT' }))._id);
+    expect(await ids('men')).toEqual([hoodie, String(tracksuit._id)].sort());
+    expect(await ids('women')).toEqual([hoodie]);
   });
 
   it('updates existing SKUs with only the columns in the sheet', async () => {

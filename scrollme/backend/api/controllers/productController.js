@@ -12,11 +12,13 @@ const SORTS = {
   name: { name: 1, _id: 1 },
 };
 
-const PUBLIC_FIELDS = '-__v';
+// Internal fields (SKU, parcel weight and size) stay out of public responses.
+const PUBLIC_FIELDS = '-__v -sku -weight -dimensions';
 
 // Customers see whether an item can be bought, never how many are left: stock
 // counts are for the shop's admins only (the admin API keeps them).
-const toPublic = ({ stock, ...product }) => ({ ...product, inStock: stock > 0 });
+// eslint-disable-next-line no-unused-vars
+const toPublic = ({ stock, sku, weight, dimensions, __v, ...product }) => ({ ...product, inStock: stock > 0 });
 
 // Builds the Mongo filter for the public catalogue (and the admin list).
 const buildFilter = (query, { includeInactive = false } = {}) => {

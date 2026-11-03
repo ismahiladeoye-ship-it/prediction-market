@@ -84,7 +84,7 @@ If you see something else:
 
 ## 5. Make yourself the admin
 
-**Easiest:** sign up on the shop with your own email, add a Vercel variable `ADMIN_EMAILS` = that email (several can be separated by commas) and redeploy. Sign out and back in: the account becomes an admin. Then open **`/admin`** and set up two-step sign-in as in step 3 below. Once you are in, you can delete the variable (and redeploy); your account stays an admin.
+**Easiest:** sign up on the shop with your own email, add a Vercel variable `ADMIN_EMAILS` = that email (several can be separated by commas) and redeploy. Sign out and back in: the account becomes an admin. It must be proven that you own the address: confirm it with the code emailed at sign-up, or (if email was not set up when you signed up) use *Forgot password* once and sign in with the new password. This stops a stranger who signs up with a listed address first from becoming an admin. Then open **`/admin`** and set up two-step sign-in as in step 3 below. Once you are in, you can delete the variable (and redeploy); your account stays an admin.
 
 **Or by hand in the database:**
 

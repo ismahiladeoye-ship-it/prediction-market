@@ -4,6 +4,7 @@ const { unitPriceCents, computeTotals, totalsToJSON, deliveryOptions, deliveryMe
 const { getConfig } = require('../config/env');
 const { fromCents } = require('../utils/money');
 const { badRequest, notFound, conflict } = require('../utils/httpError');
+const { MAX_PER_ITEM } = require('../validators/schemas');
 
 // Stock counts stay private to the shop's admins, so shoppers are never told how many are left.
 const TOO_MANY = "Sorry, we don't have that many in stock right now. Please choose fewer.";
@@ -59,6 +60,9 @@ const buildCartView = async (cart, deliveryMethod = 'standard') => {
         size: line.size,
         message: product.stock <= 0 ? `${product.name} is out of stock` : `We don't have ${item.quantity} of ${product.name} right now. Please choose fewer.`,
       });
+    } else if (item.quantity > MAX_PER_ITEM) {
+      // Bags saved before the limit was lowered.
+      issues.push({ productId: product._id, size: line.size, message: `You can buy at most ${MAX_PER_ITEM} of ${product.name}. Please choose fewer.` });
     }
     lines.push(line);
   }
@@ -100,7 +104,7 @@ exports.addToCart = async (req, res) => {
   const cart = await getOrCreateCart(req.user._id);
   const existing = cart.items.find((i) => sameLine(i, productId, size));
   const newQty = (existing?.quantity || 0) + quantity;
-  if (newQty > 20) throw badRequest('You can buy at most 20 of one item');
+  if (newQty > MAX_PER_ITEM) throw badRequest(`You can buy at most ${MAX_PER_ITEM} of one item`);
   if (newQty > product.stock) {
     throw conflict(product.stock <= 0 ? 'This product is out of stock' : TOO_MANY);
   }

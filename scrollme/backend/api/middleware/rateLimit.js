@@ -46,18 +46,22 @@ const passwordResetEmailLimiter = make({
   limit: 3,
   keyGenerator: (req) => String(req.body?.email || '').toLowerCase(),
 });
-// New confirmation codes: 5 an hour per account.
+// New confirmation codes: 5 a day per account, and 10 an hour per IP address,
+// so one visitor cannot use the shop to send streams of emails.
 const verificationEmailLimiter = make({
   shared: 'verify-email',
-  windowMs: 60 * 60 * 1000,
+  windowMs: 24 * 60 * 60 * 1000,
   limit: 5,
   keyGenerator: (req) => String(req.user?._id),
 });
+const verificationIpLimiter = make({ shared: 'verify-ip', windowMs: 60 * 60 * 1000, limit: 10 });
 const checkoutLimiter = make({ shared: 'checkout', windowMs: 10 * 60 * 1000, limit: 30 });
 // General flood guard on every API request; kept in memory (no database write per request).
 const apiLimiter = make({ windowMs: 60 * 1000, limit: 300 });
 // Contact form: 5 messages an hour from one address.
 const contactLimiter = make({ shared: 'contact', windowMs: 60 * 60 * 1000, limit: 5 });
+// Newsletter sign-ups always "succeed", so every request counts: 10 an hour per IP.
+const newsletterLimiter = make({ shared: 'newsletter', windowMs: 60 * 60 * 1000, limit: 10 });
 
 module.exports = {
   authLimiter,
@@ -67,7 +71,9 @@ module.exports = {
   passwordResetLimiter,
   passwordResetEmailLimiter,
   verificationEmailLimiter,
+  verificationIpLimiter,
   checkoutLimiter,
   apiLimiter,
   contactLimiter,
+  newsletterLimiter,
 };

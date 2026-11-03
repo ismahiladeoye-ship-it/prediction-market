@@ -26,6 +26,16 @@ describe('stock counts are private to admins', () => {
     expect((await request(ctx.app).get(`/api/product/${none.id}`)).body.inStock).toBe(false);
   });
 
+  it('product responses leave out internal fields', async () => {
+    const product = await createProduct({ name: 'Boxed', sizes: [], sku: 'INT-001', weight: 1.2, dimensions: { length: 30, width: 20, height: 10 } });
+    const page = (await request(ctx.app).get(`/api/product/${product.id}`)).body;
+    const listed = (await request(ctx.app).get('/api/product/list')).body.products[0];
+    for (const p of [page, listed]) {
+      for (const field of ['sku', 'weight', 'dimensions', '__v', 'stock']) expect(p).not.toHaveProperty(field);
+    }
+    expect(page.name).toBe('Boxed');
+  });
+
   it('the bag and wishlist never reveal how many are left', async () => {
     const product = await createProduct({ name: 'Last Few', sizes: [], stock: 3 });
     const { agent } = await signedInAgent(ctx.app);

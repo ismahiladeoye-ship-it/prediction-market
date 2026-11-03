@@ -109,9 +109,9 @@ exports.updateOrderStatus = async (req, res) => {
   const order = await Order.findById(req.params.orderId);
   if (!order) throw notFound('Order not found');
   const from = order.status;
-  await changeStatus(order, req.body.status, { by: req.user._id, note: req.body.note, trackingNumber: req.body.trackingNumber });
-  audit(req, 'order_status', { orderId: String(order._id), from, to: order.status });
-  res.json({ order: serializeOrder(order, { admin: true }), allowedTransitions: Order.TRANSITIONS[order.status] });
+  const updated = await changeStatus(order, req.body.status, { by: req.user._id, note: req.body.note, trackingNumber: req.body.trackingNumber });
+  audit(req, 'order_status', { orderId: String(order._id), from, to: updated.status });
+  res.json({ order: serializeOrder(updated, { admin: true }), allowedTransitions: Order.TRANSITIONS[updated.status] });
 };
 
 // Monthly sales by product, with stock on hand.

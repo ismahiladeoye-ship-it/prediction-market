@@ -143,7 +143,13 @@ describe('cart', () => {
     await agent.post('/api/cart/add').send({ productId: product.id });
     const updated = await agent.put('/api/cart/update').send({ productId: product.id, quantity: 4 });
     expect(updated.body.items[0].quantity).toBe(4);
-    expect((await agent.put('/api/cart/update').send({ productId: product.id, quantity: 11 })).status).toBe(409);
+    // At most 5 of one item; within that, never more than are in stock.
+    const tooMany = await agent.put('/api/cart/update').send({ productId: product.id, quantity: 6 });
+    expect(tooMany.status).toBe(400);
+    expect(tooMany.body.message).toMatch(/at most 5 of one item/);
+    await product.updateOne({ stock: 3 });
+    expect((await agent.put('/api/cart/update').send({ productId: product.id, quantity: 5 })).status).toBe(409);
+    await product.updateOne({ stock: 10 });
     const removed = await agent.delete(`/api/cart/items/${product.id}`);
     expect(removed.body.items).toEqual([]);
     await agent.post('/api/cart/add').send({ productId: product.id });
@@ -171,5 +177,27 @@ describe('cart', () => {
     const b = await signedInAgent(ctx.app);
     await a.agent.post('/api/cart/add').send({ productId: product.id });
     expect((await b.agent.get('/api/cart')).body.items).toEqual([]);
+  });
+});
+
+describe('quantity limit', () => {
+  it('keeps each item to 5 a bag, also when added in steps', async () => {
+    const product = await createProduct({ sizes: [] });
+    const { agent } = await signedInAgent(ctx.app);
+    expect((await agent.post('/api/cart/add').send({ productId: product.id, quantity: 6 })).status).toBe(400);
+    expect((await agent.post('/api/cart/add').send({ productId: product.id, quantity: 3 })).status).toBe(200);
+    const more = await agent.post('/api/cart/add').send({ productId: product.id, quantity: 3 });
+    expect(more.status).toBe(400);
+    expect(more.body.message).toBe('You can buy at most 5 of one item');
+    expect((await agent.post('/api/cart/add').send({ productId: product.id, quantity: 2 })).status).toBe(200);
+  });
+
+  it('flags bags saved with more than 5 of an item, so they cannot be checked out', async () => {
+    const product = await createProduct({ name: 'Old Bag Item', sizes: [], stock: 20 });
+    const { agent, user } = await signedInAgent(ctx.app);
+    await agent.post('/api/cart/add').send({ productId: product.id, quantity: 1 });
+    await Cart.updateOne({ userId: user._id }, { $set: { 'items.0.quantity': 8 } });
+    const res = await agent.get('/api/cart');
+    expect(res.body.issues.map((i) => i.message)).toEqual(['You can buy at most 5 of Old Bag Item. Please choose fewer.']);
   });
 });

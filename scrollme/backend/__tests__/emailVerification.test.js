@@ -100,3 +100,11 @@ describe('without email sending set up', () => {
     expect(res.body).toMatchObject({ verificationRequired: false, user: { emailVerified: true } });
   });
 });
+
+describe('mail logs', () => {
+  it('hide 6-digit codes in subjects', () => {
+    const { hideCodes } = require('../api/services/mailer');
+    expect(hideCodes('123456 is your Get It Sourced password reset code')).toBe('****** is your Get It Sourced password reset code');
+    expect(hideCodes('Order GIS-1 shipped')).toBe('Order GIS-1 shipped');
+  });
+});

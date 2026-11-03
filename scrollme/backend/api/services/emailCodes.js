@@ -5,6 +5,7 @@ const mailer = require('./mailer');
 const { getShopDetails } = require('./shopDetails');
 const { render } = require('./notifications');
 const { afterResponse } = require('../utils/background');
+const { MongoStore } = require('../middleware/rateLimitStore');
 const logger = require('../utils/logger');
 
 // 6-digit codes emailed for password resets ("passwordReset") and to confirm a
@@ -27,21 +28,43 @@ const issueCode = async (user, purpose) => {
   return code;
 };
 
-// True and the code is used up when it matches; otherwise counts a wrong guess.
-// After MAX_ATTEMPTS wrong guesses, or after 15 minutes, a new code is needed.
+// True and the code is used up when it matches. Each guess is counted before it
+// is checked, in one step, so guesses sent all at once cannot get past the
+// limit: after MAX_ATTEMPTS guesses, or after 15 minutes, a new code is needed.
 const checkCode = async (userId, purpose, code) => {
-  const user = await User.findById(userId).select(`+${purpose}.codeHash +${purpose}.expiresAt +${purpose}.attempts`);
+  const user = await User.findOneAndUpdate(
+    {
+      _id: userId,
+      [`${purpose}.codeHash`]: { $exists: true },
+      [`${purpose}.expiresAt`]: { $gt: new Date() },
+      [`${purpose}.attempts`]: { $not: { $gte: MAX_ATTEMPTS } },
+    },
+    { $inc: { [`${purpose}.attempts`]: 1 } }
+  ).select(`+${purpose}.codeHash`);
   const record = user?.[purpose];
-  if (!record?.codeHash || !record.expiresAt || record.expiresAt < new Date() || (record.attempts || 0) >= MAX_ATTEMPTS) return false;
+  if (!record?.codeHash) return false;
   const given = Buffer.from(hashCode(purpose, userId, code));
   const stored = Buffer.from(record.codeHash);
-  if (given.length === stored.length && crypto.timingSafeEqual(given, stored)) {
-    // Only one request can use a code, even if two arrive at once.
-    const used = await User.updateOne({ _id: userId, [`${purpose}.codeHash`]: record.codeHash }, { $unset: { [purpose]: 1 } });
-    return used.modifiedCount === 1;
+  if (given.length !== stored.length || !crypto.timingSafeEqual(given, stored)) return false;
+  // Only one request can use a code, even if two arrive at once.
+  const used = await User.updateOne({ _id: userId, [`${purpose}.codeHash`]: record.codeHash }, { $unset: { [purpose]: 1 } });
+  return used.modifiedCount === 1;
+};
+
+// Sign-up confirmation codes go to addresses nobody has proven are theirs, so
+// the whole shop sends at most this many an hour. That keeps a burst of fake
+// sign-ups from using up the email allowance that order emails depend on.
+const UNCONFIRMED_EMAILS_PER_HOUR = 30;
+const unconfirmedMail = new MongoStore('unconfirmed-mail');
+unconfirmedMail.init({ windowMs: 60 * 60 * 1000 });
+const canEmailUnconfirmed = async () => {
+  if (!getConfig().RATE_LIMIT_ENABLED) return true;
+  const { totalHits } = await unconfirmedMail.increment('all');
+  if (totalHits > UNCONFIRMED_EMAILS_PER_HOUR) {
+    logger.warn('unconfirmed_email_cap_reached', { perHour: UNCONFIRMED_EMAILS_PER_HOUR });
+    return false;
   }
-  await User.updateOne({ _id: userId, [`${purpose}.codeHash`]: record.codeHash }, { $inc: { [`${purpose}.attempts`]: 1 } });
-  return false;
+  return true;
 };
 
 const TEMPLATES = {
@@ -74,4 +97,4 @@ const sendCode = (user, purpose, code) =>
     })().catch((err) => logger.error('code_email_failed', { purpose, err }))
   );
 
-module.exports = { issueCode, checkCode, sendCode, MAX_ATTEMPTS, CODE_TTL_MS };
+module.exports = { issueCode, checkCode, sendCode, canEmailUnconfirmed, MAX_ATTEMPTS, CODE_TTL_MS, UNCONFIRMED_EMAILS_PER_HOUR };

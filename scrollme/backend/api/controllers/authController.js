@@ -2,7 +2,7 @@ const crypto = require('node:crypto');
 const User = require('../models/userModel');
 const { getConfig } = require('../config/env');
 const { REFRESH_COOKIE, setAuthCookies, clearAuthCookies, verifyRefreshToken, setMfaPendingCookie, clearMfaPendingCookie } = require('../services/tokens');
-const { issueCode, checkCode, sendCode } = require('../services/emailCodes');
+const { issueCode, checkCode, sendCode, canEmailUnconfirmed } = require('../services/emailCodes');
 const googleAuth = require('../services/googleAuth');
 const logger = require('../utils/logger');
 const { badRequest, unauthorized, conflict, HttpError } = require('../utils/httpError');
@@ -11,10 +11,13 @@ const { badRequest, unauthorized, conflict, HttpError } = require('../utils/http
 const DUMMY_HASH = '$2b$12$QRwGchrL8LjfV4hGSmigAup8WIdSYopb8y.uAszQLu8qei1DpUXMK';
 
 // The shop owner's way in without editing the database: an account whose email
-// is in ADMIN_EMAILS (and confirmed) is made an admin when it signs in. The admin
-// pages still need two-factor sign-in, set up on the first visit.
+// is in ADMIN_EMAILS is made an admin when it signs in, but only once the
+// address is proven to be theirs (an emailed code or Google). Accounts made
+// while email confirmation was off have no proof, so a stranger who registers a
+// listed address first does not become an admin. The admin pages still need
+// two-factor sign-in, set up on the first visit.
 const grantConfiguredAdmin = async (user) => {
-  if (!getConfig().adminEmails.includes(user.email) || user.emailVerified === false) return;
+  if (!getConfig().adminEmails.includes(user.email) || user.emailVerified !== true) return;
   if (user.roles.includes('admin') || user.roles.includes('super_admin')) return;
   await User.updateOne({ _id: user._id }, { $addToSet: { roles: 'admin' } });
   user.roles.push('admin');
@@ -54,7 +57,9 @@ exports.register = async (req, res) => {
     roles: ['user'],
     ...(verificationRequired ? { emailVerified: false } : {}),
   });
-  if (verificationRequired) sendCode(user, 'emailVerification', await issueCode(user, 'emailVerification'));
+  // When the shop-wide cap is reached the account is still made; the shopper
+  // can ask for the code again later.
+  if (verificationRequired && (await canEmailUnconfirmed())) sendCode(user, 'emailVerification', await issueCode(user, 'emailVerification'));
   setAuthCookies(res, user);
   res.status(201).json({ message: 'User registered successfully', user: user.toPublicJSON(), verificationRequired });
 };
@@ -133,7 +138,7 @@ exports.resetPassword = async (req, res) => {
   user.tokenVersion += 1; // sign out all existing sessions
   user.authProvider = user.authProvider || 'password';
   // The code reached their inbox, so the address is theirs.
-  if (user.emailVerified === false) user.emailVerified = true;
+  user.emailVerified = true;
   await user.save();
   clearAuthCookies(res);
   res.status(200).json({ message: 'Password updated. Please sign in with your new password.' });
@@ -150,6 +155,7 @@ exports.verifyEmail = async (req, res) => {
 
 exports.resendVerification = async (req, res) => {
   if (req.user.emailVerified !== false) return res.json({ message: 'Your email address is already confirmed.' });
+  if (!(await canEmailUnconfirmed())) throw new HttpError(429, 'We are sending a lot of emails right now. Please ask for a new code in an hour.');
   sendCode(req.user, 'emailVerification', await issueCode(req.user, 'emailVerification'));
   return res.json({ message: `We have sent a new code to ${req.user.email}.` });
 };
@@ -185,6 +191,10 @@ exports.googleLogin = async (req, res) => {
       // Google has confirmed the address.
       emailVerified: true,
     });
+  } else if (user.emailVerified !== true) {
+    // Google has confirmed the address of this existing Google account.
+    await User.updateOne({ _id: user._id }, { $set: { emailVerified: true } });
+    user.emailVerified = true;
   }
   await grantConfiguredAdmin(user);
   beginSession(res, user, 'Logged in successfully');

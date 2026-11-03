@@ -14,13 +14,16 @@ const getTransport = () => {
   return transport;
 };
 
+// Subjects can carry a 6-digit code ("123456 is your … code"): logs get the digits hidden.
+const hideCodes = (text) => String(text ?? '').replace(/\d{6}/g, '******');
+
 // Without SMTP configured, development logs the message (so reset links can be
 // used locally) while production only logs that mail is not configured.
 const sendMail = async ({ to, subject, text, html, replyTo }) => {
   const config = getConfig();
   const t = getTransport();
   if (!t) {
-    if (config.isProd) logger.warn('mail_not_configured', { subject });
+    if (config.isProd) logger.warn('mail_not_configured', { subject: hideCodes(subject) });
     else logger.info('mail_dev_outbox', { to, subject, text });
     return { delivered: false };
   }
@@ -28,4 +31,4 @@ const sendMail = async ({ to, subject, text, html, replyTo }) => {
   return { delivered: true };
 };
 
-module.exports = { sendMail };
+module.exports = { sendMail, hideCodes };

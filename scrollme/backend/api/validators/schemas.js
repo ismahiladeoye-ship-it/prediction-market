@@ -91,7 +91,14 @@ const productListQuery = z.object({
   sort: z.enum(sortValues).default('newest'),
 });
 
-const quantity = z.coerce.number().int('Quantity must be a whole number').min(1, 'Quantity must be at least 1').max(20, 'You can buy at most 20 of one item');
+// At most 5 of one item per order. Kept below the usual stock (10), so trying
+// bigger quantities in the bag does not reveal how many are left.
+const MAX_PER_ITEM = 5;
+const quantity = z.coerce
+  .number()
+  .int('Quantity must be a whole number')
+  .min(1, 'Quantity must be at least 1')
+  .max(MAX_PER_ITEM, `You can buy at most ${MAX_PER_ITEM} of one item`);
 const size = z.string().trim().max(20).default('');
 
 const cartAdd = z.object({ productId: objectId, quantity: quantity.default(1), size });
@@ -348,6 +355,7 @@ const pageQuery = z.object({
 const idParam = (key) => z.object({ [key]: objectId });
 
 module.exports = {
+  MAX_PER_ITEM,
   objectId,
   password,
   register,

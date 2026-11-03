@@ -14,7 +14,8 @@ const serializeOrder = (order, { admin = false } = {}) => {
     id: o._id,
     orderNumber: o.orderNumber,
     status: o.status,
-    statusHistory: o.statusHistory,
+    // Admins' notes and ids are for admins; customers see each step and when.
+    statusHistory: admin ? o.statusHistory : (o.statusHistory || []).map(({ status, at }) => ({ status, at })),
     email: o.email,
     userId: o.userId,
     items: o.items.map((i) => ({
@@ -97,9 +98,14 @@ exports.cancelOrder = async (req, res) => {
   const order = await loadOwnOrder(req);
   if (!order.userId.equals(req.user._id)) throw forbidden();
   if (order.status !== 'pending_payment') throw conflict('Only unpaid orders can be cancelled online. Please contact us.');
-  await changeStatus(order, 'cancelled', { by: req.user._id, note: 'Cancelled by customer' });
-  res.json({ order: serializeOrder(order) });
+  const cancelled = await changeStatus(order, 'cancelled', { by: req.user._id, note: 'Cancelled by customer' });
+  res.json({ order: serializeOrder(cancelled) });
 };
+
+// Each new payment page renews the order's hold on its stock, so the renewals
+// are limited: an unpaid order cannot keep stock from other shoppers for long.
+const MAX_PAYMENT_ATTEMPTS = 3;
+const MAX_UNPAID_AGE_MS = 2 * 60 * 60 * 1000;
 
 // Resume payment for an unpaid order whose session may have been closed.
 exports.resumePayment = async (req, res) => {
@@ -108,6 +114,9 @@ exports.resumePayment = async (req, res) => {
   if (!order.userId.equals(req.user._id)) throw forbidden();
   if (order.status !== 'pending_payment') throw conflict('This order is not awaiting payment');
   if (order.reservationExpiresAt && order.reservationExpiresAt <= new Date()) throw conflict('This order has expired. Please check out again.');
+  if ((order.payment.attempts || 0) >= MAX_PAYMENT_ATTEMPTS || Date.now() - order.createdAt.getTime() > MAX_UNPAID_AGE_MS) {
+    throw conflict('This order can no longer be paid. Please cancel it from your account and check out again.');
+  }
   const provider = getProvider();
   if (order.payment.provider === 'stripe' && order.payment.sessionId) {
     const status = await provider.getSessionStatus(order.payment.sessionId).catch(() => null);
