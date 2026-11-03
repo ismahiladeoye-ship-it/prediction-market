@@ -64,7 +64,7 @@ const SizeGuide = ({ department }) => {
       <Button variant='link' size='sm' color='inherit' textDecoration='underline' fontWeight='500' onClick={onOpen}>
         Size guide
       </Button>
-      <Modal isOpen={isOpen} onClose={onClose} size='lg' scrollBehavior='inside'>
+      <Modal isOpen={isOpen} onClose={onClose} size='lg' scrollBehavior='inside' motionPreset='none'>
         <ModalOverlay />
         <ModalContent mx={4}>
           <ModalHeader>{women ? "Women's" : "Men's"} shoe size guide</ModalHeader>
