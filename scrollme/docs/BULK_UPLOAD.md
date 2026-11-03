@@ -52,7 +52,7 @@ Products are shown under **Men**, **Women** and **Electronics** (the menus on th
 
 | Category | Subcategories |
 | --- | --- |
-| Clothing | Tops, T-shirts, Hoodies & sweatshirts, Jeans, Jumpers & cardigans, Trousers, Co-ords, Shirts & blouses, Skirts, Jumpsuits & playsuits |
+| Clothing | Tops, T-shirts, Hoodies & sweatshirts, Jeans, Jumpers & cardigans, Trousers & shorts, Co-ords, Shirts & blouses, Skirts, Jumpsuits & playsuits |
 | Dresses | Mini dresses, Midi dresses, Maxi dresses, Party dresses, Casual dresses, Bodycon dresses, Shirt dresses, Wrap dresses, Jumper dresses, Occasion dresses |
 | Coats & Jackets | Puffer jackets, Wool coats, Trench coats, Blazers, Denim jackets, Leather jackets, Gilets, Raincoats, Faux fur & teddy, Parkas |
 | Shoes & Boots | Trainers, Ankle boots, Knee-high boots, Slippers, Heels, Flat shoes, Sandals, Loafers, Mules, Sliders & flip-flops |
