@@ -44,8 +44,6 @@ Products are shown under **Men**, **Women** and **Electronics** (the menus on th
 | Coats & Jackets | Puffer jackets, Parkas, Bomber jackets, Gilets, Raincoats, Denim jackets, Leather jackets, Overcoats, Fleeces, Overshirts |
 | Shoes & Boots | Trainers, Running trainers, Boots, Casual shoes, Smart shoes, Loafers, Sliders, Sandals, Flip-flops, Slippers |
 | Sportswear | Gym tops, Gym shorts, Joggers, Hoodies, Tracksuits, Track tops, Base layers, Running, Swim shorts, Sports socks |
-| Suits & Tailoring | Suits, Blazers, Waistcoats, Formal shirts, Suit trousers, Ties & bow ties |
-| Underwear & Nightwear | Boxers, Trunks, Briefs, Vests, Pyjamas, Loungewear, Dressing gowns, Thermals |
 | Accessories | Caps, Hats & beanies, Watches, Belts, Wallets & cardholders, Sunglasses, Scarves, Gloves, Socks |
 | Bags & Luggage | Rucksacks & backpacks, Cross-body bags, Bum bags, Holdalls, Tote bags, Laptop bags, Messenger bags, Wash bags, Suitcases |
 | Fragrance | Aftershave, Cologne, Body spray, Deodorant, Gift sets |
@@ -59,7 +57,6 @@ Products are shown under **Men**, **Women** and **Electronics** (the menus on th
 | Coats & Jackets | Puffer jackets, Wool coats, Trench coats, Blazers, Denim jackets, Leather jackets, Gilets, Raincoats, Faux fur & teddy, Parkas |
 | Shoes & Boots | Trainers, Ankle boots, Knee-high boots, Slippers, Heels, Flat shoes, Sandals, Loafers, Mules, Sliders & flip-flops |
 | Sportswear | Leggings, Sports bras, Gym tops, Joggers, Hoodies, Shorts, Tracksuits, Jackets, Running |
-| Lingerie & Nightwear | Bras, Knickers, Lingerie sets, Shapewear, Pyjamas, Nightdresses, Loungewear, Dressing gowns, Swimwear |
 | Accessories | Watches, Sunglasses, Hats & beanies, Scarves, Belts, Hair accessories, Gloves, Socks & tights, Keyrings |
 | Bags & Purses | Handbags, Shoulder bags, Cross-body bags, Tote bags, Rucksacks & backpacks, Clutch bags, Purses & cardholders, Bum bags, Suitcases & luggage |
 | Fragrance | Perfume, Body mist, Deodorant, Gift sets |

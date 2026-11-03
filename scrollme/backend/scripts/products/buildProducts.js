@@ -5,7 +5,7 @@ const { placementProblem } = require('../../api/config/taxonomy');
 // Source product types -> [category, subcategory] in config/taxonomy.json, per
 // department (one entry = same in both; "electronics" = that department for
 // everyone). Other types (kidswear, sarees, jewellery, homeware, make-up...)
-// are left out of the sample shop.
+// are left out of the sample shop, as are suits and underwear (not sold).
 const PLACEMENTS = {
   tshirts: ['clothing', 't-shirts'],
   shirts: { men: ['clothing', 'shirts'], women: ['clothing', 'shirts-blouses'] },
@@ -24,8 +24,7 @@ const PLACEMENTS = {
   leggings: { women: ['activewear', 'leggings'] },
   jackets: { men: ['coats-jackets', 'bomber-jackets'], women: ['coats-jackets', 'denim-jackets'] },
   coats: { men: ['coats-jackets', 'overcoats'], women: ['coats-jackets', 'wool-coats'] },
-  blazers: { men: ['suits-tailoring', 'blazers'], women: ['coats-jackets', 'blazers'] },
-  suits: { men: ['suits-tailoring', 'suits'] },
+  blazers: { women: ['coats-jackets', 'blazers'] },
   'casual-shoes': { men: ['shoes-boots', 'casual-shoes'], women: ['shoes-boots', 'trainers'] },
   'sports-shoes': ['shoes-boots', 'trainers'],
   'formal-shoes': { men: ['shoes-boots', 'smart-shoes'] },
@@ -50,16 +49,6 @@ const PLACEMENTS = {
   hat: ['accessories', 'hats-beanies'],
   socks: { men: ['accessories', 'socks'], women: ['accessories', 'socks-tights'] },
   scarves: ['accessories', 'scarves'],
-  ties: { men: ['suits-tailoring', 'ties-bow-ties'] },
-  bra: { women: ['underwear-nightwear', 'bras'] },
-  briefs: { men: ['underwear-nightwear', 'briefs'], women: ['underwear-nightwear', 'knickers'] },
-  trunk: { men: ['underwear-nightwear', 'trunks'] },
-  boxers: { men: ['underwear-nightwear', 'boxers'] },
-  'innerwear-vests': { men: ['underwear-nightwear', 'vests'] },
-  shapewear: { women: ['underwear-nightwear', 'shapewear'] },
-  'night-suits': ['underwear-nightwear', 'pyjamas'],
-  nightdress: { women: ['underwear-nightwear', 'nightdresses'] },
-  'lounge-pants': ['underwear-nightwear', 'loungewear'],
   'perfume-and-body-mist': { men: ['fragrance', 'aftershave'], women: ['fragrance', 'perfume'] },
   deodorant: ['fragrance', 'deodorant'],
 };
