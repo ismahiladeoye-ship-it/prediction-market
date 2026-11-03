@@ -190,74 +190,6 @@
           ]
         },
         {
-          "slug": "suits-tailoring",
-          "title": "Suits & Tailoring",
-          "subcategories": [
-            {
-              "slug": "suits",
-              "title": "Suits"
-            },
-            {
-              "slug": "blazers",
-              "title": "Blazers"
-            },
-            {
-              "slug": "waistcoats",
-              "title": "Waistcoats"
-            },
-            {
-              "slug": "formal-shirts",
-              "title": "Formal shirts"
-            },
-            {
-              "slug": "suit-trousers",
-              "title": "Suit trousers"
-            },
-            {
-              "slug": "ties-bow-ties",
-              "title": "Ties & bow ties"
-            }
-          ]
-        },
-        {
-          "slug": "underwear-nightwear",
-          "title": "Underwear & Nightwear",
-          "subcategories": [
-            {
-              "slug": "boxers",
-              "title": "Boxers"
-            },
-            {
-              "slug": "trunks",
-              "title": "Trunks"
-            },
-            {
-              "slug": "briefs",
-              "title": "Briefs"
-            },
-            {
-              "slug": "vests",
-              "title": "Vests"
-            },
-            {
-              "slug": "pyjamas",
-              "title": "Pyjamas"
-            },
-            {
-              "slug": "loungewear",
-              "title": "Loungewear"
-            },
-            {
-              "slug": "dressing-gowns",
-              "title": "Dressing gowns"
-            },
-            {
-              "slug": "thermals",
-              "title": "Thermals"
-            }
-          ]
-        },
-        {
           "slug": "accessories",
           "title": "Accessories",
           "subcategories": [
@@ -597,48 +529,6 @@
             {
               "slug": "running",
               "title": "Running"
-            }
-          ]
-        },
-        {
-          "slug": "underwear-nightwear",
-          "title": "Lingerie & Nightwear",
-          "subcategories": [
-            {
-              "slug": "bras",
-              "title": "Bras"
-            },
-            {
-              "slug": "knickers",
-              "title": "Knickers"
-            },
-            {
-              "slug": "lingerie-sets",
-              "title": "Lingerie sets"
-            },
-            {
-              "slug": "shapewear",
-              "title": "Shapewear"
-            },
-            {
-              "slug": "pyjamas",
-              "title": "Pyjamas"
-            },
-            {
-              "slug": "nightdresses",
-              "title": "Nightdresses"
-            },
-            {
-              "slug": "loungewear",
-              "title": "Loungewear"
-            },
-            {
-              "slug": "dressing-gowns",
-              "title": "Dressing gowns"
-            },
-            {
-              "slug": "swimwear",
-              "title": "Swimwear"
             }
           ]
         },
