@@ -5,7 +5,7 @@ import ProductTile from './ProductTile';
 import { listCategoriesAPI, listProductsAPI } from '../services/products/productService';
 import { getErrorMessage } from '../api/client';
 import { categoriesOf, categoryTitle, countIn, departments, subcategoriesOf } from '../utils/taxonomy';
-import { Box, Button, Checkbox, Flex, HStack, Input, InputGroup, InputLeftAddon, Select, Spinner, Text } from '@chakra-ui/react';
+import { Box, Button, Checkbox, Flex, HStack, Select, Spinner, Text } from '@chakra-ui/react';
 
 const Title = styled.h1`
   font-family: var(--font-display);
@@ -130,12 +130,7 @@ const ProductGallery = ({
   const category = fixedCategory || searchParams.get('category') || '';
   const subcategory = fixedSubcategory || searchParams.get('subcategory') || '';
   const sort = searchParams.get('sort') || 'newest';
-  const minPrice = searchParams.get('minPrice') || '';
-  const maxPrice = searchParams.get('maxPrice') || '';
   const inStock = searchParams.get('inStock') === 'true';
-
-  const [priceDraft, setPriceDraft] = useState({ minPrice, maxPrice });
-  useEffect(() => setPriceDraft({ minPrice, maxPrice }), [minPrice, maxPrice]);
 
   const updateParams = (changes, resetPage = true) => {
     const next = new URLSearchParams(searchParams);
@@ -163,8 +158,6 @@ const ProductGallery = ({
         category,
         subcategory,
         sort,
-        minPrice,
-        maxPrice,
         inStock: inStock ? 'true' : '',
       });
       setData({ products: response?.products || [], totalPages: response?.totalPages || 0, totalProducts: response?.totalProducts || 0 });
@@ -173,7 +166,7 @@ const ProductGallery = ({
     } finally {
       setLoading(false);
     }
-  }, [page, q, department, category, subcategory, sort, minPrice, maxPrice, inStock, notFound]);
+  }, [page, q, department, category, subcategory, sort, inStock, notFound]);
 
   useEffect(() => {
     fetchProducts();
@@ -191,11 +184,6 @@ const ProductGallery = ({
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const applyPrice = (e) => {
-    e.preventDefault();
-    updateParams(priceDraft);
-  };
-
   const withCount = (label, where) => (counts ? `${label} (${countIn(counts, { department, ...where })})` : label);
   const categoryOptions = categoriesOf(department).map((c) => [c.slug, withCount(c.title, { category: c.slug })]);
   const subcategoryOptions = category
@@ -204,13 +192,7 @@ const ProductGallery = ({
 
   const heading = title || (q ? `Results for “${q}”` : category ? categoryTitle(department, category) : 'Products Gallery');
   const hasFilters = Boolean(
-    q ||
-      (!fixedDepartment && department) ||
-      (!fixedCategory && category) ||
-      (!fixedSubcategory && subcategory) ||
-      minPrice ||
-      maxPrice ||
-      inStock
+    q || (!fixedDepartment && department) || (!fixedCategory && category) || (!fixedSubcategory && subcategory) || inStock
   );
 
   return (
@@ -282,33 +264,6 @@ const ProductGallery = ({
               ))}
             </Select>
           </Box>
-          <HStack as='form' onSubmit={applyPrice} spacing={2} align='flex-end' w={{ base: '100%', sm: 'auto' }}>
-            <InputGroup size='md' maxW='140px'>
-              <InputLeftAddon>Min</InputLeftAddon>
-              <Input
-                bg='white'
-                type='number'
-                min={0}
-                value={priceDraft.minPrice}
-                onChange={(e) => setPriceDraft((d) => ({ ...d, minPrice: e.target.value }))}
-                aria-label='Minimum price'
-              />
-            </InputGroup>
-            <InputGroup size='md' maxW='140px'>
-              <InputLeftAddon>Max</InputLeftAddon>
-              <Input
-                bg='white'
-                type='number'
-                min={0}
-                value={priceDraft.maxPrice}
-                onChange={(e) => setPriceDraft((d) => ({ ...d, maxPrice: e.target.value }))}
-                aria-label='Maximum price'
-              />
-            </InputGroup>
-            <Button type='submit' colorScheme='brand' variant='outline'>
-              Apply
-            </Button>
-          </HStack>
           <Checkbox
             colorScheme='brand'
             isChecked={inStock}
