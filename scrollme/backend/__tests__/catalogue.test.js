@@ -114,11 +114,19 @@ describe('product catalogue', () => {
     await createProduct({ ...shoe, name: 'Samba Suede Trainers XL – Green', color: 'Green' });
     await createProduct({ ...shoe, brand: 'nike', name: 'Samba Suede Trainers – Red', color: 'Red' });
     await createProduct({ ...shoe, name: 'Samba Suede Trainers – Blue', color: 'Navy' });
+    // The women's version of the same shoe has its own colours.
+    const women = await createProduct({ ...shoe, department: 'women', name: 'Samba Suede Trainers – Pink', color: 'Pink' });
+    const womenWhite = await createProduct({ ...shoe, department: 'women', name: 'Samba Suede Trainers – White', color: 'White' });
 
     const res = await request(ctx.app).get(`/api/product/${green.id}`);
     expect(res.body.colours.map((c) => [c._id, c.color])).toEqual([
       [black.id, 'Black/White'],
       [green.id, 'Green'],
+    ]);
+    const womens = await request(ctx.app).get(`/api/product/${women.id}`);
+    expect(womens.body.colours.map((c) => [c._id, c.color])).toEqual([
+      [women.id, 'Pink'],
+      [womenWhite.id, 'White'],
     ]);
   });
 

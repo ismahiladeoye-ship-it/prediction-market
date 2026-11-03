@@ -98,14 +98,17 @@ exports.listBrands = async (req, res) => {
 exports.getProductById = async (req, res) => {
   const product = await Product.findOne({ _id: req.params.productId, isActive: true }).select(PUBLIC_FIELDS).lean();
   if (!product) throw notFound('Product not found');
-  // The same item in other colours: products on sale with the same brand and
-  // the same name, or the same name with the colour on the end ("Samba – Black").
+  // The same item in other colours: products on sale in the same department
+  // with the same brand and the same name, or the same name with the colour on
+  // the end ("Samba – Black"). Men's and women's versions of a shoe share a
+  // name, so the department keeps their colours apart.
   let colours = [];
   if (product.color) {
     const suffix = ` – ${product.color}`;
     const base = product.name.endsWith(suffix) ? product.name.slice(0, -suffix.length) : product.name;
     const candidates = await Product.find({
       isActive: true,
+      department: product.department ?? null,
       brand: product.brand ?? null,
       color: { $nin: [null, ''] },
       $or: [{ name: base }, { name: { $regex: `^${escapeRegex(base)} – ` } }],
