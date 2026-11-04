@@ -12,7 +12,7 @@ import { Box, Spinner, useToast } from '@chakra-ui/react';
 import { deleteCartItem, updateCartItem, viewCart } from '../store/slices/cartSlice';
 import { toggleWishlist } from '../store/slices/wishlistSlice';
 import { formatPrice } from '../utils/format';
-import { imageSrc, onImageError } from '../utils/imageFallback';
+import { imageSrc, fallbackTo } from '../utils/imageFallback';
 
 const Container = styled.div``;
 
@@ -387,7 +387,7 @@ const Cart = () => {
               <Product key={`${item.productId}-${item.size}`}>
                 <ProductDetail>
                   <Link to={`/${item.category || 'product'}/${item.productId}`}>
-                    <Image src={imageSrc(item.image)} alt={item.name} onError={onImageError} />
+                    <Image src={imageSrc(item.image, item)} alt={item.name} onError={fallbackTo(item)} />
                   </Link>
                   <Details>
                     <ProductBrand>{item.brand}</ProductBrand>

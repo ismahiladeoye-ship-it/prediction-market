@@ -25,7 +25,7 @@ import { listAdminProductsAPI, adjustStockAPI, deactivateProductAPI, updateProdu
 import { getErrorMessage } from '../../api/client';
 import { formatPrice } from '../../utils/format';
 import { placementLabel } from '../../utils/taxonomy';
-import { imageSrc, onImageError } from '../../utils/imageFallback';
+import { imageSrc, fallbackTo } from '../../utils/imageFallback';
 import ProductFormModal from './ProductFormModal';
 
 const AdminProducts = () => {
@@ -151,7 +151,7 @@ const AdminProducts = () => {
                   <Tr key={p._id}>
                     <Td>
                       <HStack>
-                        <Image src={imageSrc(p.imageUrl)} onError={onImageError} alt='' boxSize='40px' objectFit='cover' />
+                        <Image src={imageSrc(p.imageUrl, p)} onError={fallbackTo(p)} alt='' boxSize='40px' objectFit='cover' />
                         <Box maxW='260px' whiteSpace='normal'>
                           <Text fontWeight={600} noOfLines={2}>
                             {p.name}

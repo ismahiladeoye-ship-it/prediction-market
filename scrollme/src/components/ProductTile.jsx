@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { HiHeart, HiOutlineHeart } from 'react-icons/hi2';
 import { toggleWishlist } from '../store/slices/wishlistSlice';
 import { formatPrice, retailSaving } from '../utils/format';
-import { imageSrc, onImageError } from '../utils/imageFallback';
+import { imageSrc, fallbackTo } from '../utils/imageFallback';
 
 const Card = styled.article`
   position: relative;
@@ -108,7 +108,7 @@ const ProductTile = ({ product }) => {
   return (
     <Card>
       <ImageLink to={href} aria-label={product.name}>
-        <img src={imageSrc(product.imageUrl)} alt='' loading='lazy' onError={onImageError} />
+        <img src={imageSrc(product.imageUrl, product)} alt='' loading='lazy' onError={fallbackTo(product)} />
       </ImageLink>
       {soldOut && <Badge>Sold out</Badge>}
       <Heart

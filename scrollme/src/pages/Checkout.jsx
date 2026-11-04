@@ -11,7 +11,7 @@ import { viewCart } from '../store/slices/cartSlice';
 import { placeOrderAPI } from '../services/orders/orderService';
 import { getErrorMessage } from '../api/client';
 import { formatPrice } from '../utils/format';
-import { imageSrc, onImageError } from '../utils/imageFallback';
+import { imageSrc, fallbackTo } from '../utils/imageFallback';
 import { countryName } from '../utils/countries';
 import PaymentMethodSheet, { isMethodSupported } from '../components/payment/PaymentMethodSheet';
 import { MethodLogo } from '../components/payment/PaymentLogos';
@@ -238,7 +238,7 @@ const Checkout = () => {
             ))}
             {cart.items.map((item) => (
               <Item key={`${item.productId}-${item.size}`}>
-                <img src={imageSrc(item.image)} alt={item.name} onError={onImageError} />
+                <img src={imageSrc(item.image, item)} alt={item.name} onError={fallbackTo(item)} />
                 <div>
                   <ItemBrand>{item.brand}</ItemBrand>
                   <p>{item.name}</p>

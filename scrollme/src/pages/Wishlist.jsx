@@ -9,7 +9,7 @@ import { addToCart } from '../store/slices/cartSlice';
 import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { formatPrice } from '../utils/format';
-import { imageSrc, onImageError } from '../utils/imageFallback';
+import { imageSrc, fallbackTo } from '../utils/imageFallback';
 
 const Container = styled.div`
   margin-top: 16px;
@@ -136,7 +136,7 @@ const Wishlist = () => {
                 X
               </RemoveButton>
               <Link to={`/${product?.category || 'product'}/${product?._id}`}>
-                <Image src={imageSrc(product?.imageUrl)} alt={product?.name} onError={onImageError} />
+                <Image src={imageSrc(product?.imageUrl, product)} alt={product?.name} onError={fallbackTo(product)} />
               </Link>
               <Title>{product?.name}</Title>
               <Price>{formatPrice(product?.price)}</Price>
