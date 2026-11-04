@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import { formatPrice } from '../utils/format';
-import { imageSrc, onImageError } from '../utils/imageFallback';
+import { imageSrc, fallbackTo } from '../utils/imageFallback';
 
 const Item = styled.div`
   display: flex;
@@ -40,7 +40,7 @@ const OrderItems = ({ items }) =>
   items.map((item) => (
     <Item key={`${item.productId}-${item.size}`}>
       <Link to={`/${item.category || 'product'}/${item.productId}`}>
-        <img src={imageSrc(item.imageUrl)} alt={item.name} onError={onImageError} />
+        <img src={imageSrc(item.imageUrl, item)} alt={item.name} onError={fallbackTo(item)} />
       </Link>
       <Body>
         <p>{item.brand}</p>

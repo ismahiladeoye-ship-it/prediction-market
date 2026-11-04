@@ -20,7 +20,7 @@ import { toggleWishlist } from '../store/slices/wishlistSlice';
 import { getErrorMessage } from '../api/client';
 import { formatPrice, retailSaving } from '../utils/format';
 import { placementLabel } from '../utils/taxonomy';
-import { imageSrc, onImageError } from '../utils/imageFallback';
+import { imageSrc, fallbackTo } from '../utils/imageFallback';
 import { swatchBackground } from '../utils/colourSwatch';
 import SizeGuide from '../components/SizeGuide';
 import { HiOutlineArrowPath, HiOutlineCheckCircle, HiOutlineTruck } from 'react-icons/hi2';
@@ -209,7 +209,9 @@ const Product = () => {
       <Navbar />
       <Wrapper>
         <ImgContainer>
-          {product && <Image src={imageSrc(mainPhoto)} alt={product?.name} onClick={handleImageClick} onError={onImageError} />}
+          {product && (
+            <Image src={imageSrc(mainPhoto, product)} alt={product?.name} onClick={handleImageClick} onError={fallbackTo(product)} />
+          )}
           {photos.length > 1 && (
             <Thumbs role='group' aria-label='Product photos'>
               {photos.map((url, i) => (
@@ -221,7 +223,7 @@ const Product = () => {
                   aria-pressed={i === photo}
                   onClick={() => setPhoto(i)}
                 >
-                  <img src={url} alt='' onError={onImageError} />
+                  <img src={url} alt='' onError={fallbackTo(product)} />
                 </Thumb>
               ))}
             </Thumbs>
@@ -356,7 +358,7 @@ const Product = () => {
             <CloseButton onClick={closeModal} aria-label='Close image'>
               ✖
             </CloseButton>
-            <ModalImage src={imageSrc(mainPhoto)} alt={product?.name} onError={onImageError} />
+            <ModalImage src={imageSrc(mainPhoto, product)} alt={product?.name} onError={fallbackTo(product)} />
           </ModalContent>
         </Modal>
       )}

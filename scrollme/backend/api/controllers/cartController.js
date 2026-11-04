@@ -44,6 +44,8 @@ const buildCartView = async (cart, deliveryMethod = 'standard') => {
       name: product.name,
       brand: product.brand,
       category: product.category,
+      subcategory: product.subcategory,
+      color: product.color,
       imageUrl: product.imageUrl,
       // `image` and `price` keep the field names used by the original frontend.
       image: product.imageUrl,

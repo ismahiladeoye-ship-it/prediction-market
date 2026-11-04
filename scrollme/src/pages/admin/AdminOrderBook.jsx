@@ -29,7 +29,7 @@ import { getOrderBookAPI } from '../../services/admin/adminService';
 import { getErrorMessage } from '../../api/client';
 import { formatPrice } from '../../utils/format';
 import { downloadCsv } from '../../utils/csv';
-import { imageSrc, onImageError } from '../../utils/imageFallback';
+import { imageSrc, fallbackTo } from '../../utils/imageFallback';
 
 const MONTHS_LISTED = 24;
 const MONTH_RE = /^\d{4}-(0[1-9]|1[0-2])$/;
@@ -95,7 +95,15 @@ const StockCell = ({ product, threshold }) => {
 };
 
 const Thumb = ({ product }) => (
-  <Image src={imageSrc(product.imageUrl)} onError={onImageError} alt='' boxSize='44px' objectFit='cover' borderRadius='md' flexShrink={0} />
+  <Image
+    src={imageSrc(product.imageUrl, product)}
+    onError={fallbackTo(product)}
+    alt=''
+    boxSize='44px'
+    objectFit='cover'
+    borderRadius='md'
+    flexShrink={0}
+  />
 );
 
 const ProductName = ({ product }) => (
