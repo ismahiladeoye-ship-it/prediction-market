@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { HiHeart, HiOutlineHeart } from 'react-icons/hi2';
 import { toggleWishlist } from '../store/slices/wishlistSlice';
 import { formatPrice, retailSaving } from '../utils/format';
-import { imageSrc, fallbackTo } from '../utils/imageFallback';
+import { imageSrc, fallbackTo, illustrativePhoto } from '../utils/imageFallback';
 
 const Card = styled.article`
   position: relative;
@@ -12,6 +12,7 @@ const Card = styled.article`
 `;
 
 const ImageLink = styled(Link)`
+  position: relative;
   display: block;
   aspect-ratio: 3 / 4;
   border-radius: 14px;
@@ -26,6 +27,20 @@ const ImageLink = styled(Link)`
   &:hover img {
     transform: scale(1.04);
   }
+`;
+
+// Marks a look-alike photo, so nobody mistakes it for the item itself.
+const Illustrative = styled.span`
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #444;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
 `;
 
 const Heart = styled.button`
@@ -104,11 +119,13 @@ const ProductTile = ({ product }) => {
   const inWishlist = useSelector((state) => state.wishlist.items.some((w) => w._id === product._id));
   const href = `/${product.category || 'product'}/${product._id}`;
   const soldOut = product.inStock === false;
+  const lookAlike = illustrativePhoto(product.imageUrl, product);
 
   return (
     <Card>
       <ImageLink to={href} aria-label={product.name}>
         <img src={imageSrc(product.imageUrl, product)} alt='' loading='lazy' onError={fallbackTo(product)} />
+        {lookAlike && <Illustrative>Illustrative photo</Illustrative>}
       </ImageLink>
       {soldOut && <Badge>Sold out</Badge>}
       <Heart

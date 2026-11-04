@@ -20,7 +20,7 @@ import { toggleWishlist } from '../store/slices/wishlistSlice';
 import { getErrorMessage } from '../api/client';
 import { formatPrice, retailSaving } from '../utils/format';
 import { placementLabel } from '../utils/taxonomy';
-import { imageSrc, fallbackTo } from '../utils/imageFallback';
+import { imageSrc, fallbackTo, illustrativePhoto } from '../utils/imageFallback';
 import { swatchBackground } from '../utils/colourSwatch';
 import SizeGuide from '../components/SizeGuide';
 import { HiOutlineArrowPath, HiOutlineCheckCircle, HiOutlineTruck } from 'react-icons/hi2';
@@ -66,6 +66,7 @@ const Product = () => {
   const saving = product ? retailSaving(product.price, product.retailPrice) : null;
   const photos = product?.images?.length ? product.images : [product?.imageUrl];
   const mainPhoto = photos[photo] || photos[0];
+  const lookAlike = product ? illustrativePhoto(mainPhoto, product) : null;
   const needsSize = Boolean(product?.sizes?.length);
 
   const addCurrentToCart = async () => {
@@ -211,6 +212,15 @@ const Product = () => {
         <ImgContainer>
           {product && (
             <Image src={imageSrc(mainPhoto, product)} alt={product?.name} onClick={handleImageClick} onError={fallbackTo(product)} />
+          )}
+          {lookAlike && (
+            <PhotoNote>
+              Illustrative photo – not the actual item. Photo:{' '}
+              <a href={lookAlike.link} target='_blank' rel='noopener noreferrer'>
+                {lookAlike.photographer}
+              </a>{' '}
+              on {lookAlike.source}
+            </PhotoNote>
           )}
           {photos.length > 1 && (
             <Thumbs role='group' aria-label='Product photos'>
@@ -405,6 +415,15 @@ const Image = styled.img`
   background: white;
   border: 1px solid var(--line);
   cursor: zoom-in;
+`;
+
+const PhotoNote = styled.p`
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--muted);
+  a {
+    text-decoration: underline;
+  }
 `;
 
 const Thumbs = styled.div`
