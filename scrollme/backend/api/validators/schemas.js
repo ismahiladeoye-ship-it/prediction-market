@@ -85,6 +85,9 @@ const productListQuery = z.object({
     .regex(/^[a-z0-9-]*$/, 'Invalid subcategory')
     .optional(),
   brand: z.string().trim().max(60).optional(),
+  // Several brands at once, comma-separated (brand sections such as Women >
+  // Activewear brands).
+  brands: z.string().trim().max(600).optional(),
   minPrice: z.coerce.number().min(0).optional(),
   maxPrice: z.coerce.number().min(0).optional(),
   inStock: z.enum(['true', 'false']).optional(),

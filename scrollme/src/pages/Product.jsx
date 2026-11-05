@@ -213,7 +213,28 @@ const Product = () => {
           {product && (
             <Image src={imageSrc(mainPhoto, product)} alt={product?.name} onClick={handleImageClick} onError={fallbackTo(product)} />
           )}
-          {lookAlike && (
+          {lookAlike?.kind === 'model' && (
+            <PhotoNote>
+              Photo of this model – not the actual item. Photo:{' '}
+              {lookAlike.authorUrl ? (
+                <a href={lookAlike.authorUrl} target='_blank' rel='noopener noreferrer'>
+                  {lookAlike.author}
+                </a>
+              ) : (
+                lookAlike.author
+              )}
+              ,{' '}
+              <a href={lookAlike.licenceUrl} target='_blank' rel='noopener noreferrer license'>
+                {lookAlike.licence}
+              </a>
+              , via{' '}
+              <a href={lookAlike.link} target='_blank' rel='noopener noreferrer'>
+                {lookAlike.source}
+              </a>{' '}
+              ({lookAlike.changes || 'resized'})
+            </PhotoNote>
+          )}
+          {lookAlike?.kind === 'lookalike' && (
             <PhotoNote>
               Illustrative photo – not the actual item. Photo:{' '}
               <a href={lookAlike.link} target='_blank' rel='noopener noreferrer'>

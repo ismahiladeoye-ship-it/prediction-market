@@ -51,6 +51,10 @@ describe('product catalogue', () => {
     expect((await request(ctx.app).get('/api/product/list?category=clothing')).body.totalProducts).toBe(3);
     expect((await request(ctx.app).get('/api/product/list?category=clothing&subcategory=shirts')).body.totalProducts).toBe(1);
     expect((await request(ctx.app).get('/api/product/list?brand=levis')).body.totalProducts).toBe(1);
+    // Several brands at once (brand sections); a single brand narrows it down.
+    expect((await request(ctx.app).get('/api/product/list?brands=Levis,%20freesoul,nobody')).body.totalProducts).toBe(2);
+    expect((await request(ctx.app).get('/api/product/list?brands=levis,freesoul&brand=freesoul')).body.totalProducts).toBe(1);
+    expect((await request(ctx.app).get('/api/product/list?brands=.*')).body.totalProducts).toBe(0);
     const range = await request(ctx.app).get('/api/product/list?minPrice=20&maxPrice=50');
     expect(range.body.products.map((p) => p.name)).toEqual(['White Linen Shirt']);
     expect((await request(ctx.app).get('/api/product/list?inStock=true')).body.totalProducts).toBe(2);

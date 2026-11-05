@@ -7,6 +7,7 @@ import Cart from './pages/Cart';
 import Wishlist from './pages/Wishlist';
 import { Routes, Route, Link, Navigate } from 'react-router-dom';
 import ProtectedRoute from './utils/ProtectedRoute';
+import { sectionsOf } from './brandSections';
 import { lazy, Suspense } from 'react';
 import ContactUsPage from './pages/ContactUsPage';
 import ComingSoon from './pages/ComingSoon';
@@ -17,6 +18,7 @@ import { departments } from './utils/taxonomy';
 const LazyAllProducts = lazy(() => import('./pages/AllProducts'));
 const LazyCategoryProducts = lazy(() => import('./pages/CategoryProducts'));
 const LazyDepartmentProducts = lazy(() => import('./pages/DepartmentProducts'));
+const LazyBrandSection = lazy(() => import('./pages/BrandSection'));
 const LazyAbout = lazy(() => import('./pages/About'));
 const LazyCheckout = lazy(() => import('./pages/Checkout'));
 const LazyMockPayment = lazy(() => import('./pages/MockPayment'));
@@ -78,6 +80,9 @@ function App() {
           {departments.map((d) => (
             <Route key={d.slug} path={`/${d.slug}`}>
               <Route index element={<LazyDepartmentProducts department={d.slug} />} />
+              {sectionsOf(d.slug).map((sec) => (
+                <Route key={sec.slug} path={sec.slug} element={<LazyBrandSection department={d.slug} slug={sec.slug} />} />
+              ))}
               <Route path=':category' element={<LazyDepartmentProducts department={d.slug} />} />
               <Route path=':category/:subcategory' element={<LazyDepartmentProducts department={d.slug} />} />
             </Route>

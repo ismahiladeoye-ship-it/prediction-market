@@ -28,6 +28,14 @@ const buildFilter = (query, { includeInactive = false } = {}) => {
   if (query.category) filter.category = query.category;
   if (query.subcategory) filter.subcategory = query.subcategory;
   if (query.brand) filter.brand = new RegExp(`^${escapeRegex(query.brand)}$`, 'i');
+  else if (query.brands) {
+    const names = query.brands
+      .split(',')
+      .map((b) => b.trim())
+      .filter(Boolean)
+      .slice(0, 20);
+    if (names.length) filter.brand = { $in: names.map((b) => new RegExp(`^${escapeRegex(b)}$`, 'i')) };
+  }
   if (query.minPrice !== undefined || query.maxPrice !== undefined) {
     filter.price = {};
     if (query.minPrice !== undefined) filter.price.$gte = query.minPrice;
