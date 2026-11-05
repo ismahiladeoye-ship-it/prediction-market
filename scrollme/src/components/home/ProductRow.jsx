@@ -14,7 +14,7 @@ const Head = styled.div`
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin: 64px 0 20px;
+  margin: ${({ $banner }) => ($banner ? '32px 0 20px' : '64px 0 20px')};
   padding: 0 16px;
   ${DESKTOP} {
     padding: 0 32px;
@@ -26,6 +26,25 @@ const Head = styled.div`
     font-size: clamp(34px, 8vw, 48px);
     line-height: 1;
   }
+`;
+
+// Highlight rows sit on a coloured band across the page.
+const Band = styled.section`
+  ${({ $banner }) =>
+    $banner &&
+    `
+    margin-top: 48px;
+    padding: 4px 0 36px;
+    background: var(--soft);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  `}
+`;
+
+const Subtitle = styled.p`
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--muted, #6b6b6b);
 `;
 
 const Actions = styled.div`
@@ -144,9 +163,11 @@ const Progress = styled.div`
 
 // A swipeable row of products (e.g. one collection's best-rated items in stock),
 // with optional shortcut links to categories. Renders nothing when empty.
-const ProductRow = ({ id, title, params, viewAllTo, shortcuts = [] }) => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+// `items` shows products already fetched (the home page highlights) instead of
+// fetching by `params`; `banner` sets the row on a coloured band.
+const ProductRow = ({ id, title, subtitle, params, items, viewAllTo, shortcuts = [], banner = false }) => {
+  const [products, setProducts] = useState(items || []);
+  const [loading, setLoading] = useState(!items);
   const [error, setError] = useState(null);
   const [bar, setBar] = useState({ left: 0, width: 1 });
   const track = useRef(null);
@@ -154,6 +175,11 @@ const ProductRow = ({ id, title, params, viewAllTo, shortcuts = [] }) => {
   const query = JSON.stringify(params);
 
   const fetchProducts = useCallback(async () => {
+    if (items) {
+      setProducts(items);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -170,7 +196,7 @@ const ProductRow = ({ id, title, params, viewAllTo, shortcuts = [] }) => {
     } finally {
       setLoading(false);
     }
-  }, [query]);
+  }, [query, items]);
 
   useEffect(() => {
     fetchProducts();
@@ -195,9 +221,12 @@ const ProductRow = ({ id, title, params, viewAllTo, shortcuts = [] }) => {
   if (!loading && !error && !products.length) return null;
 
   return (
-    <section aria-labelledby={id}>
-      <Head>
-        <h2 id={id}>{title}</h2>
+    <Band as='section' aria-labelledby={id} $banner={banner}>
+      <Head $banner={banner}>
+        <div>
+          <h2 id={id}>{title}</h2>
+          {subtitle && <Subtitle>{subtitle}</Subtitle>}
+        </div>
         <Actions>
           <ScrollButton type='button' aria-label={`Scroll ${title} back`} onClick={() => scrollBy(-1)} disabled={atStart}>
             <HiOutlineChevronLeft size={18} />
@@ -205,12 +234,14 @@ const ProductRow = ({ id, title, params, viewAllTo, shortcuts = [] }) => {
           <ScrollButton type='button' aria-label={`Scroll ${title} forward`} onClick={() => scrollBy(1)} disabled={atEnd}>
             <HiOutlineChevronRight size={18} />
           </ScrollButton>
-          <ViewAll to={viewAllTo} aria-label={`View all ${title}`}>
-            View all
-            <span aria-hidden='true'>
-              <HiOutlineArrowRight size={14} />
-            </span>
-          </ViewAll>
+          {viewAllTo && (
+            <ViewAll to={viewAllTo} aria-label={`View all ${title}`}>
+              View all
+              <span aria-hidden='true'>
+                <HiOutlineArrowRight size={14} />
+              </span>
+            </ViewAll>
+          )}
         </Actions>
       </Head>
       {shortcuts.length > 0 && (
@@ -249,7 +280,7 @@ const ProductRow = ({ id, title, params, viewAllTo, shortcuts = [] }) => {
           )}
         </>
       )}
-    </section>
+    </Band>
   );
 };
 

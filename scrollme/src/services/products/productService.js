@@ -11,6 +11,12 @@ export const listProductsAPI = async (params = 1, limit = 40) => {
   return response.data;
 };
 
+// Home page rows: { trending, specials }, up to 7 products each.
+export const getHighlightsAPI = async () => {
+  const response = await client.get(PRODUCT_ENDPOINTS.HIGHLIGHTS);
+  return response.data;
+};
+
 // Product counts per department, category and subcategory (see utils/taxonomy countIn).
 export const listCategoriesAPI = async () => {
   const response = await client.get(PRODUCT_ENDPOINTS.CATEGORIES);

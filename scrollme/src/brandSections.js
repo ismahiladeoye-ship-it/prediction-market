@@ -8,6 +8,13 @@ export const brandSections = [
     intro: 'Leggings, sports bras, gym tops, hoodies and joggers from the activewear names everyone wants.',
     brands: ['Sweaty Betty', 'Gymshark', 'Vuori', 'Girlfriend Collective', 'PE Nation', 'Juicy Couture'],
   },
+  {
+    slug: 'activewear-brands',
+    department: 'men',
+    title: 'Activewear brands',
+    intro: 'Gym tops, shorts, joggers, hoodies and base layers from the training brands that take it seriously.',
+    brands: ['Gymshark', 'Vuori', 'Castore', 'Gym King'],
+  },
 ];
 
 export const sectionsOf = (department) => brandSections.filter((s) => s.department === department);

@@ -6,8 +6,14 @@ test("the women's activewear brands section has its own link under Women", () =>
   expect(s.brands).toEqual(['Sweaty Betty', 'Gymshark', 'Vuori', 'Girlfriend Collective', 'PE Nation', 'Juicy Couture']);
   expect(sectionLink(s)).toBe('/women/activewear-brands');
   expect(sectionsOf('women')).toContain(s);
-  expect(sectionsOf('men')).toEqual([]);
-  expect(findSection('men', 'activewear-brands')).toBeNull();
+  expect(findSection('electronics', 'activewear-brands')).toBeNull();
+  expect(sectionsOf('electronics')).toEqual([]);
+});
+
+test("the men's activewear brands section has its own link under Men", () => {
+  const s = findSection('men', 'activewear-brands');
+  expect(s.brands).toEqual(['Gymshark', 'Vuori', 'Castore', 'Gym King']);
+  expect(sectionLink(s)).toBe('/men/activewear-brands');
 });
 
 test('section slugs never hide a category page of the same department', () => {
