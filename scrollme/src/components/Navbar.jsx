@@ -18,6 +18,7 @@ import Logo from './Logo';
 import { selectIsAdmin } from '../store/slices/userSlice';
 import { signOut } from '../store/session';
 import { categoryLink, departmentLink, departments, findCategory, findDepartment, subcategoryLink } from '../utils/taxonomy';
+import { sectionLink, sectionsOf } from '../brandSections';
 
 const DESKTOP = '@media (min-width: 900px)';
 
@@ -477,6 +478,11 @@ const Navbar = () => {
       {megaOpen && (
         <MegaPanel id={`menu-${megaOpen}`} ref={megaPanel} role='region' aria-label={`${findDepartment(megaOpen).title} categories`}>
           <MegaAll to={departmentLink(megaOpen)}>Shop all {findDepartment(megaOpen).title}</MegaAll>
+          {sectionsOf(megaOpen).map((sec) => (
+            <MegaAll key={sec.slug} to={sectionLink(sec)} style={{ marginLeft: 24 }}>
+              {sec.title}
+            </MegaAll>
+          ))}
           <MegaGrid>
             {findDepartment(megaOpen).categories.map((c) => (
               <div key={c.slug}>
@@ -551,6 +557,13 @@ const Navbar = () => {
                   Shop all {findDepartment(drawerDept).title}
                 </Link>
               </li>
+              {sectionsOf(drawerDept).map((sec) => (
+                <li key={sec.slug}>
+                  <Link className='all' to={sectionLink(sec)}>
+                    {sec.title}
+                  </Link>
+                </li>
+              ))}
               {findDepartment(drawerDept).categories.map((c) => (
                 <li key={c.slug}>
                   <button type='button' onClick={() => setDrawerCategory(c.slug)}>

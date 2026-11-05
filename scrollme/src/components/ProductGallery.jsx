@@ -18,6 +18,14 @@ const Title = styled.h1`
   word-break: break-word;
 `;
 
+const Intro = styled.p`
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 16px 8px;
+  text-align: center;
+  color: var(--muted, #6b6b6b);
+`;
+
 const Crumbs = styled.nav`
   padding: 24px 16px 0;
   text-align: center;
@@ -115,6 +123,8 @@ const ProductGallery = ({
   title,
   breadcrumbs = [],
   links = [],
+  brands,
+  intro = '',
   notFound = false,
   notFoundText = 'This page does not exist',
 }) => {
@@ -130,6 +140,9 @@ const ProductGallery = ({
   const category = fixedCategory || searchParams.get('category') || '';
   const subcategory = fixedSubcategory || searchParams.get('subcategory') || '';
   const sort = searchParams.get('sort') || 'newest';
+  // Brand sections fix a list of brands; ?brand= picks one of them.
+  const brandList = brands?.length ? brands.join(',') : '';
+  const brand = brands?.includes(searchParams.get('brand')) ? searchParams.get('brand') : '';
   const inStock = searchParams.get('inStock') === 'true';
 
   const updateParams = (changes, resetPage = true) => {
@@ -157,6 +170,8 @@ const ProductGallery = ({
         department,
         category,
         subcategory,
+        brands: brandList,
+        brand,
         sort,
         inStock: inStock ? 'true' : '',
       });
@@ -166,7 +181,7 @@ const ProductGallery = ({
     } finally {
       setLoading(false);
     }
-  }, [page, q, department, category, subcategory, sort, inStock, notFound]);
+  }, [page, q, department, category, subcategory, brandList, brand, sort, inStock, notFound]);
 
   useEffect(() => {
     fetchProducts();
@@ -184,7 +199,8 @@ const ProductGallery = ({
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const withCount = (label, where) => (counts ? `${label} (${countIn(counts, { department, ...where })})` : label);
+  // Counts cover the whole department, so a brand section leaves them out.
+  const withCount = (label, where) => (counts && !brandList ? `${label} (${countIn(counts, { department, ...where })})` : label);
   const categoryOptions = categoriesOf(department).map((c) => [c.slug, withCount(c.title, { category: c.slug })]);
   const subcategoryOptions = category
     ? subcategoriesOf(department, category).map((sc) => [sc.slug, withCount(sc.title, { category, subcategory: sc.slug })])
@@ -192,7 +208,7 @@ const ProductGallery = ({
 
   const heading = title || (q ? `Results for “${q}”` : category ? categoryTitle(department, category) : 'Products Gallery');
   const hasFilters = Boolean(
-    q || (!fixedDepartment && department) || (!fixedCategory && category) || (!fixedSubcategory && subcategory) || inStock
+    q || (!fixedDepartment && department) || (!fixedCategory && category) || (!fixedSubcategory && subcategory) || brand || inStock
   );
 
   return (
@@ -209,6 +225,7 @@ const ProductGallery = ({
         </Crumbs>
       )}
       <Title>{heading}</Title>
+      {intro && <Intro>{intro}</Intro>}
       {links.length > 0 && (
         <Chips aria-label={`${heading} categories`}>
           {links.map((l) => (
@@ -227,6 +244,15 @@ const ProductGallery = ({
               value={department}
               onChange={(v) => updateParams({ department: v })}
               options={departments.map((d) => [d.slug, d.title])}
+            />
+          )}
+          {brands?.length > 0 && (
+            <FilterSelect
+              label='Brand'
+              allLabel='All brands'
+              value={brand}
+              onChange={(v) => updateParams({ brand: v })}
+              options={brands.map((b) => [b, b])}
             />
           )}
           {!fixedCategory && (
