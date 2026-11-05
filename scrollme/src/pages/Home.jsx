@@ -2,6 +2,7 @@ import Announcement from '../components/Announcement';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
 import Hero from '../components/home/Hero';
+import HomeHighlights from '../components/home/HomeHighlights';
 import HomeCollections from '../components/home/HomeCollections';
 import FeatureSplit from '../components/home/FeatureSplit';
 import FAQ from '../components/FAQ';
@@ -14,6 +15,7 @@ const Home = () => {
       <Navbar />
       <main>
         <Hero />
+        <HomeHighlights />
         <HomeCollections />
         <FeatureSplit />
         <FAQ />

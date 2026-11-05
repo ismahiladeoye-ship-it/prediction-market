@@ -1,4 +1,5 @@
 const Product = require('../models/productModel');
+const Order = require('../models/orderModel');
 const { UNISEX_DEPARTMENTS } = require('../config/taxonomy');
 const { notFound } = require('../utils/httpError');
 
@@ -133,6 +134,61 @@ exports.getProductById = async (req, res) => {
     ...toPublic(product),
     colours: colours.length > 1 ? colours.map((c) => ({ _id: c._id, color: c.color, category: c.category, inStock: c.stock > 0 })) : [],
   });
+};
+
+// Home page highlights, 7 items each, in stock, one per brand so each row is
+// varied. "Hot & trending": the most bought in the last 30 days, topped up with
+// the newest arrivals. "Specials": the biggest savings on the retail price.
+const HIGHLIGHTS = 7;
+const HIDDEN = { __v: 0, sku: 0, weight: 0, dimensions: 0 };
+const onePerBrand = (sort) => [
+  { $sort: sort },
+  { $group: { _id: { $ifNull: ['$brand', '$_id'] }, doc: { $first: '$$ROOT' } } },
+  { $replaceRoot: { newRoot: '$doc' } },
+  { $sort: sort },
+];
+
+exports.highlights = async (req, res) => {
+  const forSale = { isActive: true, stock: { $gt: 0 } };
+  const specials = await Product.aggregate([
+    { $match: { ...forSale, retailPrice: { $gt: 0 } } },
+    { $addFields: { saving: { $divide: [{ $subtract: ['$retailPrice', '$price'] }, '$retailPrice'] } } },
+    { $match: { saving: { $gt: 0 } } },
+    ...onePerBrand({ saving: -1, _id: 1 }),
+    { $limit: HIGHLIGHTS },
+    { $project: { ...HIDDEN, saving: 0 } },
+  ]);
+  const taken = specials.map((p) => p._id);
+
+  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const bought = await Order.aggregate([
+    { $match: { 'payment.status': 'paid', createdAt: { $gte: since } } },
+    { $unwind: '$items' },
+    { $group: { _id: '$items.productId', sold: { $sum: '$items.quantity' } } },
+    { $sort: { sold: -1, _id: 1 } },
+    { $limit: 100 },
+  ]);
+  const rank = new Map(bought.map((b, i) => [String(b._id), i]));
+  const popular = bought.length
+    ? (
+        await Product.find({ ...forSale, _id: { $in: bought.map((b) => b._id), $nin: taken } })
+          .select(HIDDEN)
+          .lean()
+      ).sort((a, b) => rank.get(String(a._id)) - rank.get(String(b._id)))
+    : [];
+  const brands = new Set();
+  const trending = popular.filter((p) => !brands.has(p.brand) && brands.add(p.brand)).slice(0, HIGHLIGHTS);
+  if (trending.length < HIGHLIGHTS) {
+    const newest = await Product.aggregate([
+      { $match: { ...forSale, _id: { $nin: [...taken, ...trending.map((p) => p._id)] }, brand: { $nin: [...brands] } } },
+      ...onePerBrand({ createdAt: -1, _id: -1 }),
+      { $limit: HIGHLIGHTS - trending.length },
+      { $project: HIDDEN },
+    ]);
+    trending.push(...newest);
+  }
+  res.set('Cache-Control', 'public, max-age=300');
+  res.status(200).json({ trending: trending.map(toPublic), specials: specials.map(toPublic) });
 };
 
 exports.buildFilter = buildFilter;

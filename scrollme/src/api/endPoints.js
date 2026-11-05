@@ -23,6 +23,7 @@ export const PRODUCT_ENDPOINTS = {
   ADD_PRODUCT: `${API_BASE_URL}/product/add`,
   LIST_PRODUCTS: `${API_BASE_URL}/product/list`,
   CATEGORIES: `${API_BASE_URL}/product/categories`,
+  HIGHLIGHTS: `${API_BASE_URL}/product/highlights`,
   GET_PRODUCT_BY_ID: (productId) => `${API_BASE_URL}/product/${productId}`,
   UPDATE_PRODUCT: (productId) => `${API_BASE_URL}/product/update/${productId}`,
   DELETE_PRODUCT: (productId) => `${API_BASE_URL}/product/delete/${productId}`,
