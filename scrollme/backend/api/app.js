@@ -10,6 +10,8 @@ const { apiLimiter } = require('./middleware/rateLimit');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const { asyncHandler } = require('./utils/httpError');
 const paymentController = require('./controllers/paymentController');
+const priceSyncController = require('./controllers/priceSyncController');
+const priceSyncRoute = require('./routes/priceSyncRoute');
 const { releaseExpiredOrders } = require('./services/orders');
 const { serveStaticSite } = require('./middleware/staticSite');
 const authRoutes = require('./routes/authRoute');
@@ -96,6 +98,10 @@ const createApp = () => {
 
   // Stripe webhook must receive the raw body, so it is registered before express.json().
   app.post('/api/payments/stripe/webhook', express.raw({ type: 'application/json', limit: '1mb' }), asyncHandler(paymentController.stripeWebhook));
+
+  // Daily price check: key-checked before anything else, and allowed bigger
+  // bodies (a batch of findings). Not rate limited: it is one known job.
+  app.use('/api/price-sync', priceSyncController.requireSyncKey, express.json({ limit: '2mb' }), priceSyncRoute);
 
   app.use('/api', apiLimiter);
   // Spreadsheet uploads are larger than any other request body.

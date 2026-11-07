@@ -269,11 +269,55 @@ const notifyNewMessage = async (msg) => {
   }
 };
 
+// Daily price check summary for the owner: counts, then the changes themselves
+// (the first 80; the rest are counted).
+const PRICE_REPORT_LINES = 80;
+const sendPriceSyncReport = async ({ checked = 0, pagesChecked = 0, unreachable = 0, changes = [], warning = '' }) => {
+  const shop = await getShopDetails();
+  const count = (type) => changes.filter((c) => c.type === type).length;
+  const pounds = (v) => (typeof v === 'number' ? money(Math.round(v * 100), 'gbp') : '');
+  const line = (c) =>
+    c.type === 'price'
+      ? [c.name, `${pounds(c.from)} → ${pounds(c.to)}`]
+      : c.type === 'hidden'
+        ? [c.name, `Hidden (${c.reason})`]
+        : c.type === 'back'
+          ? [c.name, `Back in the shop at ${pounds(c.to)}`]
+          : [c.name, `Sizes now ${c.to}`];
+  const shown = changes.slice(0, PRICE_REPORT_LINES);
+  const content = render({
+    shop,
+    heading: 'Daily price check',
+    blocks: [
+      ...(warning ? [{ text: warning }] : []),
+      {
+        rows: [
+          ['Products checked', String(checked)],
+          ['Supplier pages read', `${pagesChecked}${unreachable ? ` (${unreachable} could not be read; those items were left as they were)` : ''}`],
+          ['Prices changed', String(count('price'))],
+          ['Hidden (sold out or outside your rules)', String(count('hidden'))],
+          ['Back in the shop', String(count('back'))],
+          ['Sizes updated', String(count('sizes'))],
+        ],
+      },
+      ...(shown.length ? [{ rows: shown.map(line) }] : [{ text: 'Nothing needed changing today.' }]),
+      ...(changes.length > shown.length ? [{ text: `…and ${changes.length - shown.length} more changes.` }] : []),
+      { text: 'Prices you set by hand were left alone.' },
+    ],
+    button: { label: 'Open products in admin', url: appUrl('/admin/products') },
+  });
+  await send(
+    { to: await notifyAddress(), subject: `Daily price check: ${count('price')} prices changed, ${count('hidden')} hidden, ${count('back')} back`, ...content },
+    { kind: 'price_sync_report' }
+  );
+};
+
 // Callers do not wait for emails; afterResponse keeps them sending on Vercel.
 module.exports = {
   notifyOrderPaid: (order) => afterResponse(notifyOrderPaid(order)),
   notifyOrderStatus: (order) => afterResponse(notifyOrderStatus(order)),
   notifyNewMessage: (msg) => afterResponse(notifyNewMessage(msg)),
+  sendPriceSyncReport,
   render,
   escapeHtml,
 };

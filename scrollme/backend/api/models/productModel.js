@@ -125,6 +125,18 @@ const ProductSchema = new Schema(
       default: true,
       index: true,
     },
+    // Daily price check (services/priceSync.js). Where this item is sourced:
+    // the supplier's product page, the colour's code on it and, for items sold
+    // by size of bottle, which size. Never sent to shoppers (select: false).
+    sourceUrl: { type: String, trim: true, maxlength: 300, select: false },
+    sourceCode: { type: String, trim: true, maxlength: 40, select: false },
+    sourceSize: { type: String, trim: true, maxlength: 40, select: false },
+    // The owner set this price by hand: the daily check keeps it.
+    priceLocked: { type: Boolean, default: false, select: false },
+    // Hidden by the daily check (sold out, or priced outside the rules) rather
+    // than by the owner; the check brings it back when it is available again.
+    hiddenBySync: { type: Boolean, default: false, select: false },
+    sourceCheckedAt: { type: Date, select: false },
     createdAt: {
       type: Date,
       default: Date.now,
