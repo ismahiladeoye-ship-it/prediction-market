@@ -77,6 +77,9 @@ const schema = z.object({
   R2_PUBLIC_URL: z.string().url().optional(),
   // Protects the daily cron endpoint (Vercel sends it as a Bearer token).
   CRON_SECRET: z.string().optional(),
+  // Protects the daily price check's endpoints (/api/price-sync). The job sends
+  // it as an "X-Price-Sync-Key" header. Disabled unless set (24+ characters).
+  PRICE_SYNC_KEY: z.string().min(24).optional(),
   // Single-service hosting (Railway, Render, Fly, a VPS): this Node process also
   // serves the built storefront, so the whole shop runs from one container at
   // one address. Off by default; nginx (or Vercel) serves the pages otherwise.

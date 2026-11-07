@@ -57,6 +57,8 @@ jobs:
       - run: npm run lint-check
       - run: npm run test:ci
         env: { CI: true }
+      - name: Daily price check script tests
+        run: node --test scripts/price-sync.test.mjs
       - run: npm run build
         env: { CI: true }
       - uses: actions/upload-artifact@v4

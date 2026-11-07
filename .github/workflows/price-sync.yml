@@ -1,0 +1,38 @@
+name: Daily price check
+
+# Every morning: re-reads each product's supplier page and updates the shop's
+# prices, sizes and availability by the owner's rules (scrollme/scripts/price-sync.mjs).
+# Needs the repository secret PRICE_SYNC_KEY (the same value as on Vercel).
+on:
+  schedule:
+    - cron: '41 5 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Only report what would change'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: price-sync
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: scrollme/scripts
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Check prices
+        env:
+          SHOP_URL: https://getitsourced.com
+          PRICE_SYNC_KEY: ${{ secrets.PRICE_SYNC_KEY }}
+        run: node scrollme/scripts/price-sync.mjs ${{ inputs.dry_run && '--dry-run' || '' }}

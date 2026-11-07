@@ -357,7 +357,78 @@ const pageQuery = z.object({
 
 const idParam = (key) => z.object({ [key]: objectId });
 
+// Daily price check (/api/price-sync). Supplier paths are site-relative.
+const syncSku = z.string().trim().min(1).max(64);
+const priceSyncListQuery = z.object({
+  page: z.coerce.number().int().min(1).max(1000).default(1),
+  limit: z.coerce.number().int().min(1).max(1000).default(500),
+});
+const priceSyncSources = z.object({
+  items: z
+    .array(
+      z
+        .object({
+          sku: syncSku,
+          sourceUrl: z
+            .string()
+            .trim()
+            .regex(/^\/[A-Za-z0-9\-._~/%]+$/, 'sourceUrl must be a site path')
+            .max(300)
+            .optional(),
+          sourceCode: z
+            .string()
+            .trim()
+            .regex(/^[A-Za-z0-9-]+$/)
+            .max(40)
+            .optional(),
+          sourceSize: z.string().trim().max(40).optional(),
+          priceLocked: z.boolean().optional(),
+          price: z.number().positive().max(100000).optional(),
+        })
+        .strict()
+    )
+    .min(1)
+    .max(1000),
+});
+const priceSyncApply = z.object({
+  results: z
+    .array(
+      z
+        .object({
+          sku: syncSku,
+          supplierPrice: z.number().positive().max(100000).nullable(),
+          sizes: z.array(z.string().trim().min(1).max(20)).max(40).optional(),
+        })
+        .strict()
+    )
+    .min(1)
+    .max(1000),
+});
+const priceSyncReport = z.object({
+  checked: z.number().int().min(0).max(1000000).default(0),
+  pagesChecked: z.number().int().min(0).max(1000000).default(0),
+  unreachable: z.number().int().min(0).max(1000000).default(0),
+  warning: z.string().max(500).default(''),
+  changes: z
+    .array(
+      z.object({
+        sku: syncSku,
+        name: z.string().max(200),
+        type: z.enum(['price', 'hidden', 'back', 'sizes']),
+        from: z.union([z.number(), z.string().max(300)]).optional(),
+        to: z.union([z.number(), z.string().max(300)]).optional(),
+        reason: z.string().max(200).optional(),
+      })
+    )
+    .max(20000)
+    .default([]),
+});
+
 module.exports = {
+  priceSyncListQuery,
+  priceSyncSources,
+  priceSyncApply,
+  priceSyncReport,
   MAX_PER_ITEM,
   objectId,
   password,

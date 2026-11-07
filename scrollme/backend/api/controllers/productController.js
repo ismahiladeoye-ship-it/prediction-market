@@ -140,7 +140,8 @@ exports.getProductById = async (req, res) => {
 // of item so each row is varied. "Hot & trending": the most bought in the last 30 days, topped up with
 // the newest arrivals. "Specials": the biggest savings on the retail price.
 const HIGHLIGHTS = 7;
-const HIDDEN = { __v: 0, sku: 0, weight: 0, dimensions: 0 };
+// Aggregations ignore select: false, so the sourcing fields are dropped here too.
+const HIDDEN = { __v: 0, sku: 0, weight: 0, dimensions: 0, sourceUrl: 0, sourceCode: 0, sourceSize: 0, priceLocked: 0, hiddenBySync: 0, sourceCheckedAt: 0 };
 // One product per kind of item (subcategory), best first; the caller then keeps
 // one per brand too, so each row mixes trainers, hoodies, perfume and so on.
 const onePerKind = (sort) => [
