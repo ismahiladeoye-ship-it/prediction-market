@@ -1,11 +1,10 @@
 name: Daily price check
 
-# Every morning: re-reads each product's supplier page and updates the shop's
+# Manual backup for the daily price check (the daily run is a scheduled Claude
+# Code task): re-reads each product's supplier page and updates the shop's
 # prices, sizes and availability by the owner's rules (scrollme/scripts/price-sync.mjs).
 # Needs the repository secret PRICE_SYNC_KEY (the same value as on Vercel).
 on:
-  schedule:
-    - cron: '41 5 * * *'
   workflow_dispatch:
     inputs:
       dry_run:
