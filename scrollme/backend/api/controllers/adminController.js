@@ -8,7 +8,7 @@ const { importProducts } = require('../services/productImport');
 const { monthlyOrderBook } = require('../services/orderBook');
 const ContactMessage = require('../models/contactMessageModel');
 const { getShopDetails } = require('../services/shopDetails');
-const { getConfig } = require('../config/env');
+const { getConfig, isLiveStripeKey } = require('../config/env');
 const { fromCents } = require('../utils/money');
 const { notFound, conflict } = require('../utils/httpError');
 const logger = require('../utils/logger');
@@ -150,7 +150,7 @@ exports.stats = async (req, res) => {
       emailSending: config.emailConfigured,
       // On Vercel, photos need a connected Blob store.
       photoStorage: Boolean(config.r2) || Boolean(config.BLOB_READ_WRITE_TOKEN) || !config.onVercel,
-      payments: config.PAYMENT_PROVIDER === 'mock' ? 'mock' : String(config.STRIPE_SECRET_KEY || '').startsWith('sk_live_') ? 'live' : 'test',
+      payments: config.PAYMENT_PROVIDER === 'mock' ? 'mock' : isLiveStripeKey(config.STRIPE_SECRET_KEY) ? 'live' : 'test',
     },
   });
 };
