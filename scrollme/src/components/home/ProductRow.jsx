@@ -8,6 +8,10 @@ import { listProductsAPI } from '../../services/products/productService';
 import { getErrorMessage } from '../../api/client';
 
 const DESKTOP = '@media (min-width: 900px)';
+// Rotating rows move on one product at a time, like the banner's slides.
+export const ROTATE_MS = 5000;
+// After a swipe, wait a little before moving on by itself again.
+const RESUME_AFTER_TOUCH_MS = 8000;
 
 const Head = styled.div`
   display: flex;
@@ -164,13 +168,18 @@ const Progress = styled.div`
 // A swipeable row of products (e.g. one collection's best-rated items in stock),
 // with optional shortcut links to categories. Renders nothing when empty.
 // `items` shows products already fetched (the home page highlights) instead of
-// fetching by `params`; `banner` sets the row on a coloured band.
-const ProductRow = ({ id, title, subtitle, params, items, viewAllTo, shortcuts = [], banner = false }) => {
+// fetching by `params`; `banner` sets the row on a coloured band; `rotate`
+// moves the row on by one product every few seconds and back to the start at
+// the end, pausing while the shopper hovers, focuses or touches it, while the
+// tab is hidden, and never for people who ask for reduced motion.
+const ProductRow = ({ id, title, subtitle, params, items, viewAllTo, shortcuts = [], banner = false, rotate = false }) => {
   const [products, setProducts] = useState(items || []);
   const [loading, setLoading] = useState(!items);
   const [error, setError] = useState(null);
   const [bar, setBar] = useState({ left: 0, width: 1 });
+  const [paused, setPaused] = useState(false);
   const track = useRef(null);
+  const resumeTimer = useRef(null);
 
   const query = JSON.stringify(params);
 
@@ -214,6 +223,42 @@ const ProductRow = ({ id, title, subtitle, params, items, viewAllTo, shortcuts =
     return () => window.removeEventListener('resize', measure);
   }, [measure, products]);
 
+  useEffect(() => {
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (!rotate || paused || reduced || loading || error || products.length < 2) return undefined;
+    const timer = setInterval(() => {
+      const el = track.current;
+      if (!el || document.hidden || !el.scrollTo || el.scrollWidth <= el.clientWidth + 1) return;
+      const first = el.firstElementChild;
+      const gap = parseFloat(window.getComputedStyle(el).columnGap) || 0;
+      const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
+      el.scrollTo({ left: atEnd ? 0 : el.scrollLeft + (first ? first.offsetWidth : 0) + gap, behavior: 'smooth' });
+    }, ROTATE_MS);
+    return () => clearInterval(timer);
+  }, [rotate, paused, loading, error, products.length]);
+
+  useEffect(() => () => clearTimeout(resumeTimer.current), []);
+
+  const hold = () => {
+    clearTimeout(resumeTimer.current);
+    setPaused(true);
+  };
+  const release = (after = 0) => {
+    clearTimeout(resumeTimer.current);
+    if (after) resumeTimer.current = setTimeout(() => setPaused(false), after);
+    else setPaused(false);
+  };
+  const pauseHandlers = rotate
+    ? {
+        onMouseEnter: hold,
+        onMouseLeave: () => release(),
+        onFocus: hold,
+        onBlur: () => release(),
+        onTouchStart: hold,
+        onTouchEnd: () => release(RESUME_AFTER_TOUCH_MS),
+      }
+    : {};
+
   const scrollBy = (dir) => track.current?.scrollBy({ left: dir * track.current.clientWidth, behavior: 'smooth' });
   const atStart = bar.left <= 0.001;
   const atEnd = bar.left + bar.width >= 0.999;
@@ -221,7 +266,7 @@ const ProductRow = ({ id, title, subtitle, params, items, viewAllTo, shortcuts =
   if (!loading && !error && !products.length) return null;
 
   return (
-    <Band as='section' aria-labelledby={id} $banner={banner}>
+    <Band as='section' aria-labelledby={id} $banner={banner} {...pauseHandlers}>
       <Head $banner={banner}>
         <div>
           <h2 id={id}>{title}</h2>
@@ -268,7 +313,7 @@ const ProductRow = ({ id, title, subtitle, params, items, viewAllTo, shortcuts =
       )}
       {!loading && !error && (
         <>
-          <Track ref={track} onScroll={measure}>
+          <Track ref={track} onScroll={measure} data-testid={`${id}-track`}>
             {products.map((product) => (
               <ProductTile product={product} key={product._id} />
             ))}

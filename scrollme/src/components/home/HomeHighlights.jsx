@@ -3,8 +3,9 @@ import ProductRow from './ProductRow';
 import { getHighlightsAPI } from '../../services/products/productService';
 
 // "Hot & trending" (most bought lately, then the newest arrivals) and
-// "Specials" (biggest savings), 7 items each, on coloured bands near the top
-// of the home page. Hidden if there is nothing to show or the request fails.
+// "Specials" (the owner's picks, then the biggest savings), 7 items each, on
+// coloured bands near the top of the home page. Both rotate like the banner.
+// Hidden if there is nothing to show or the request fails.
 const HomeHighlights = () => {
   const [rows, setRows] = useState(null);
 
@@ -29,10 +30,11 @@ const HomeHighlights = () => {
           items={rows.trending}
           viewAllTo='/products'
           banner
+          rotate
         />
       )}
       {rows.specials?.length > 0 && (
-        <ProductRow id='row-specials' title='Specials' subtitle='Our biggest savings on the retail price' items={rows.specials} banner />
+        <ProductRow id='row-specials' title='Specials' subtitle='Our biggest savings on the retail price' items={rows.specials} banner rotate />
       )}
     </>
   );
