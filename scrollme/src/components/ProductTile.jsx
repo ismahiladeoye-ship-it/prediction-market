@@ -115,7 +115,8 @@ const Save = styled.span`
 // Product card used on the home page and in listings.
 const ProductTile = ({ product }) => {
   const dispatch = useDispatch();
-  const saving = retailSaving(product.price, product.retailPrice);
+  const onRequest = Boolean(product.priceOnRequest);
+  const saving = onRequest ? null : retailSaving(product.price, product.retailPrice);
   const inWishlist = useSelector((state) => state.wishlist.items.some((w) => w._id === product._id));
   const href = `/${product.category || 'product'}/${product._id}`;
   const soldOut = product.inStock === false;
@@ -138,7 +139,7 @@ const ProductTile = ({ product }) => {
       {product.brand && <Brand>{product.brand}</Brand>}
       <Name to={href}>{product.name}</Name>
       <Price>
-        {formatPrice(product.price)}
+        {onRequest ? 'Price on request' : formatPrice(product.price)}
         {saving && (
           <>
             {' '}

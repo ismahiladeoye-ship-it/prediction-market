@@ -30,6 +30,9 @@ const ProductSchema = new Schema(
       type: Number,
       min: 0,
     },
+    // No price shown and no "Add to cart": shoppers ask for a price through the
+    // contact form and the owner replies. These can never go in a bag.
+    priceOnRequest: { type: Boolean, default: false },
     // Men, women, electronics or unisex (shown under Men and Women). See config/taxonomy.json.
     department: {
       type: String,

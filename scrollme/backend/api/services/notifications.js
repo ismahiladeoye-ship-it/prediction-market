@@ -236,16 +236,17 @@ const notifyNewMessage = async (msg) => {
   try {
     const shop = await getShopDetails();
     const sourcing = msg.kind === 'sourcing';
+    const priceAsk = msg.kind === 'price';
     const content = render({
       shop,
-      heading: sourcing ? `Sourcing request from ${msg.name}` : `Message from ${msg.name}`,
+      heading: priceAsk ? `Price request from ${msg.name}` : sourcing ? `Sourcing request from ${msg.name}` : `Message from ${msg.name}`,
       blocks: [
         {
           rows: [
             ['From', `${msg.name} <${msg.email}>`],
             ...(msg.phone ? [['Phone', msg.phone]] : []),
             ...(msg.orderNumber ? [['Order', msg.orderNumber]] : []),
-            ...(msg.item ? [['Looking for', msg.item]] : []),
+            ...(msg.item ? [[priceAsk ? 'Price wanted for' : 'Looking for', msg.item]] : []),
             ...(msg.size ? [['Size', msg.size]] : []),
             ...(msg.budget ? [['Budget', msg.budget]] : []),
           ],
@@ -259,7 +260,7 @@ const notifyNewMessage = async (msg) => {
       {
         to: await notifyAddress(),
         replyTo: msg.email,
-        subject: sourcing ? `New sourcing request: ${msg.item}` : `New message from ${msg.name}`,
+        subject: priceAsk ? `Price request: ${msg.item}` : sourcing ? `New sourcing request: ${msg.item}` : `New message from ${msg.name}`,
         ...content,
       },
       { kind: 'new_message_alert', messageId: String(msg._id) }

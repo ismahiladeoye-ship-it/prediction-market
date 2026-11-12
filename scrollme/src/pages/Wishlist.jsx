@@ -139,9 +139,13 @@ const Wishlist = () => {
                 <Image src={imageSrc(product?.imageUrl, product)} alt={product?.name} onError={fallbackTo(product)} />
               </Link>
               <Title>{product?.name}</Title>
-              <Price>{formatPrice(product?.price)}</Price>
+              <Price>{product?.priceOnRequest ? 'Price on request' : formatPrice(product?.price)}</Price>
               {product?.isActive === false || product?.inStock === false ? (
                 <Unavailable>Currently unavailable</Unavailable>
+              ) : product?.priceOnRequest ? (
+                <MoveToBagButton onClick={() => navigate(`/contact-us?type=price&item=${encodeURIComponent(product.name)}`)}>
+                  Request a price
+                </MoveToBagButton>
               ) : (
                 <MoveToBagButton onClick={() => handleAddToCart(product)}>
                   {product?.sizes?.length ? 'Choose Size' : 'Move to Cart'}

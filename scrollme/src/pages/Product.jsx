@@ -63,7 +63,13 @@ const Product = () => {
   }, [productId]);
 
   const outOfStock = product?.inStock === false;
-  const saving = product ? retailSaving(product.price, product.retailPrice) : null;
+  // Price-on-request items: no price and no bag; shoppers ask for a price.
+  const onRequest = Boolean(product?.priceOnRequest);
+  const saving = product && !onRequest ? retailSaving(product.price, product.retailPrice) : null;
+  const requestPrice = () => {
+    const item = [product.name, size && `size ${size}`].filter(Boolean).join(', ');
+    navigate(`/contact-us?type=price&item=${encodeURIComponent(item)}`);
+  };
   const photos = product?.images?.length ? product.images : [product?.imageUrl];
   const mainPhoto = photos[photo] || photos[0];
   const lookAlike = product ? illustrativePhoto(mainPhoto, product) : null;
@@ -283,7 +289,9 @@ const Product = () => {
             <ProductReview>{product?.ratings?.numberOfReviews || 0} reviews</ProductReview>
           </ProductRating>
           <Desc>{product?.description}</Desc>
-          {saving ? (
+          {onRequest ? (
+            <Price>Price on request</Price>
+          ) : saving ? (
             <PriceBlock>
               <RetailLine>
                 Retail price <s>{formatPrice(saving.retail)}</s>
@@ -354,14 +362,22 @@ const Product = () => {
             )}
           </FilterContainer>
           <AddContainer>
-            <ActionButtons>
-              <Button $primary onClick={handleAddToCart} disabled={outOfStock || adding}>
-                {outOfStock ? 'OUT OF STOCK' : 'ADD TO CART'}
-              </Button>
-              <Button onClick={handleBuyNow} disabled={outOfStock || adding}>
-                BUY NOW
-              </Button>
-            </ActionButtons>
+            {onRequest ? (
+              <ActionButtons>
+                <Button $primary onClick={requestPrice} disabled={outOfStock}>
+                  {outOfStock ? 'OUT OF STOCK' : 'REQUEST A PRICE'}
+                </Button>
+              </ActionButtons>
+            ) : (
+              <ActionButtons>
+                <Button $primary onClick={handleAddToCart} disabled={outOfStock || adding}>
+                  {outOfStock ? 'OUT OF STOCK' : 'ADD TO CART'}
+                </Button>
+                <Button onClick={handleBuyNow} disabled={outOfStock || adding}>
+                  BUY NOW
+                </Button>
+              </ActionButtons>
+            )}
             {storeConfig.perks?.length > 0 && (
               <Perks>
                 {storeConfig.perks.map(({ icon, text }) => {

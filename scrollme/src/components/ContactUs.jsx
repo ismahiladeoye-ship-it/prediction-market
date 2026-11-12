@@ -165,16 +165,19 @@ const ContactUs = () => {
   const shop = useShopDetails();
   const user = useSelector((state) => state.user);
   const [params] = useSearchParams();
+  // "?type=price&item=…" comes from a price-on-request product's button.
+  const askedKind = ['sourcing', 'price'].includes(params.get('type')) ? params.get('type') : 'general';
+  const askedItem = askedKind === 'price' ? (params.get('item') || '').slice(0, 200) : '';
   const blank = () => ({
-    kind: params.get('type') === 'sourcing' ? 'sourcing' : 'general',
+    kind: askedKind,
     name: user?.isAuthenticated ? [user.firstName, user.lastName].filter(Boolean).join(' ') : '',
     email: user?.isAuthenticated ? user.email || '' : '',
     phone: '',
     orderNumber: '',
-    item: '',
+    item: askedItem,
     size: '',
     budget: '',
-    message: '',
+    message: askedItem ? `Hi, please could you send me a price for the ${askedItem}.` : '',
     website: '',
   });
   const [form, setForm] = useState(blank);
@@ -182,6 +185,7 @@ const ContactUs = () => {
   const [error, setError] = useState('');
   const [sent, setSent] = useState('');
   const sourcing = form.kind === 'sourcing';
+  const priceAsk = form.kind === 'price';
 
   const change = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
@@ -191,7 +195,11 @@ const ContactUs = () => {
     setError('');
     try {
       const { kind, name, email, phone, message, website } = form;
-      const extra = sourcing ? { item: form.item, size: form.size, budget: form.budget } : { orderNumber: form.orderNumber };
+      const extra = sourcing
+        ? { item: form.item, size: form.size, budget: form.budget }
+        : priceAsk
+          ? { item: form.item }
+          : { orderNumber: form.orderNumber };
       setSent((await sendContactMessageAPI({ kind, name, email, phone, message, website, ...extra })).message);
     } catch (err) {
       setError(getErrorMessage(err, 'Your message could not be sent. Please try again.'));
@@ -235,6 +243,12 @@ const ContactUs = () => {
       </Intro>
 
       <Form onSubmit={submit}>
+        {priceAsk ? (
+          <Field>
+            Item you&apos;d like a price for
+            <input name='item' value={form.item} onChange={change} required maxLength={200} />
+          </Field>
+        ) : (
         <Kinds role='radiogroup' aria-label='What can we help with?'>
           <label>
             <input type='radio' name='kind' value='general' checked={!sourcing} onChange={change} />
@@ -251,6 +265,7 @@ const ContactUs = () => {
             </span>
           </label>
         </Kinds>
+        )}
 
         <Row>
           <Field>
@@ -291,7 +306,7 @@ const ContactUs = () => {
               </Field>
             </Row>
           </>
-        ) : (
+        ) : priceAsk ? null : (
           <Field>
             <span>
               Order number <span className='optional'>(if it&apos;s about an order)</span>

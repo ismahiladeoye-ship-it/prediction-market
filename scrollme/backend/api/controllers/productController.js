@@ -7,8 +7,9 @@ const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const SORTS = {
   newest: { createdAt: -1, _id: -1 },
-  price_asc: { price: 1, _id: 1 },
-  price_desc: { price: -1, _id: -1 },
+  // Price-on-request items have no real price, so they go last either way.
+  price_asc: { priceOnRequest: 1, price: 1, _id: 1 },
+  price_desc: { priceOnRequest: 1, price: -1, _id: -1 },
   rating: { 'ratings.averageRating': -1, 'ratings.numberOfReviews': -1, _id: 1 },
   name: { name: 1, _id: 1 },
 };
@@ -38,6 +39,7 @@ const buildFilter = (query, { includeInactive = false } = {}) => {
     if (names.length) filter.brand = { $in: names.map((b) => new RegExp(`^${escapeRegex(b)}$`, 'i')) };
   }
   if (query.minPrice !== undefined || query.maxPrice !== undefined) {
+    filter.priceOnRequest = { $ne: true };
     filter.price = {};
     if (query.minPrice !== undefined) filter.price.$gte = query.minPrice;
     if (query.maxPrice !== undefined) filter.price.$lte = query.maxPrice;
@@ -164,7 +166,7 @@ exports.highlights = async (req, res) => {
     .select(HIDDEN)
     .lean();
   const deals = await Product.aggregate([
-    { $match: { ...forSale, retailPrice: { $gt: 0 }, _id: { $nin: pinned.map((p) => p._id) } } },
+    { $match: { ...forSale, priceOnRequest: { $ne: true }, retailPrice: { $gt: 0 }, _id: { $nin: pinned.map((p) => p._id) } } },
     { $addFields: { saving: { $divide: [{ $subtract: ['$retailPrice', '$price'] }, '$retailPrice'] } } },
     { $match: { saving: { $gt: 0 } } },
     ...onePerKind({ saving: -1, _id: 1 }),

@@ -11,6 +11,22 @@ describe('cart', () => {
     expect((await request(ctx.app).post('/api/cart/add').send({})).status).toBe(401);
   });
 
+  it('refuses price-on-request items, and blocks checkout if one is already in the bag', async () => {
+    const product = await createProduct({ price: 0, priceOnRequest: true });
+    const { agent } = await signedInAgent(ctx.app);
+    const res = await agent.post('/api/cart/add').send({ productId: product.id, quantity: 1, size: 'M' });
+    expect(res.status).toBe(409);
+    expect(res.body.message).toMatch(/price on request/);
+    // Switched to price on request after it was added.
+    const other = await createProduct({ price: 30 });
+    await agent.post('/api/cart/add').send({ productId: other.id, quantity: 1, size: 'M' });
+    other.priceOnRequest = true;
+    await other.save();
+    const view = await agent.get('/api/cart/view');
+    expect(view.body.items).toEqual([]);
+    expect(view.body.issues[0].message).toMatch(/price on request/);
+  });
+
   it('returns an empty cart instead of 404', async () => {
     const { agent } = await signedInAgent(ctx.app);
     const res = await agent.get('/api/cart/view');

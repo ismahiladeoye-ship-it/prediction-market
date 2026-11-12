@@ -26,13 +26,16 @@ const Detail = ({ label, value }) =>
 
 const MessageCard = ({ msg, shopName, onStatus, busy }) => {
   const sourcing = msg.kind === 'sourcing';
-  const subject = sourcing ? `Re: your request for ${msg.item}` : `Re: your message to ${shopName}`;
+  const priceAsk = msg.kind === 'price';
+  const subject = priceAsk ? `Price for ${msg.item}` : sourcing ? `Re: your request for ${msg.item}` : `Re: your message to ${shopName}`;
   return (
     <Box as='article' aria-label={`Message from ${msg.name}`} bg='white' borderRadius='lg' boxShadow='0 2px 10px rgba(0,0,0,0.08)' p={5}>
       <Flex justify='space-between' gap={3} wrap='wrap' mb={3}>
         <Box>
           <HStack spacing={2} mb={1}>
-            <Badge colorScheme={sourcing ? 'purple' : 'blue'}>{sourcing ? 'Sourcing request' : 'Question'}</Badge>
+            <Badge colorScheme={priceAsk ? 'green' : sourcing ? 'purple' : 'blue'}>
+              {priceAsk ? 'Price request' : sourcing ? 'Sourcing request' : 'Question'}
+            </Badge>
             <Badge colorScheme={STATUS_COLORS[msg.status]}>{msg.status}</Badge>
           </HStack>
           <Text fontWeight={700}>{msg.name}</Text>

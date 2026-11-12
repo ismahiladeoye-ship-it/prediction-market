@@ -13,6 +13,7 @@ const toItem = (product) => ({
   name: product.name,
   imageUrl: product.imageUrl,
   price: product.price,
+  priceOnRequest: Boolean(product.priceOnRequest),
   color: product.color,
   category: product.category,
   sizes: product.sizes || [],
