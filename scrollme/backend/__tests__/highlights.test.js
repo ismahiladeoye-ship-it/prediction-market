@@ -33,6 +33,20 @@ describe('home page highlights', () => {
     expect(res.body.specials[0]).not.toHaveProperty('sku');
   });
 
+  it('leads specials with products tagged "special", then fills with the biggest savings', async () => {
+    await createProduct({ name: 'Sony PlayStation 5 Console', brand: 'Sony', subcategory: 'consoles', price: 380, retailPrice: 569, tags: ['special'] });
+    await createProduct({ name: 'Alo Tracksuit Set – Black', brand: 'Alo Yoga', subcategory: 'tracksuits', price: 120, tags: ['Special'] });
+    await createProduct({ name: 'Tagged But Sold Out', brand: 'Puma', price: 10, retailPrice: 100, stock: 0, tags: ['special'] });
+    await createProduct({ name: 'Big Saving', brand: 'Lacoste', price: 20, retailPrice: 60 });
+    await createProduct({ name: 'Other Sony Deal', brand: 'Sony', subcategory: 'headphones', price: 10, retailPrice: 100 });
+    const res = await request(ctx.app).get('/api/product/highlights');
+    expect(res.status).toBe(200);
+    const names = res.body.specials.map((p) => p.name);
+    expect(names.slice(0, 2).sort()).toEqual(['Alo Tracksuit Set – Black', 'Sony PlayStation 5 Console']);
+    expect(names.slice(2)).toEqual(['Big Saving']);
+    expect(res.body.trending.map((p) => p.name)).not.toContain('Sony PlayStation 5 Console');
+  });
+
   it('puts the most bought items first in hot & trending, then the newest, without repeating specials', async () => {
     const user = await createUser();
     const popular = await createProduct({

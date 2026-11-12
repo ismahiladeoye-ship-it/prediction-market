@@ -152,16 +152,26 @@ const onePerKind = (sort) => [
 ];
 const brandOnce = (list, brands = new Set()) => list.filter((p) => !brands.has(p.brand) && brands.add(p.brand));
 
+// Products the owner tags "special" (the "tags" column of a bulk upload) lead
+// the Specials row; the biggest savings fill the rest.
+const SPECIAL_TAG = /^specials?$/i;
+
 exports.highlights = async (req, res) => {
   const forSale = { isActive: true, stock: { $gt: 0 } };
-  const specials = await Product.aggregate([
-    { $match: { ...forSale, retailPrice: { $gt: 0 } } },
+  const pinned = await Product.find({ ...forSale, tags: SPECIAL_TAG })
+    .sort({ updatedAt: -1, _id: 1 })
+    .limit(HIGHLIGHTS)
+    .select(HIDDEN)
+    .lean();
+  const deals = await Product.aggregate([
+    { $match: { ...forSale, retailPrice: { $gt: 0 }, _id: { $nin: pinned.map((p) => p._id) } } },
     { $addFields: { saving: { $divide: [{ $subtract: ['$retailPrice', '$price'] }, '$retailPrice'] } } },
     { $match: { saving: { $gt: 0 } } },
     ...onePerKind({ saving: -1, _id: 1 }),
     { $limit: 40 },
     { $project: { ...HIDDEN, saving: 0 } },
-  ]).then((list) => brandOnce(list).slice(0, HIGHLIGHTS));
+  ]).then((list) => brandOnce(list, new Set(pinned.map((p) => p.brand))).slice(0, HIGHLIGHTS - pinned.length));
+  const specials = [...pinned, ...deals];
   const taken = specials.map((p) => p._id);
 
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
