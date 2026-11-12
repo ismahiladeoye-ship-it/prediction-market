@@ -1,7 +1,7 @@
 const Order = require('../models/orderModel');
 const { stripeProvider } = require('../services/payments');
 const { markOrderPaid } = require('../services/orders');
-const { getConfig } = require('../config/env');
+const { getConfig, isLiveStripeKey } = require('../config/env');
 const { serializeOrder } = require('./orderController');
 const { notFound, forbidden, conflict, badRequest } = require('../utils/httpError');
 const logger = require('../utils/logger');
@@ -38,7 +38,7 @@ exports.stripeWebhook = async (req, res) => {
 // Which payment methods the storefront should offer.
 exports.listMethods = async (req, res) => {
   const config = getConfig();
-  const testMode = config.PAYMENT_PROVIDER === 'mock' || !String(config.STRIPE_SECRET_KEY || '').startsWith('sk_live_');
+  const testMode = config.PAYMENT_PROVIDER === 'mock' || !isLiveStripeKey(config.STRIPE_SECRET_KEY);
   res.json({ provider: config.PAYMENT_PROVIDER, testMode, methods: config.paymentMethods });
 };
 

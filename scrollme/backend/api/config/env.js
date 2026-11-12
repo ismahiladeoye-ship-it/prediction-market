@@ -89,6 +89,8 @@ const schema = z.object({
 });
 
 const PAYMENT_METHOD_IDS = ['apple_pay', 'google_pay', 'card', 'paypal', 'klarna'];
+// Full secret keys (sk_live_) and restricted keys (rk_live_) both take real payments.
+const isLiveStripeKey = (key) => /^(sk|rk)_live_/.test(String(key || ''));
 
 const WEAK_SECRETS = new Set(['someone', 'SCROLLME_SECRET', 'changeme', 'secret']);
 
@@ -136,7 +138,7 @@ function loadConfig(source = process.env) {
     }
   }
   if (env.PAYMENT_PROVIDER === 'stripe' && env.STRIPE_SECRET_KEY) {
-    if (env.STRIPE_SECRET_KEY.startsWith('sk_live_') && !env.STRIPE_ALLOW_LIVE) {
+    if (isLiveStripeKey(env.STRIPE_SECRET_KEY) && !env.STRIPE_ALLOW_LIVE) {
       throw new Error('Invalid configuration:\n  - STRIPE_SECRET_KEY is a live key; set STRIPE_ALLOW_LIVE=true only once test-mode checkout is verified');
     }
   }
@@ -189,4 +191,4 @@ const resetConfig = () => {
   cached = undefined;
 };
 
-module.exports = { loadConfig, getConfig, resetConfig, PAYMENT_METHOD_IDS };
+module.exports = { loadConfig, getConfig, resetConfig, PAYMENT_METHOD_IDS, isLiveStripeKey };

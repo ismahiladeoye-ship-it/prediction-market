@@ -1,4 +1,4 @@
-const { loadConfig } = require('../api/config/env');
+const { loadConfig, isLiveStripeKey } = require('../api/config/env');
 
 const base = { MONGODB_URI: 'mongodb://x/y', JWT_SECRET: 'a', REFRESH_TOKEN_SECRET: 'b' };
 const strong = (c) => c.repeat(40);
@@ -43,6 +43,14 @@ describe('configuration', () => {
     expect(() => loadConfig({ ...base, STRIPE_SECRET_KEY: 'sk_live_123' })).toThrow(/live key/);
     expect(loadConfig({ ...base, STRIPE_SECRET_KEY: 'sk_live_123', STRIPE_ALLOW_LIVE: 'true' }).STRIPE_ALLOW_LIVE).toBe(true);
     expect(loadConfig({ ...base, STRIPE_SECRET_KEY: 'sk_test_123' }).STRIPE_SECRET_KEY).toBe('sk_test_123');
+    // Restricted live keys take real payments too.
+    expect(() => loadConfig({ ...base, STRIPE_SECRET_KEY: 'rk_live_123' })).toThrow(/live key/);
+    expect(loadConfig({ ...base, STRIPE_SECRET_KEY: 'rk_live_123', STRIPE_ALLOW_LIVE: 'true' }).STRIPE_ALLOW_LIVE).toBe(true);
+  });
+
+  it('treats full and restricted live Stripe keys as live', () => {
+    expect(['sk_live_1', 'rk_live_1'].map(isLiveStripeKey)).toEqual([true, true]);
+    expect(['sk_test_1', 'rk_test_1', '', undefined, 'live_sk_1'].map(isLiveStripeKey)).toEqual([false, false, false, false, false]);
   });
 
   it('turns on email (and sign-up codes) with a Resend API key or an SMTP address', () => {
