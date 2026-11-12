@@ -43,6 +43,7 @@ const EMPTY = {
   sizes: '',
   description: '',
   isActive: true,
+  priceOnRequest: false,
 };
 
 const toForm = (p) =>
@@ -63,6 +64,7 @@ const toForm = (p) =>
         sizes: (p.sizes || []).join(', '),
         description: p.description || '',
         isActive: p.isActive !== false,
+        priceOnRequest: Boolean(p.priceOnRequest),
       }
     : EMPTY;
 
@@ -72,7 +74,9 @@ const validate = (f) => {
   if (f.name.trim().length < 2) e.name = 'Name is required';
   if (!f.department) e.department = 'Choose Men, Women or Unisex';
   if (!f.category) e.category = 'Choose a category';
-  if (f.price === '' || Number(f.price) < 0 || Number.isNaN(Number(f.price))) e.price = 'Enter a price of 0 or more';
+  // Price-on-request items may leave the price empty.
+  if (!(f.priceOnRequest && f.price === '') && (f.price === '' || Number(f.price) < 0 || Number.isNaN(Number(f.price))))
+    e.price = 'Enter a price of 0 or more';
   if (f.retailPrice !== '' && (Number(f.retailPrice) < 0 || Number.isNaN(Number(f.retailPrice))))
     e.retailPrice = 'Enter a retail price of 0 or more, or leave it empty';
   if (f.stock === '' || !Number.isInteger(Number(f.stock)) || Number(f.stock) < 0) e.stock = 'Enter a whole number of 0 or more';
@@ -136,7 +140,8 @@ const ProductFormModal = ({ isOpen, onClose, product, onSaved }) => {
       department: form.department,
       category: form.category,
       subcategory: form.subcategory,
-      price: Number(form.price),
+      price: form.price === '' ? 0 : Number(form.price),
+      priceOnRequest: form.priceOnRequest,
       retailPrice: form.retailPrice === '' ? null : Number(form.retailPrice),
       stock: Number(form.stock),
       images: form.images,
@@ -313,6 +318,9 @@ const ProductFormModal = ({ isOpen, onClose, product, onSaved }) => {
             </FormControl>
             <Checkbox colorScheme='brand' isChecked={form.isActive} onChange={set('isActive')}>
               Visible in the store
+            </Checkbox>
+            <Checkbox colorScheme='brand' isChecked={form.priceOnRequest} onChange={set('priceOnRequest')}>
+              Price on request (no price shown; shoppers ask you for one)
             </Checkbox>
           </SimpleGrid>
         </ModalBody>

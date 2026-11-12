@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 // ("find me this item"). Read and answered in Admin → Messages.
 const contactMessageSchema = new mongoose.Schema(
   {
-    kind: { type: String, enum: ['general', 'sourcing'], default: 'general', index: true },
+    kind: { type: String, enum: ['general', 'sourcing', 'price'], default: 'general', index: true },
     name: { type: String, required: true },
     email: { type: String, required: true, lowercase: true },
     phone: String,

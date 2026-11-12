@@ -94,6 +94,19 @@ describe('contact form', () => {
     expect(await ContactMessage.findOne({ kind: 'sourcing' }).lean()).toMatchObject({ item: 'Essentials hoodie in black', size: 'L', budget: '£120' });
   });
 
+  it('takes price requests for price-on-request items and tells the shop which item', async () => {
+    await (await adminAgent()).put('/api/admin/business').send(SHOP);
+    const ask = { ...question, kind: 'price', message: 'Hi, please could you send me a price for this.' };
+    expect((await request(ctx.app).post('/api/contact').send(ask)).status).toBe(400);
+    const res = await request(ctx.app)
+      .post('/api/contact')
+      .send({ ...ask, item: 'Louis Vuitton Toiletry Pouch' });
+    expect(res.status).toBe(201);
+    expect(await ContactMessage.findOne({ kind: 'price' }).lean()).toMatchObject({ item: 'Louis Vuitton Toiletry Pouch' });
+    await waitFor(() => mailSpy.mock.calls.length === 1);
+    expect(mailSpy.mock.calls[0][0]).toMatchObject({ replyTo: 'ada@example.com', subject: 'Price request: Louis Vuitton Toiletry Pouch' });
+  });
+
   it('quietly drops bots that fill in the hidden field', async () => {
     const res = await request(ctx.app)
       .post('/api/contact')

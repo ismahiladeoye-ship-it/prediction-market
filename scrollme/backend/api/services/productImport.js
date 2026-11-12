@@ -33,6 +33,8 @@ const COLUMNS = {
   images: 'images',
   photos: 'images',
   active: 'isActive',
+  price_on_request: 'priceOnRequest',
+  poa: 'priceOnRequest',
 };
 
 const list = (value) =>
@@ -119,6 +121,9 @@ const toProduct = (record, { photos, dryRun, isUpdate }) => {
   if (has(record, 'description')) raw.description = record.description;
   if (has(record, 'tags')) raw.tags = list(record.tags);
   if (has(record, 'isActive') && record.isActive !== '') raw.isActive = toBoolean(record.isActive);
+  if (has(record, 'priceOnRequest') && record.priceOnRequest !== '') raw.priceOnRequest = toBoolean(record.priceOnRequest);
+  // Price-on-request items need no price.
+  if (raw.priceOnRequest === true && (raw.price === undefined || Number.isNaN(raw.price) || record.price === '')) raw.price = 0;
   for (const key of ['price', 'stock', 'retailPrice']) {
     if (Number.isNaN(raw[key])) {
       errors.push(`${key}: "${record[key]}" is not a number`);
@@ -128,6 +133,10 @@ const toProduct = (record, { photos, dryRun, isUpdate }) => {
   if (typeof raw.isActive === 'string') {
     errors.push(`active: use yes or no (got "${raw.isActive}")`);
     delete raw.isActive;
+  }
+  if (typeof raw.priceOnRequest === 'string') {
+    errors.push(`price_on_request: use yes or no (got "${raw.priceOnRequest}")`);
+    delete raw.priceOnRequest;
   }
   // Blank optional text cells are simply left out on new products.
   for (const key of ['brand', 'subcategory', 'color', 'material', 'description']) if (raw[key] === '' && !isUpdate) delete raw[key];

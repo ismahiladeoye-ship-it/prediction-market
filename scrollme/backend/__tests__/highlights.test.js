@@ -47,6 +47,16 @@ describe('home page highlights', () => {
     expect(res.body.trending.map((p) => p.name)).not.toContain('Sony PlayStation 5 Console');
   });
 
+  it('never counts a price-on-request item as a deal, but shows it when pinned', async () => {
+    await createProduct({ name: 'Ask For Price', brand: 'Louis Vuitton', price: 0, retailPrice: 500, priceOnRequest: true });
+    await createProduct({ name: 'Real Deal', brand: 'Lacoste', price: 20, retailPrice: 60 });
+    let res = await request(ctx.app).get('/api/product/highlights');
+    expect(res.body.specials.map((p) => p.name)).toEqual(['Real Deal']);
+    await createProduct({ name: 'Pinned Ask', brand: 'Goyard', price: 0, priceOnRequest: true, tags: ['special'] });
+    res = await request(ctx.app).get('/api/product/highlights');
+    expect(res.body.specials[0]).toMatchObject({ name: 'Pinned Ask', priceOnRequest: true });
+  });
+
   it('puts the most bought items first in hot & trending, then the newest, without repeating specials', async () => {
     const user = await createUser();
     const popular = await createProduct({

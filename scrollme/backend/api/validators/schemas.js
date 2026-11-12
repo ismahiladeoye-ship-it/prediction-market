@@ -254,7 +254,8 @@ const businessDetails = z
 // Contact page: a question, or a sourcing request for a specific item.
 const contactMessage = z
   .object({
-    kind: z.enum(['general', 'sourcing']).default('general'),
+    // "price": a shopper asking the price of a price-on-request product.
+    kind: z.enum(['general', 'sourcing', 'price']).default('general'),
     name: z.string().trim().min(1, 'Add your name').max(100),
     email: z.string().trim().toLowerCase().email('Enter a valid email address').max(254),
     phone: z
@@ -279,7 +280,7 @@ const contactMessage = z
   })
   .strict()
   .superRefine((v, ctx) => {
-    if (v.kind === 'sourcing' && !v.item) ctx.addIssue({ code: 'custom', path: ['item'], message: 'Tell us which item you are looking for' });
+    if (v.kind !== 'general' && !v.item) ctx.addIssue({ code: 'custom', path: ['item'], message: 'Tell us which item you are looking for' });
   });
 const messageStatus = z.object({ status: z.enum(['new', 'replied', 'closed']) }).strict();
 const messageListQuery = z.object({
@@ -303,6 +304,7 @@ const productFields = {
   discounted_price: z.coerce.number().min(0).max(1000000).optional(),
   // Usual price at major UK retailers; empty clears it.
   retailPrice: z.preprocess((v) => (v === '' ? null : v), z.union([z.null(), z.coerce.number().min(0).max(1000000)])).optional(),
+  priceOnRequest: z.boolean().optional(),
   department: z.enum(PRODUCT_DEPARTMENTS, { message: 'Department must be men, women, unisex or electronics' }),
   category: z
     .string()

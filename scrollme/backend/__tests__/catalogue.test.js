@@ -60,6 +60,16 @@ describe('product catalogue', () => {
     expect((await request(ctx.app).get('/api/product/list?inStock=true')).body.totalProducts).toBe(2);
   });
 
+  it('keeps price-on-request items out of price ranges and last when sorting by price', async () => {
+    await createProduct({ name: 'Ask For Price', category: 'clothing', price: 0, priceOnRequest: true });
+    const range = await request(ctx.app).get('/api/product/list?minPrice=0&maxPrice=50');
+    expect(range.body.products.map((p) => p.name)).not.toContain('Ask For Price');
+    for (const sort of ['price_asc', 'price_desc']) {
+      const list = (await request(ctx.app).get(`/api/product/list?sort=${sort}`)).body.products;
+      expect(list[list.length - 1]).toMatchObject({ name: 'Ask For Price', priceOnRequest: true });
+    }
+  });
+
   it('sorts by price and rating', async () => {
     const asc = await request(ctx.app).get('/api/product/list?sort=price_asc');
     expect(asc.body.products.map((p) => p.price)).toEqual([15, 35, 60]);

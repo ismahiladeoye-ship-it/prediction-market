@@ -38,6 +38,10 @@ const buildCartView = async (cart, deliveryMethod = 'standard') => {
       issues.push({ productId: item.productId, size: item.size, message: 'This product is no longer available' });
       continue;
     }
+    if (product.priceOnRequest) {
+      issues.push({ productId: item.productId, size: item.size, message: `${product.name} is price on request. Ask us for a price instead.` });
+      continue;
+    }
     const unit = unitPriceCents(product);
     const line = {
       productId: product._id,
@@ -101,6 +105,7 @@ exports.addToCart = async (req, res) => {
   const { productId, quantity } = req.body;
   const product = await Product.findOne({ _id: productId, isActive: true });
   if (!product) throw notFound('Product not found');
+  if (product.priceOnRequest) throw conflict('This item is price on request. Ask us for a price instead.');
   const size = checkSize(product, req.body.size);
 
   const cart = await getOrCreateCart(req.user._id);

@@ -122,6 +122,18 @@ describe('spreadsheet import', () => {
     expect(after).toMatchObject({ stock: 12, price: 175, sizes: before.sizes, images: before.images, name: before.name });
   });
 
+  it('creates price-on-request products without a price', async () => {
+    const { agent } = await admin();
+    const csv =
+      'sku,name,brand,department,category,price,stock,price_on_request\nLV-POUCH,Louis Vuitton Toiletry Pouch,Louis Vuitton,unisex,accessories,,2,yes';
+    const res = await agent.post('/api/admin/products/import').send({ csv, dryRun: false });
+    expect(res.status).toBe(200);
+    expect(res.body.summary).toEqual({ create: 1, update: 0, errors: 0 });
+    expect(await Product.findOne({ sku: 'LV-POUCH' }).lean()).toMatchObject({ price: 0, priceOnRequest: true });
+    const bad = await agent.post('/api/admin/products/import').send({ csv: 'sku,price_on_request\nLV-POUCH,maybe', dryRun: true });
+    expect(bad.body.rows[0].errors[0]).toMatch(/price_on_request/);
+  });
+
   it('reports every problem by row and imports nothing until they are fixed', async () => {
     const { agent } = await admin();
     const csv = [
