@@ -1,11 +1,13 @@
 const Product = require('../models/productModel');
 
 // The owner's price rules, from the supplier's price today (in pounds):
-//   £30 or under: not sold      over £30 to £65: £10 off
-//   over £65 to £100: £20 off   over £100 to £200: £15 off
-//   over £200 to £300: £45 off  over £300: not sold
+//   £30 or under: not sold      over £30 to £40: £5 off
+//   over £40 to £65: £10 off    over £65 to £100: £20 off
+//   over £100 to £200: £15 off  over £200 to £300: £45 off
+//   over £300: not sold
 const RULES = [
   { upTo: 30, off: null },
+  { upTo: 40, off: 5 },
   { upTo: 65, off: 10 },
   { upTo: 100, off: 20 },
   { upTo: 200, off: 15 },

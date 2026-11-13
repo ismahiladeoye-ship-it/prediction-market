@@ -20,9 +20,11 @@ afterAll(() => {
 const sync = (method, path) => request(app)[method](`/api/price-sync${path}`).set('X-Price-Sync-Key', KEY);
 
 describe('price rules', () => {
-  it('takes £10 off up to £65, £20 up to £100, £15 up to £200, £45 up to £300, and sells nothing outside', () => {
+  it('takes £5 off up to £40, £10 up to £65, £20 up to £100, £15 up to £200, £45 up to £300, and sells nothing outside', () => {
     expect(shopPriceFor(30)).toBeNull();
-    expect(shopPriceFor(31.5)).toBe(21.5);
+    expect(shopPriceFor(31.5)).toBe(26.5);
+    expect(shopPriceFor(40)).toBe(35);
+    expect(shopPriceFor(40.01)).toBe(30.01);
     expect(shopPriceFor(65)).toBe(55);
     expect(shopPriceFor(65.01)).toBe(45.01);
     expect(shopPriceFor(100)).toBe(80);
