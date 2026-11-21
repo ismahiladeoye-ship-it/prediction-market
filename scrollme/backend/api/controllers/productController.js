@@ -203,7 +203,6 @@ exports.highlights = async (req, res) => {
     ]);
     trending.push(...brandOnce(newest, brands).slice(0, HIGHLIGHTS - trending.length));
   }
-  res.set('Cache-Control', 'public, max-age=300');
   res.status(200).json({ trending: trending.map(toPublic), specials: specials.map(toPublic) });
 };
 

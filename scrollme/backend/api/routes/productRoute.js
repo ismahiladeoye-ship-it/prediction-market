@@ -6,15 +6,16 @@ const productController = require('../controllers/productController');
 const admin = require('../controllers/adminController');
 const s = require('../validators/schemas');
 const { asyncHandler } = require('../utils/httpError');
+const publicCache = require('../middleware/publicCache');
 
 const idParams = validate({ params: s.idParam('productId') });
 
-// Public catalogue
-router.get('/list', validate({ query: s.productListQuery }), asyncHandler(productController.listProducts));
-router.get('/categories', asyncHandler(productController.listCategories));
-router.get('/brands', asyncHandler(productController.listBrands));
-router.get('/highlights', asyncHandler(productController.highlights));
-router.get('/:productId', idParams, asyncHandler(productController.getProductById));
+// Public catalogue (the same for everyone, so the CDN may share it briefly)
+router.get('/list', publicCache(), validate({ query: s.productListQuery }), asyncHandler(productController.listProducts));
+router.get('/categories', publicCache(), asyncHandler(productController.listCategories));
+router.get('/brands', publicCache(), asyncHandler(productController.listBrands));
+router.get('/highlights', publicCache(), asyncHandler(productController.highlights));
+router.get('/:productId', publicCache(), idParams, asyncHandler(productController.getProductById));
 
 // Original write endpoints, now restricted to admins (same handlers as /api/admin/products)
 router.post('/add', authMiddleware, requireAdmin, validate({ body: s.productCreate }), asyncHandler(admin.createProduct));

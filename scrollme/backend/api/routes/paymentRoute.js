@@ -5,10 +5,11 @@ const validate = require('../middleware/validate');
 const payments = require('../controllers/paymentController');
 const s = require('../validators/schemas');
 const { asyncHandler } = require('../utils/httpError');
+const publicCache = require('../middleware/publicCache');
 
 // The webhook needs the exact raw bytes for signature verification, so it is
 // mounted in app.js before the JSON body parser.
-router.get('/methods', asyncHandler(payments.listMethods));
+router.get('/methods', publicCache(), asyncHandler(payments.listMethods));
 router.post('/mock/:orderId/complete', authMiddleware, validate({ params: s.idParam('orderId') }), asyncHandler(payments.completeMockPayment));
 
 module.exports = router;
