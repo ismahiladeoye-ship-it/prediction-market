@@ -353,52 +353,6 @@
           ]
         },
         {
-          "slug": "dresses",
-          "title": "Dresses",
-          "subcategories": [
-            {
-              "slug": "mini-dresses",
-              "title": "Mini dresses"
-            },
-            {
-              "slug": "midi-dresses",
-              "title": "Midi dresses"
-            },
-            {
-              "slug": "maxi-dresses",
-              "title": "Maxi dresses"
-            },
-            {
-              "slug": "party-dresses",
-              "title": "Party dresses"
-            },
-            {
-              "slug": "casual-dresses",
-              "title": "Casual dresses"
-            },
-            {
-              "slug": "bodycon-dresses",
-              "title": "Bodycon dresses"
-            },
-            {
-              "slug": "shirt-dresses",
-              "title": "Shirt dresses"
-            },
-            {
-              "slug": "wrap-dresses",
-              "title": "Wrap dresses"
-            },
-            {
-              "slug": "knitted-dresses",
-              "title": "Jumper dresses"
-            },
-            {
-              "slug": "occasion-dresses",
-              "title": "Occasion dresses"
-            }
-          ]
-        },
-        {
           "slug": "coats-jackets",
           "title": "Coats & Jackets",
           "subcategories": [

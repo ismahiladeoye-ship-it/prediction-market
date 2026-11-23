@@ -160,14 +160,14 @@ describe('men and women', () => {
     await createProduct({ name: 'Runner Sneaker', department: 'men', category: 'shoes-boots', subcategory: 'trainers' });
     await createProduct({ name: 'Heeled Boot', department: 'women', category: 'shoes-boots', subcategory: 'ankle-boots' });
     await createProduct({ name: 'Logo Tee', department: 'unisex', category: 'clothing', subcategory: 't-shirts' });
-    await createProduct({ name: 'Silk Dress', department: 'women', category: 'dresses', subcategory: 'midi-dresses' });
+    await createProduct({ name: 'Silk Skirt', department: 'women', category: 'clothing', subcategory: 'skirts' });
     await createProduct({ name: 'Wireless Earbuds', department: 'electronics', category: 'audio', subcategory: 'earbuds' });
   });
 
   it('lists a department with unisex products, narrowed by category and subcategory', async () => {
     const names = async (query) => (await request(ctx.app).get(`/api/product/list?sort=name&${query}`)).body.products.map((p) => p.name);
     expect(await names('department=men')).toEqual(['Logo Tee', 'Runner Sneaker']);
-    expect(await names('department=women')).toEqual(['Heeled Boot', 'Logo Tee', 'Silk Dress']);
+    expect(await names('department=women')).toEqual(['Heeled Boot', 'Logo Tee', 'Silk Skirt']);
     expect(await names('department=women&category=shoes-boots')).toEqual(['Heeled Boot']);
     expect(await names('department=women&category=shoes-boots&subcategory=trainers')).toEqual([]);
     expect(await names('category=shoes-boots')).toEqual(['Heeled Boot', 'Runner Sneaker']);
