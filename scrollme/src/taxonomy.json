@@ -738,28 +738,6 @@
               "title": "Camera accessories"
             }
           ]
-        },
-        {
-          "slug": "tv-home",
-          "title": "TV & Smart Home",
-          "subcategories": [
-            {
-              "slug": "tvs",
-              "title": "TVs"
-            },
-            {
-              "slug": "streaming-devices",
-              "title": "Streaming devices"
-            },
-            {
-              "slug": "smart-speakers",
-              "title": "Smart speakers"
-            },
-            {
-              "slug": "smart-home",
-              "title": "Smart home"
-            }
-          ]
         }
       ]
     }

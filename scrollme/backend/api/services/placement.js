@@ -53,7 +53,6 @@ const CATEGORY_ALIASES = {
   wearables: 'wearables',
   computers: 'computing',
   computing: 'computing',
-  'smart-home': 'tv-home',
 };
 
 // Each everyday word can mean a different subcategory in each department.
@@ -106,7 +105,6 @@ const SUBCATEGORY_ALIASES = {
   case: ['phone-cases'],
   cases: ['phone-cases'],
   console: ['consoles'],
-  tv: ['tvs'],
   slides: ['sliders'],
   wallet: ['wallets', 'purses'],
   purse: ['purses', 'wallets'],
