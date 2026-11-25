@@ -110,7 +110,7 @@ const OrderDetail = () => {
       <Wrapper>
         {!order && !error && (
           <Box textAlign='center' py={20}>
-            <Spinner size='xl' color='gray.900' />
+            <Spinner size='xl' color='var(--ink)' />
           </Box>
         )}
         {error && (
@@ -269,7 +269,7 @@ const Title = styled.h1`
 
 const Meta = styled.div`
   text-align: center;
-  color: #555;
+  color: var(--muted);
   margin: 8px 0 24px;
 `;
 
@@ -330,8 +330,8 @@ const Button = styled.button`
   height: 52px;
   border-radius: 999px;
   letter-spacing: 0.08em;
-  background-color: black;
-  color: white;
+  background-color: var(--ink);
+  color: var(--paper);
   font-weight: 600;
   cursor: pointer;
   &:disabled {
@@ -341,7 +341,7 @@ const Button = styled.button`
 
 const SecondaryButton = styled(Button)`
   margin-top: 10px;
-  background-color: white;
-  color: black;
-  border: 1px solid black;
+  background-color: transparent;
+  color: var(--ink);
+  border: 1px solid var(--ink);
 `;

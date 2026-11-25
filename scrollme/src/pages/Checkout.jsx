@@ -252,7 +252,7 @@ const Checkout = () => {
           </Info>
           <Side>
             {!loaded ? (
-              <Spinner color='gray.900' />
+              <Spinner color='var(--ink)' />
             ) : (
               <OrderSummary summary={cart.summary} compact>
                 <Button type='submit' disabled={submitting || cart.issues.length > 0 || cart.items.length === 0}>
@@ -359,7 +359,7 @@ const Label = styled.label`
 
 const Input = styled.input`
   padding: 10px;
-  border: 1px solid ${(props) => (props['aria-invalid'] ? '#c53030' : '#ccc')};
+  border: 1px solid ${(props) => (props['aria-invalid'] ? 'var(--error)' : 'var(--field)')};
   border-radius: 4px;
   &[readonly] {
     background: var(--soft);
@@ -368,13 +368,14 @@ const Input = styled.input`
 
 const Select = styled.select`
   padding: 10px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--line);
   border-radius: 4px;
-  background: white;
+  background: var(--surface);
+  color: var(--ink);
 `;
 
 const FieldError = styled.span`
-  color: #c53030;
+  color: var(--error);
   font-size: 12px;
 `;
 
@@ -394,7 +395,7 @@ const Option = styled.label`
   align-items: center;
   gap: 10px;
   padding: 12px;
-  border: 1px solid ${(props) => (props.selected ? 'var(--accent)' : '#ddd')};
+  border: 1px solid ${(props) => (props.selected ? 'var(--accent)' : 'var(--field)')};
   border-radius: 6px;
   cursor: pointer;
   span {
@@ -410,7 +411,7 @@ const Item = styled.div`
   align-items: center;
   gap: 14px;
   padding: 10px 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--line);
   img {
     width: 64px;
     height: 80px;
@@ -443,8 +444,8 @@ const Button = styled.button`
   height: 52px;
   border-radius: 999px;
   letter-spacing: 0.08em;
-  background-color: black;
-  color: white;
+  background-color: var(--ink);
+  color: var(--paper);
   font-weight: 600;
   cursor: pointer;
   &:disabled {
@@ -459,9 +460,10 @@ const PaymentCard = styled.button`
   align-items: center;
   gap: 14px;
   padding: 14px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--line);
   border-radius: 8px;
-  background: white;
+  background: var(--surface);
+  color: var(--ink);
   text-align: left;
   cursor: pointer;
   font-size: 16px;

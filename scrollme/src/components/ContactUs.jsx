@@ -24,7 +24,7 @@ const Title = styled.h1`
 const Intro = styled.p`
   font-size: 16px;
   line-height: 1.6;
-  color: #444;
+  color: var(--muted);
   margin-bottom: 24px;
   a {
     text-decoration: underline;
@@ -37,7 +37,7 @@ const Kinds = styled.div`
   gap: 10px;
   margin-bottom: 22px;
   label {
-    border: 1.5px solid #ddd;
+    border: 1.5px solid var(--field);
     border-radius: 14px;
     padding: 14px;
     cursor: pointer;
@@ -48,12 +48,12 @@ const Kinds = styled.div`
   }
   label:has(input:checked) {
     border-color: var(--ink);
-    background: #f5f5f5;
+    background: var(--surface);
   }
   small {
     display: block;
     font-weight: 400;
-    color: #666;
+    color: var(--muted);
     margin-top: 2px;
   }
   input {
@@ -90,10 +90,11 @@ const Field = styled.label`
     font-weight: 400;
     font-size: 16px;
     padding: 12px 14px;
-    border: 1.5px solid #ddd;
+    border: 1.5px solid var(--line);
     border-radius: 12px;
     width: 100%;
-    background: white;
+    background: var(--surface);
+    color: var(--ink);
   }
   input:focus,
   textarea:focus {
@@ -122,7 +123,7 @@ const Trap = styled.div`
 const Submit = styled.button`
   justify-self: start;
   background: var(--ink);
-  color: white;
+  color: var(--paper);
   border: none;
   border-radius: 14px;
   height: 52px;

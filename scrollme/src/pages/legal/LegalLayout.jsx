@@ -49,7 +49,7 @@ const Main = styled.main`
 `;
 
 const Updated = styled.p`
-  color: #666;
+  color: var(--muted);
   font-size: 14px !important;
   margin-bottom: 28px !important;
 `;
@@ -64,11 +64,11 @@ const Notice = styled.div`
 `;
 
 export const Box = styled.div`
-  border: 1px solid #ddd;
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 16px 18px;
   margin: 12px 0 18px;
-  background: #fafafa;
+  background: var(--surface);
   p:last-child {
     margin-bottom: 0;
   }

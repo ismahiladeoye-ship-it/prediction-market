@@ -36,8 +36,8 @@ const Illustrative = styled.span`
   bottom: 8px;
   padding: 3px 8px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.9);
-  color: #444;
+  background: rgba(0, 0, 0, 0.7);
+  color: #ddd;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -51,7 +51,8 @@ const Heart = styled.button`
   height: 38px;
   border-radius: 50%;
   border: none;
-  background: white;
+  background: rgba(0, 0, 0, 0.55);
+  color: var(--ink);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -66,7 +67,7 @@ const Badge = styled.span`
   padding: 4px 10px;
   border-radius: 999px;
   background: var(--ink);
-  color: white;
+  color: var(--paper);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -109,7 +110,7 @@ const Save = styled.span`
   margin-left: 6px;
   font-size: 12px;
   font-weight: 700;
-  color: #1e6b35;
+  color: var(--save);
 `;
 
 // Product card used on the home page and in listings.

@@ -28,7 +28,8 @@ const ProductCard = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: #fff;
+  background-color: var(--surface);
+  border: 1px solid var(--line);
   position: relative;
 `;
 
@@ -66,14 +67,14 @@ const RemoveButton = styled.button`
 
 const MoveToBagButton = styled.button`
   padding: 10px 15px;
-  border: 1px solid red;
-  background-color: white;
-  color: red;
+  border: 1px solid var(--ink);
+  background-color: transparent;
+  color: var(--ink);
   border-radius: 5px;
   cursor: pointer;
   margin-top: auto;
   &:hover {
-    background-color: #f5f5f5;
+    background-color: var(--soft);
   }
 `;
 

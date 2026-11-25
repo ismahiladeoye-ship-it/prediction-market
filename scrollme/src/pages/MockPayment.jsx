@@ -186,7 +186,7 @@ const MockPayment = () => {
         <Logo />
         <Badge>TEST MODE — no real payment is taken</Badge>
         {error && <p role='alert'>{error}</p>}
-        {!order && !error && <Spinner color='gray.900' />}
+        {!order && !error && <Spinner color='var(--ink)' />}
         {order && (
           <>
             <Summary>
@@ -224,6 +224,18 @@ const Container = styled.div`
   justify-content: center;
   background-color: #f5fafd;
   padding: 16px;
+  /* The test payment page stays light: dark text on its white card. */
+  --ink: #0d0d0d;
+  --paper: #ffffff;
+  --surface: #ffffff;
+  --accent: #0d0d0d;
+  --soft: #f5f5f5;
+  --error: #c53030;
+  --muted: #6b6b6b;
+  --line: #e7e7e7;
+  --field: #cccccc;
+  color: var(--ink);
+  color-scheme: light;
 `;
 
 const Card = styled.div`

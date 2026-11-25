@@ -1,7 +1,8 @@
 import { extendTheme } from '@chakra-ui/react';
 
 // Chakra components (forms, admin tables, toasts) follow the store's
-// monochrome look: colorScheme='brand' is black on white.
+// monochrome look. The shop is black; admin pages (.admin-scope) stay light,
+// so colorScheme='brand' there is black on white.
 const theme = extendTheme({
   fonts: {
     heading: "'Inter', -apple-system, 'Helvetica Neue', Arial, sans-serif",
@@ -24,12 +25,23 @@ const theme = extendTheme({
   radii: { md: '10px' },
   styles: {
     global: {
-      body: { color: '#0d0d0d', bg: 'white' },
+      // The store's own colours (styles/global.css): black page, white text.
+      body: { color: 'var(--ink)', bg: 'var(--paper)' },
     },
   },
   components: {
     Button: {
       baseStyle: { borderRadius: 'full', fontWeight: 600 },
+    },
+    // Pop-ups open outside the page, so they take the store's colours directly.
+    Modal: { baseStyle: { dialog: { bg: 'var(--surface)', color: 'var(--ink)' } } },
+    Drawer: { baseStyle: { dialog: { bg: 'var(--surface)', color: 'var(--ink)' } } },
+    Popover: { baseStyle: { content: { bg: 'var(--surface)', color: 'var(--ink)', borderColor: 'var(--line)' } } },
+    Menu: {
+      baseStyle: {
+        list: { bg: 'var(--surface)', color: 'var(--ink)', borderColor: 'var(--line)' },
+        item: { bg: 'transparent', _hover: { bg: 'var(--soft)' } },
+      },
     },
   },
 });

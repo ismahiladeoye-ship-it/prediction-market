@@ -3,21 +3,60 @@
  * colours, fonts and corner radius are used by every page.
  */
 :root {
-  --ink: #0d0d0d;
-  --paper: #ffffff;
-  --muted: #6b6b6b;
-  --line: #e7e7e7;
-  --soft: #f5f5f5;
-  --accent: #0d0d0d;
-  --sale: #c1121f;
+  /* The store is black with white text (Nov 2026). Change the look here. */
+  --ink: #ffffff; /* text, icons, primary buttons */
+  --paper: #000000; /* page background, text on primary buttons */
+  --surface: #141414; /* raised surfaces: panels, inputs, buttons */
+  --muted: #9a9a9a;
+  --line: #262626;
+  --soft: #0f0f0f; /* bands behind product rows */
+  --accent: #ffffff;
+  --sale: #ff4d5a;
+  --save: #4cd07d; /* "Save 20%" */
+  --error: #ff6b6b;
+  --field: #3d3d3d; /* form field borders */
   --radius: 18px;
   --font-display: 'Bebas Neue', 'Oswald', Impact, 'Arial Narrow', sans-serif;
   --font-body: 'Inter', -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  color-scheme: dark;
 }
 
 body {
   background: var(--paper);
   color: var(--ink);
+}
+
+/* Plain form boxes follow the palette. :where() keeps this weaker than any
+   component's own background, so styled and Chakra fields keep theirs. */
+:where(input:not([type='checkbox'], [type='radio'], [type='range'], [type='file'], [type='submit'], [type='button']), textarea, select) {
+  background-color: var(--surface);
+  color: var(--ink);
+}
+:where(input, textarea)::placeholder {
+  color: var(--muted);
+}
+
+/* Admin pages stay black-on-white: easier for long work with tables and forms.
+   .light-scope is the same palette for admin pop-ups, which open outside the page. */
+.admin-scope,
+.light-scope {
+  --ink: #0d0d0d;
+  --paper: #ffffff;
+  --surface: #ffffff;
+  --muted: #6b6b6b;
+  --line: #e7e7e7;
+  --soft: #f5f5f5;
+  --accent: #0d0d0d;
+  --sale: #c1121f;
+  --save: #1e6b35;
+  --error: #c53030;
+  --field: #cccccc;
+  color-scheme: light;
+  color: var(--ink);
+}
+.admin-scope {
+  background: #f7f7f7;
+  min-height: 100vh;
 }
 
 /* Tall condensed uppercase headings, as used across the store. */

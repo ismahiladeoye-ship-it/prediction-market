@@ -41,7 +41,7 @@ const SocialIcon = styled.a`
 
 const Heading = styled.h2`
   font-size: 1.4rem;
-  color: #555;
+  color: var(--muted);
   margin-bottom: 10px;
 `;
 
@@ -54,7 +54,7 @@ const SubHeading = styled.p`
 const EmailInput = styled.input`
   padding: 10px 20px;
   font-size: 1rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--field);
   border-radius: 30px;
   margin-right: 10px;
   outline: none;
@@ -63,7 +63,7 @@ const EmailInput = styled.input`
 const NotifyButton = styled.button`
   padding: 10px 20px;
   font-size: 1rem;
-  color: #fff;
+  color: var(--paper);
   background-color: var(--accent);
   border: none;
   border-radius: 30px;

@@ -103,27 +103,27 @@ const Signup = styled.form`
     height: 56px;
     padding: 0 20px;
     border-radius: 10px;
-    border: 1px solid var(--ink);
-    background: var(--ink);
-    color: white;
+    border: 1px solid var(--field);
+    background: var(--surface);
+    color: var(--ink);
     font-size: 17px;
   }
   input::placeholder {
-    color: #d6d6d6;
+    color: var(--muted);
   }
   button {
     height: 56px;
     padding: 0 22px;
     border-radius: 10px;
     border: 1.5px solid var(--ink);
-    background: white;
-    color: var(--ink);
+    background: var(--ink);
+    color: var(--paper);
     font-size: 17px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
   }
   button:hover {
-    background: var(--soft);
+    opacity: 0.88;
   }
   ${DESKTOP} {
     padding: 0;

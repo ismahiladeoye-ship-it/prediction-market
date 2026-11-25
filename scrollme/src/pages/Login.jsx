@@ -15,7 +15,7 @@ const Container = styled.div`
   width: 100vw;
   height: 100vh;
   background:
-    linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)),
+    linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
     url('https://images.pexels.com/photos/6984650/pexels-photo-6984650.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940') center;
   background-size: cover;
   display: flex;
@@ -28,7 +28,8 @@ const Wrapper = styled.div`
   ${mobile({ width: '84%;' })}
   ${tablet({ width: '84%;' })}
     padding: 20px;
-  background-color: white;
+  background-color: var(--paper);
+  border: 1px solid var(--line);
 `;
 
 const Title = styled.h1`
@@ -53,7 +54,7 @@ const Input = styled.input`
   margin-bottom: 15px;
   /* 16px stops iPhones zooming in when the box is tapped. */
   font-size: 16px;
-  border: 1px solid #bbb;
+  border: 1px solid var(--field);
   border-radius: 4px;
   box-sizing: border-box;
 `;
@@ -70,7 +71,7 @@ const Label = styled.label`
 const FieldHint = styled.p`
   margin: -8px 0 6px;
   font-size: 13px;
-  color: #555;
+  color: var(--muted);
 `;
 
 const Button = styled.button`
@@ -78,7 +79,7 @@ const Button = styled.button`
   border: none;
   padding: 15px 20px;
   background-color: var(--accent);
-  color: white;
+  color: var(--paper);
   cursor: pointer;
   margin-bottom: 10px;
   transition: transform 0.3s ease;
@@ -121,7 +122,7 @@ const TextButton = styled.button`
 `;
 
 const ErrorText = styled.p`
-  color: #c53030;
+  color: var(--error);
   font-size: 14px;
   margin-bottom: 10px;
 `;

@@ -195,7 +195,7 @@ const Product = () => {
               <Text fontSize='2xl' fontWeight={300}>
                 Product not found
               </Text>
-              <Text color='gray.600'>It may have been removed or is no longer available.</Text>
+              <Text color='var(--muted)'>It may have been removed or is no longer available.</Text>
               <RouterLink to='/products' style={{ color: 'var(--accent)', textDecoration: 'underline' }}>
                 Browse all products
               </RouterLink>
@@ -449,7 +449,7 @@ const Image = styled.img`
   max-height: 78vh;
   object-fit: contain;
   border-radius: var(--radius);
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--line);
   cursor: zoom-in;
 `;
@@ -476,7 +476,7 @@ const Thumb = styled.button`
   padding: 0;
   border-radius: 10px;
   overflow: hidden;
-  background: white;
+  background: var(--surface);
   border: 2px solid ${({ $active }) => ($active ? 'var(--ink)' : 'var(--line)')};
   cursor: pointer;
   img {
@@ -573,8 +573,8 @@ const SaveLine = styled.span`
   align-self: flex-start;
   padding: 3px 10px;
   border-radius: 999px;
-  background: #e6f4ea;
-  color: #1e6b35;
+  background: rgba(76, 208, 125, 0.15);
+  color: var(--save);
   font-size: 14px;
   font-weight: 700;
 `;
@@ -613,7 +613,7 @@ const FilterColor = styled.div`
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  border: 1px solid #ddd;
+  border: 1px solid var(--field);
   background: ${(props) => props.color};
   margin: 0px 5px;
   cursor: pointer;
@@ -636,8 +636,8 @@ const SwatchLink = styled(RouterLink)`
   height: 28px;
   border-radius: 50%;
   background: ${({ $colour }) => $colour};
-  border: 1px solid rgba(0, 0, 0, 0.18);
-  box-shadow: ${({ $selected }) => ($selected ? '0 0 0 2px #fff, 0 0 0 4px #111' : 'none')};
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: ${({ $selected }) => ($selected ? '0 0 0 2px var(--paper), 0 0 0 4px var(--ink)' : 'none')};
   opacity: ${({ $soldOut }) => ($soldOut ? 0.45 : 1)};
   &::after {
     content: '';
@@ -646,7 +646,7 @@ const SwatchLink = styled(RouterLink)`
     left: 50%;
     top: -2px;
     bottom: -2px;
-    border-left: 1.5px solid #111;
+    border-left: 1.5px solid #888;
     transform: rotate(45deg);
   }
   &:focus-visible {
@@ -674,8 +674,8 @@ const SizePill = styled.button`
   padding: 0 14px;
   border-radius: 999px;
   border: 1.5px solid ${({ $selected }) => ($selected ? 'var(--ink)' : 'var(--line)')};
-  background: ${({ $selected }) => ($selected ? 'var(--ink)' : 'white')};
-  color: ${({ $selected }) => ($selected ? 'white' : 'var(--ink)')};
+  background: ${({ $selected }) => ($selected ? 'var(--ink)' : 'transparent')};
+  color: ${({ $selected }) => ($selected ? 'var(--paper)' : 'var(--ink)')};
   font-weight: 600;
   cursor: pointer;
   &:hover {
@@ -718,8 +718,8 @@ const Button = styled.button`
   height: 56px;
   border-radius: 999px;
   border: 1.5px solid var(--ink);
-  background-color: ${({ $primary }) => ($primary ? 'var(--ink)' : 'white')};
-  color: ${({ $primary }) => ($primary ? 'white' : 'var(--ink)')};
+  background-color: ${({ $primary }) => ($primary ? 'var(--ink)' : 'transparent')};
+  color: ${({ $primary }) => ($primary ? 'var(--paper)' : 'var(--ink)')};
   cursor: pointer;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -727,9 +727,9 @@ const Button = styled.button`
     opacity: 0.88;
   }
   &:disabled {
-    border-color: #ccc;
-    background-color: ${({ $primary }) => ($primary ? '#ccc' : 'white')};
-    color: ${({ $primary }) => ($primary ? 'white' : '#999')};
+    border-color: var(--muted);
+    background-color: ${({ $primary }) => ($primary ? '#333' : 'transparent')};
+    color: ${({ $primary }) => ($primary ? '#999' : '#777')};
     cursor: not-allowed;
     opacity: 1;
   }

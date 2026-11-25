@@ -8,7 +8,7 @@ const Container = styled.div`
   padding: 24px 16px;
   box-sizing: border-box;
   background:
-    linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)),
+    linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
     url('https://images.pexels.com/photos/6984650/pexels-photo-6984650.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940') center;
   background-size: cover;
   display: flex;
@@ -21,7 +21,8 @@ const Wrapper = styled.div`
   max-width: 440px;
   padding: 28px 24px;
   box-sizing: border-box;
-  background-color: white;
+  background-color: var(--paper);
+  border: 1px solid var(--line);
 `;
 
 export const Title = styled.h1`
@@ -37,7 +38,7 @@ export const Intro = styled.p`
   margin-top: 10px;
   font-size: 14px;
   line-height: 1.5;
-  color: #444;
+  color: var(--muted);
 `;
 
 export const Form = styled.form`
@@ -59,12 +60,12 @@ export const Field = styled.div`
     padding: 12px;
     /* 16px stops iPhones zooming in when the box is tapped. */
     font-size: 16px;
-    border: 1px solid #bbb;
+    border: 1px solid var(--field);
     border-radius: 4px;
     box-sizing: border-box;
   }
   input[aria-invalid='true'] {
-    border: 2px solid #c53030;
+    border: 2px solid var(--error);
   }
   input.code {
     font-size: 26px;
@@ -77,7 +78,7 @@ export const Hint = styled.p`
   margin-top: 6px;
   font-size: 13px;
   line-height: 1.45;
-  color: ${({ $error, $ok }) => ($error ? '#c53030' : $ok ? '#276749' : '#555')};
+  color: ${({ $error, $ok }) => ($error ? 'var(--error)' : $ok ? 'var(--save)' : 'var(--muted)')};
   font-weight: ${({ $error }) => ($error ? 600 : 400)};
 `;
 
@@ -87,7 +88,7 @@ export const Button = styled.button`
   border: none;
   padding: 15px 20px;
   background-color: var(--accent);
-  color: white;
+  color: var(--paper);
   font-size: 15px;
   letter-spacing: 0.06em;
   cursor: pointer;
@@ -116,14 +117,14 @@ export const TextButton = styled.button`
 
 export const ErrorText = styled.p`
   margin-top: 14px;
-  color: #c53030;
+  color: var(--error);
   font-size: 14px;
   font-weight: 600;
 `;
 
 export const Status = styled.p`
   margin-top: 14px;
-  color: #276749;
+  color: var(--save);
   font-size: 14px;
 `;
 

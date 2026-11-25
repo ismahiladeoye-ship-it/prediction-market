@@ -52,7 +52,7 @@ const TopButton = styled.button`
   cursor: pointer;
   border: 1.5px solid var(--ink);
   background-color: ${(props) => (props.type === 'filled' ? 'var(--ink)' : 'transparent')};
-  color: ${(props) => (props.type === 'filled' ? 'white' : 'var(--ink)')};
+  color: ${(props) => (props.type === 'filled' ? 'var(--paper)' : 'var(--ink)')};
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -169,7 +169,7 @@ const ProductPrice = styled.div`
 `;
 
 const Hr = styled.hr`
-  background-color: #eee;
+  background-color: var(--line);
   border: none;
   height: 1px;
   margin: 10px 0;
@@ -225,8 +225,8 @@ const Button = styled.button`
   border-radius: 999px;
   letter-spacing: 0.08em;
   cursor: pointer;
-  background-color: black;
-  color: white;
+  background-color: var(--ink);
+  color: var(--paper);
   font-weight: 600;
   &:disabled {
     opacity: 0.5;
@@ -283,7 +283,7 @@ const Cart = () => {
         toast({
           position: 'bottom-right',
           render: () => (
-            <Box color='white' p={1} bg='gray.900' borderRadius='xs'>
+            <Box color='var(--paper)' p={2} bg='var(--ink)' borderRadius='md'>
               Quantity updated!
             </Box>
           ),
@@ -370,7 +370,7 @@ const Cart = () => {
           <Info>
             {status === 'loading' && isEmpty && (
               <Box w='100%' textAlign='center' py={10}>
-                <Spinner size='lg' color='gray.900' />
+                <Spinner size='lg' color='var(--ink)' />
               </Box>
             )}
             {status !== 'loading' && isEmpty && (
@@ -465,10 +465,10 @@ const IconButton = styled.button`
   font-size: 18px;
   cursor: pointer;
   padding: 4px;
-  color: #333;
+  color: var(--muted);
 
   &:disabled {
-    color: #ccc;
+    color: #555;
     cursor: not-allowed;
   }
 `;

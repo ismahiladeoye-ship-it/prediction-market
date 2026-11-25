@@ -49,9 +49,9 @@ const List = styled.div`
 `;
 
 const Item = styled.div`
-  background: white;
+  background: var(--surface);
+  border: 1px solid var(--line);
   border-radius: 16px;
-  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.08);
 `;
 
 const Question = styled.button`
