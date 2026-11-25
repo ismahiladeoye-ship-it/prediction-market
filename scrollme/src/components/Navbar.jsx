@@ -221,7 +221,7 @@ const SearchPanel = styled.form`
     padding: 0 22px;
     border-radius: 999px;
     background: var(--ink);
-    color: white;
+    color: var(--paper);
     font-weight: 600;
     border: none;
     cursor: pointer;
@@ -430,7 +430,7 @@ const Navbar = () => {
           {searchButton}
         </PhoneSide>
         <LogoSlot>
-          <Logo stacked size='1.9rem' />
+          <Logo stacked size='clamp(15px, 4.5vw, 22px)' />
         </LogoSlot>
         <Nav aria-label='Main'>
           <span ref={megaButtons} style={{ display: 'contents' }}>
@@ -513,7 +513,7 @@ const Navbar = () => {
               </IconButton>
             </Side>
             <LogoSlot>
-              <Logo stacked size='1.9rem' />
+              <Logo stacked size='clamp(15px, 4.5vw, 22px)' />
             </LogoSlot>
             <Side $end>{cartLink}</Side>
           </DrawerRow>

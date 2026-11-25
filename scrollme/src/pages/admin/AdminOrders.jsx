@@ -75,7 +75,7 @@ const OrderDrawer = ({ orderId, onClose, onChanged }) => {
   return (
     <Drawer isOpen={Boolean(orderId)} onClose={onClose} size='md'>
       <DrawerOverlay />
-      <DrawerContent>
+      <DrawerContent className='light-scope'>
         <DrawerCloseButton />
         <DrawerHeader>{order ? `Order ${order.orderNumber}` : 'Order'}</DrawerHeader>
         <DrawerBody>

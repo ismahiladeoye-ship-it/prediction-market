@@ -8,7 +8,7 @@ const Item = styled.div`
   align-items: center;
   gap: 14px;
   padding: 10px 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--line);
   img {
     width: 64px;
     height: 80px;

@@ -206,7 +206,7 @@ const ProductFormModal = ({ isOpen, onClose, product, onSaved }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} size='2xl' scrollBehavior='inside'>
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent className='light-scope'>
         <ModalHeader>{product ? 'Edit product' : 'New product'}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>

@@ -95,12 +95,14 @@ const AdminLayout = () => {
     <div>
       <Announcement />
       <Navbar />
-      <Box px={{ base: 4, md: 8 }} py={6} maxW='1400px' mx='auto'>
-        <Heading as='h1' size='lg' fontWeight={300} mb={4}>
-          Store administration
-        </Heading>
-        {content}
-      </Box>
+      <div className='admin-scope'>
+        <Box px={{ base: 4, md: 8 }} py={6} maxW='1400px' mx='auto'>
+          <Heading as='h1' size='lg' fontWeight={300} mb={4}>
+            Store administration
+          </Heading>
+          {content}
+        </Box>
+      </div>
     </div>
   );
 };

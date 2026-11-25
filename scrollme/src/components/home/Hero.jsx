@@ -76,7 +76,7 @@ const Cta = styled(Link)`
   padding: 0 30px;
   border-radius: 16px;
   background: white;
-  color: var(--ink);
+  color: #0d0d0d;
   font-weight: 700;
   font-size: 16px;
   letter-spacing: 0.1em;
@@ -103,7 +103,7 @@ const Control = styled.button`
   border-radius: 12px;
   border: none;
   background: white;
-  color: var(--ink);
+  color: #0d0d0d;
   display: flex;
   align-items: center;
   justify-content: center;

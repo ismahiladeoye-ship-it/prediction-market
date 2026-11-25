@@ -87,7 +87,8 @@ const ScrollButton = styled.button`
   height: 38px;
   border-radius: 50%;
   border: 1px solid var(--line);
-  background: white;
+  background: var(--surface);
+  color: var(--ink);
   cursor: pointer;
   &:disabled {
     opacity: 0.35;
@@ -300,7 +301,7 @@ const ProductRow = ({ id, title, subtitle, params, items, viewAllTo, shortcuts =
       )}
       {loading && (
         <Box textAlign='center' py={10}>
-          <Spinner size='xl' color='gray.900' />
+          <Spinner size='xl' color='var(--ink)' />
         </Box>
       )}
       {error && (

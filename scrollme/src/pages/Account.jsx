@@ -48,7 +48,7 @@ const Account = () => {
         )}
         {!data && !error && (
           <Box textAlign='center' py={10}>
-            <Spinner color='gray.900' />
+            <Spinner color='var(--ink)' />
           </Box>
         )}
         {data && data.orders.length === 0 && (
@@ -137,7 +137,8 @@ const OrderRow = styled(Link)`
   align-items: center;
   gap: 14px;
   padding: 14px;
-  box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--line);
+  background: var(--surface);
   border-radius: 2px;
   div {
     flex: 1;

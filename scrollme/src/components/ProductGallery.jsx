@@ -102,7 +102,14 @@ const FilterSelect = ({ label, value, onChange, allLabel, options }) => (
     <Text fontSize='sm' fontWeight={600} mb={1}>
       {label}
     </Text>
-    <Select bg='white' value={value} onChange={(e) => onChange(e.target.value)} aria-label={label}>
+    <Select
+      bg='var(--surface)'
+      borderColor='var(--line)'
+      color='var(--ink)'
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      aria-label={label}
+    >
       <option value=''>{allLabel}</option>
       {options.map(([v, l]) => (
         <option key={v} value={v}>
@@ -278,7 +285,9 @@ const ProductGallery = ({
               Sort Products
             </Text>
             <Select
-              bg='white'
+              bg='var(--surface)'
+              borderColor='var(--line)'
+              color='var(--ink)'
               value={sort}
               onChange={(e) => updateParams({ sort: e.target.value === 'newest' ? '' : e.target.value })}
               aria-label='Sort products'
@@ -292,6 +301,7 @@ const ProductGallery = ({
           </Box>
           <Checkbox
             colorScheme='brand'
+            sx={{ '.chakra-checkbox__control[data-checked]': { bg: 'var(--ink)', borderColor: 'var(--ink)', color: 'var(--paper)' } }}
             isChecked={inStock}
             onChange={(e) => updateParams({ inStock: e.target.checked ? 'true' : '' })}
             pb={2}
@@ -299,7 +309,7 @@ const ProductGallery = ({
             In stock only
           </Checkbox>
           {hasFilters && (
-            <Button variant='link' colorScheme='brand' pb={2} onClick={() => setSearchParams(new URLSearchParams())}>
+            <Button variant='link' color='var(--ink)' pb={2} onClick={() => setSearchParams(new URLSearchParams())}>
               Clear filters
             </Button>
           )}
@@ -322,13 +332,13 @@ const ProductGallery = ({
             <Text fontSize='xl' fontWeight={600}>
               {notFound ? notFoundText : 'No products found'}
             </Text>
-            <Text mt={2} color='gray.600'>
+            <Text mt={2} color='var(--muted)'>
               Try a different search or remove some filters.
             </Text>
           </Box>
         ) : (
           <>
-            <Text mb={4} color='gray.600' fontSize='sm'>
+            <Text mb={4} color='var(--muted)' fontSize='sm'>
               {data.totalProducts.toLocaleString()} products
             </Text>
             <Grid>

@@ -52,7 +52,7 @@ const Cta = styled(Link)`
   padding: 14px 28px;
   border-radius: 999px;
   background: var(--ink);
-  color: white;
+  color: var(--paper);
   font-weight: 600;
   font-size: 15px;
   transition: transform 0.2s ease;

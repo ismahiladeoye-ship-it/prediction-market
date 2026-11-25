@@ -150,7 +150,8 @@ const Sheet = styled.div`
   width: 100%;
   max-height: 92vh;
   overflow-y: auto;
-  background: white;
+  background: var(--surface);
+  color: var(--ink);
   border-radius: 24px 24px 0 0;
   padding: 24px 20px calc(20px + env(safe-area-inset-bottom));
   animation: ${slideUp} 0.25s ease;
@@ -191,7 +192,7 @@ const Close = styled.button`
   background: none;
   border: none;
   cursor: pointer;
-  color: #333;
+  color: var(--muted);
 `;
 
 const TestBadge = styled.p`
@@ -224,7 +225,7 @@ const Row = styled.label`
   align-items: center;
   gap: 16px;
   padding: 18px 4px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--line);
   cursor: ${(p) => (p.disabled ? 'not-allowed' : 'pointer')};
   opacity: ${(p) => (p.disabled ? 0.5 : 1)};
   input {
@@ -247,9 +248,9 @@ const Radio = styled.span`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  border: ${(p) => (p.checked ? 'none' : '2px solid #bbb')};
-  background: ${(p) => (p.checked ? 'var(--accent)' : 'white')};
+  color: var(--paper);
+  border: ${(p) => (p.checked ? 'none' : '2px solid var(--muted)')};
+  background: ${(p) => (p.checked ? 'var(--accent)' : 'transparent')};
 `;
 
 const Body = styled.span`
@@ -271,7 +272,7 @@ const Label = styled.span`
 
 const Caption = styled.span`
   font-size: 13px;
-  color: #666;
+  color: var(--muted);
 `;
 
 const More = styled.button`
@@ -306,7 +307,7 @@ const ConfirmButton = styled.button`
   border: none;
   border-radius: 999px;
   background: var(--accent);
-  color: white;
+  color: var(--paper);
   font-size: 20px;
   font-weight: 700;
   cursor: pointer;

@@ -12,10 +12,10 @@ const Rules = styled.ul`
     align-items: center;
     gap: 6px;
     padding: 2px 0;
-    color: #666;
+    color: var(--muted);
   }
   li[data-met='true'] {
-    color: #276749;
+    color: var(--save);
   }
 `;
 

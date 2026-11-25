@@ -48,7 +48,7 @@ const Chip = styled.span`
   padding: 5px 11px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.85);
-  color: var(--ink);
+  color: #0d0d0d;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -80,7 +80,7 @@ const Pill = styled.span`
   padding: 12px 20px;
   border-radius: 999px;
   background: white;
-  color: var(--ink);
+  color: #0d0d0d;
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -96,7 +96,7 @@ const Arrow = styled.button`
   border-radius: 50%;
   border: none;
   background: white;
-  color: var(--ink);
+  color: #0d0d0d;
   display: flex;
   align-items: center;
   justify-content: center;
