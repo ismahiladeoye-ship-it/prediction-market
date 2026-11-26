@@ -6,7 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#000000" />
   <meta name="description" content="Get It Sourced — sourced fashion, footwear and accessories, delivered to your door." />
+  <!-- The shop's logo icon: browser tabs, bookmarks and Google search results.
+       Google wants a square icon in multiples of 48px, so the 48 and 192 sizes are listed. -->
+  <link rel="icon" href="%PUBLIC_URL%/favicon.ico" sizes="48x48" />
   <link rel="icon" href="%PUBLIC_URL%/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="%PUBLIC_URL%/favicon-48.png" sizes="48x48" type="image/png" />
+  <link rel="icon" href="%PUBLIC_URL%/icon-192.png" sizes="192x192" type="image/png" />
   <link rel="icon" href="%PUBLIC_URL%/favicon-32.png" sizes="32x32" type="image/png" />
   <link rel="apple-touch-icon" href="%PUBLIC_URL%/apple-touch-icon.png" />
   <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
@@ -20,6 +25,17 @@
     href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
   <title>GET IT SOURCED | Online Store</title>
+  <meta property="og:site_name" content="Get It Sourced" />
+  <!-- Tells Google the shop's name and logo, so search results say "Get It Sourced". -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        { "@type": "WebSite", "name": "Get It Sourced", "alternateName": "GetItSourced", "url": "https://getitsourced.com/" },
+        { "@type": "Organization", "name": "Get It Sourced", "url": "https://getitsourced.com/", "logo": "https://getitsourced.com/icon-512.png" }
+      ]
+    }
+  </script>
   <style>
     * {
       margin: 0;
