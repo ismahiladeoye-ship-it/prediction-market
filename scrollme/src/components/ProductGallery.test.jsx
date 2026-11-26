@@ -66,7 +66,7 @@ describe('ProductGallery', () => {
     expect(listProductsAPI).toHaveBeenLastCalledWith(expect.objectContaining({ category: 'lounge-pants' }));
   });
 
-  it('narrows a department page by subcategory, with product counts', async () => {
+  it('narrows a department page by subcategory, without showing product counts', async () => {
     listProductsAPI.mockResolvedValue({ products: [product('1')], totalPages: 1, totalProducts: 1 });
     renderWithProviders(<ProductGallery department='men' category='clothing' title="Men's Clothing" />, {
       route: '/men/clothing?subcategory=shirts',
@@ -78,8 +78,8 @@ describe('ProductGallery', () => {
     expect(screen.queryByLabelText('Department')).not.toBeInTheDocument();
     const select = screen.getByLabelText('Subcategory');
     expect(select).toHaveValue('shirts');
-    await waitFor(() => expect(screen.getByRole('option', { name: 'Shirts (2)' })).toBeInTheDocument());
-    // Unisex products count under Men too.
-    expect(screen.getByRole('option', { name: 'T-shirts (1)' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Shirts' })).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: /\(\d+\)/ })).not.toBeInTheDocument();
+    expect(screen.queryByText(/\d+ products/)).not.toBeInTheDocument();
   });
 });

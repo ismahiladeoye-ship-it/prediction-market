@@ -40,21 +40,6 @@ const Card = styled(Link)`
   }
 `;
 
-const Chip = styled.span`
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  z-index: 1;
-  padding: 5px 11px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.85);
-  color: #0d0d0d;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-`;
-
 const Footer = styled.span`
   position: absolute;
   left: 18px;
@@ -116,9 +101,6 @@ const offsetOf = (i, active, n) => {
 
 // "Coverflow" carousel: the active card in front, neighbours smaller behind.
 // Short lists are repeated (inert copies) so both sides stay filled.
-// e.g. 1 item, 1,240 items
-const itemCount = (n) => `${n.toLocaleString()} ${n === 1 ? 'item' : 'items'}`;
-
 const Coverflow = ({ items, label }) => {
   const [{ active, previous }, setState] = useState({ active: 0, previous: 0 });
   const pointer = useRef({ x: 0, down: false, swiped: false });
@@ -170,7 +152,7 @@ const Coverflow = ({ items, label }) => {
             key={`${item.id}-${i}`}
             to={item.link}
             draggable={false}
-            aria-label={item.count ? `${item.title}, ${itemCount(item.count)}` : item.title}
+            aria-label={item.title}
             aria-hidden={copy || undefined}
             tabIndex={copy || far ? -1 : undefined}
             onFocus={() => !pointer.current.down && d !== 0 && goTo(i)}
@@ -184,7 +166,6 @@ const Coverflow = ({ items, label }) => {
             }}
           >
             <img src={item.img} alt='' loading='lazy' style={item.position ? { objectPosition: item.position } : undefined} />
-            {item.count > 0 && <Chip>{itemCount(item.count)}</Chip>}
             <Footer>
               <Title>{item.title}</Title>
               <Pill aria-hidden='true'>SHOP</Pill>

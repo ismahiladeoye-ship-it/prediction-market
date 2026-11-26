@@ -2,9 +2,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import ProductTile from './ProductTile';
-import { listCategoriesAPI, listProductsAPI } from '../services/products/productService';
+import { listProductsAPI } from '../services/products/productService';
 import { getErrorMessage } from '../api/client';
-import { categoriesOf, categoryTitle, countIn, departments, subcategoriesOf } from '../utils/taxonomy';
+import { categoriesOf, categoryTitle, departments, subcategoriesOf } from '../utils/taxonomy';
 import { Box, Button, Checkbox, Flex, HStack, Select, Spinner, Text } from '@chakra-ui/react';
 
 const Title = styled.h1`
@@ -137,7 +137,6 @@ const ProductGallery = ({
 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [data, setData] = useState({ products: [], totalPages: 0, totalProducts: 0 });
-  const [counts, setCounts] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -194,24 +193,14 @@ const ProductGallery = ({
     fetchProducts();
   }, [fetchProducts]);
 
-  // Product counts for the filter choices.
-  useEffect(() => {
-    listCategoriesAPI()
-      .then(setCounts)
-      .catch(() => setCounts(null));
-  }, []);
-
   const goToPage = (p) => {
     updateParams({ page: p > 1 ? p : '' }, false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Counts cover the whole department, so a brand section leaves them out.
-  const withCount = (label, where) => (counts && !brandList ? `${label} (${countIn(counts, { department, ...where })})` : label);
-  const categoryOptions = categoriesOf(department).map((c) => [c.slug, withCount(c.title, { category: c.slug })]);
-  const subcategoryOptions = category
-    ? subcategoriesOf(department, category).map((sc) => [sc.slug, withCount(sc.title, { category, subcategory: sc.slug })])
-    : [];
+  // Filter choices show names only: shoppers are not shown how many products we have.
+  const categoryOptions = categoriesOf(department).map((c) => [c.slug, c.title]);
+  const subcategoryOptions = category ? subcategoriesOf(department, category).map((sc) => [sc.slug, sc.title]) : [];
 
   const heading = title || (q ? `Results for “${q}”` : category ? categoryTitle(department, category) : 'Products Gallery');
   const hasFilters = Boolean(
@@ -337,16 +326,11 @@ const ProductGallery = ({
             </Text>
           </Box>
         ) : (
-          <>
-            <Text mb={4} color='var(--muted)' fontSize='sm'>
-              {data.totalProducts.toLocaleString()} products
-            </Text>
-            <Grid>
-              {data.products.map((product) => (
-                <ProductTile product={product} key={product._id} />
-              ))}
-            </Grid>
-          </>
+          <Grid>
+            {data.products.map((product) => (
+              <ProductTile product={product} key={product._id} />
+            ))}
+          </Grid>
         )}
 
         {data.totalPages > 1 && !loading && !error && (

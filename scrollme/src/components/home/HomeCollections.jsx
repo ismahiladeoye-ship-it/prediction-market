@@ -12,7 +12,7 @@ const shortcutLink = (department, category, { subcategory, search }) =>
 // Home page sections (storeConfig.homeSections), e.g. Men's Clothing: "Shop by
 // category" with one card per section, then a product row for each one with
 // shortcut buttons. Empty sections and subcategories are hidden once the live
-// counts arrive.
+// counts arrive. Shoppers never see the counts themselves.
 const HomeCollections = () => {
   const [counts, setCounts] = useState(null);
 
