@@ -4,7 +4,8 @@ import Navbar from '../components/Navbar';
 import Hero from '../components/home/Hero';
 import HomeHighlights from '../components/home/HomeHighlights';
 import HomeCollections from '../components/home/HomeCollections';
-import FeatureSplit from '../components/home/FeatureSplit';
+import BrandStrip from '../components/home/BrandStrip';
+import SourceQuote from '../components/home/SourceQuote';
 import FAQ from '../components/FAQ';
 import BackToTopButton from '../components/BackToTopButton';
 
@@ -17,7 +18,8 @@ const Home = () => {
         <Hero />
         <HomeHighlights />
         <HomeCollections />
-        <FeatureSplit />
+        <BrandStrip />
+        <SourceQuote />
         <FAQ />
       </main>
       <BackToTopButton />
