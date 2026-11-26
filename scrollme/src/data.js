@@ -13,8 +13,10 @@ export const storeConfig = {
   ],
   // Show the hero photos in black and white. Off: the owner chose colour (Nov 2026).
   heroMono: false,
-  // Home page hero. The footwear slide is the owner's own photo of their stock
-  // (public/hero). The others are Pexels licence (free for commercial use), product only.
+  // Home page hero. The footwear and caps slides are the owner's photos, used with
+  // permission (public/hero; the receipt in the caps photo is blurred). The others are
+  // Pexels licence (free for commercial use), product only. No caps are listed yet, so
+  // the caps slide opens the "Source an item" form.
   heroSlides: [
     {
       id: 'footwear',
@@ -24,6 +26,15 @@ export const storeConfig = {
       link: '/products?category=shoes-boots',
       img: '/hero/footwear-owner.webp',
       position: 'center',
+    },
+    {
+      id: 'caps',
+      title: 'Caps, sourced',
+      subtitle: 'Tell us the one you want',
+      cta: 'Request it',
+      link: '/contact-us?type=sourcing',
+      img: '/hero/caps-owner.webp',
+      position: 'center 45%',
     },
     {
       id: 'outerwear',
