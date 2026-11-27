@@ -1,7 +1,8 @@
 import styled, { keyframes } from 'styled-components';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaApplePay, FaCcAmex, FaCcMastercard, FaCcPaypal, FaCcVisa, FaGooglePay, FaInstagram, FaTiktok, FaWhatsapp } from 'react-icons/fa';
+import { FaApplePay, FaCcAmex, FaCcMastercard, FaCcVisa, FaInstagram, FaTiktok, FaWhatsapp } from 'react-icons/fa';
+import { SiKlarna } from 'react-icons/si';
 import { storeConfig } from '../data';
 import { departmentLink, departments } from '../utils/taxonomy';
 import { subscribeAPI } from '../services/newsletter/newsletterService';
@@ -343,13 +344,13 @@ const Footer = () => {
             )}
           </ul>
         </Links>
-        <Payments aria-label='Accepted payment methods: Visa, Mastercard, American Express, PayPal, Apple Pay, Google Pay'>
+        {/* Only the methods switched on for checkout (PAYMENT_METHODS: card, Apple Pay, Klarna). */}
+        <Payments aria-label='Accepted payment methods: Visa, Mastercard, American Express, Apple Pay, Klarna'>
           <FaCcVisa size={28} />
           <FaCcMastercard size={28} />
           <FaCcAmex size={28} />
-          <FaCcPaypal size={28} />
           <FaApplePay size={32} />
-          <FaGooglePay size={32} />
+          <SiKlarna size={22} />
         </Payments>
       </Bottom>
     </FooterEl>

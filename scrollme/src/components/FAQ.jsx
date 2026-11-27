@@ -5,10 +5,14 @@ import SectionHeading from './home/SectionHeading';
 import { useShopDetails } from '../context/ShopDetails';
 import { formatPrice } from '../utils/format';
 
-// e.g. "delivery is free on orders over £100", from the API's delivery settings.
+// e.g. "delivery is free on orders of £50.00 or more, and £2.99 below that",
+// from the API's delivery settings.
 const deliveryCost = (d) => {
-  if (!d || d.standard <= 0) return d ? 'delivery is free' : 'delivery is free on orders over £100';
-  return d.freeOver ? `delivery is free on orders over ${formatPrice(d.freeOver)}` : `standard delivery costs ${formatPrice(d.standard)}`;
+  if (!d) return 'delivery is free on orders of £50 or more, and £2.99 below that';
+  if (d.standard <= 0) return 'delivery is free';
+  return d.freeOver
+    ? `delivery is free on orders of ${formatPrice(d.freeOver)} or more, and ${formatPrice(d.standard)} below that`
+    : `standard delivery costs ${formatPrice(d.standard)}`;
 };
 
 // Delivery time and return postage come from Admin → Shop details.
@@ -19,7 +23,7 @@ const faqData = (shop) => [
   },
   {
     question: 'Where do you deliver, and how much does it cost?',
-    answer: `We deliver across the UK, and ${deliveryCost(shop.delivery)}. Otherwise the delivery charge is shown in your bag before you pay. We do not ship outside the UK at the moment. Standard delivery takes ${shop.deliveryEstimate}. Full details are on our Delivery page.`,
+    answer: `We deliver across the UK, and ${deliveryCost(shop.delivery)}. Your bag always shows the delivery charge before you pay. We do not ship outside the UK at the moment. Standard delivery takes ${shop.deliveryEstimate}. Full details are on our Delivery page.`,
   },
   {
     question: 'How do I track my order?',
@@ -29,7 +33,7 @@ const faqData = (shop) => [
   {
     question: 'What payment methods are accepted?',
     answer:
-      'We accept credit and debit cards (Visa, Mastercard, American Express and more), Apple Pay, Google Pay, PayPal and Klarna. Payments are processed securely by our payment provider; we never store your card details.',
+      'We accept credit and debit cards (Visa, Mastercard, American Express and more), Apple Pay and Klarna. Payments are processed securely by our payment provider; we never store your card details.',
   },
   {
     question: "What if I'm not happy with my order?",

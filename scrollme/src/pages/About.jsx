@@ -58,7 +58,8 @@ const About = () => (
       </p>
       <p>
         Clothing, trainers, tech and fragrance: if there is something you are after, <Link to='/contact-us'>tell us</Link> and we will track
-        it down. We deliver across the UK, free on orders over £100, and you have 30 days to return anything that is not right.
+        it down. We deliver across the UK, free on orders of £50 or more (£2.99 under £50), and you have 30 days to return anything that is
+        not right.
       </p>
       <p>
         Questions about an item or an order? <Link to='/contact-us'>Get in touch</Link>. We are happy to help.

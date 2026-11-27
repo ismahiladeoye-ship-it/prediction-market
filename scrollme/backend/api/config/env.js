@@ -34,9 +34,10 @@ const schema = z.object({
   TAX_RATE: z.coerce.number().min(0).max(1).default(0),
   // Delivery prices in CURRENCY. Standard delivery is free from
   // FREE_SHIPPING_THRESHOLD (0 = never); express is offered only when SHIPPING_EXPRESS is set.
-  SHIPPING_STANDARD: z.coerce.number().min(0).default(3.99),
+  // Owner's terms (Nov 2026): £2.99 on orders under £50, free from £50.
+  SHIPPING_STANDARD: z.coerce.number().min(0).default(2.99),
   SHIPPING_EXPRESS: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().min(0).optional()),
-  FREE_SHIPPING_THRESHOLD: z.coerce.number().min(0).default(100),
+  FREE_SHIPPING_THRESHOLD: z.coerce.number().min(0).default(50),
   // Countries the store delivers to (2-letter codes, comma-separated).
   SHIP_TO_COUNTRIES: z
     .string()

@@ -3,12 +3,12 @@ const pexels = (id, w = 1600) => `https://images.pexels.com/photos/${id}/pexels-
 // Everything a shop owner is likely to edit, in one place.
 export const storeConfig = {
   name: 'Get It Sourced',
-  // Rotating messages in the bar above the header. Only state what is true:
+  // Rotating messages in the home page banner, below Specials. Only state what is true:
   // keep the delivery wording in line with FREE_SHIPPING_THRESHOLD and SHIP_TO_COUNTRIES in the API.
-  announcements: ['FREE UK DELIVERY ON ORDERS OVER £100', '30-DAY RETURNS', 'PAY WITH CARD, APPLE PAY, PAYPAL OR KLARNA'],
+  announcements: ['£2.99 UK DELIVERY · FREE FROM £50', '30-DAY RETURNS', 'PAY WITH CARD, APPLE PAY OR KLARNA'],
   // Shown under "Add to cart" on product pages (icon: delivery, returns or check).
   perks: [
-    { icon: 'delivery', text: 'Free UK delivery over £100' },
+    { icon: 'delivery', text: 'Free UK delivery from £50 (£2.99 under £50)' },
     { icon: 'returns', text: '30-day returns' },
   ],
   // Show the hero photos in black and white. Off: the owner chose colour (Nov 2026).
