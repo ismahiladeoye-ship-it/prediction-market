@@ -66,27 +66,27 @@ describe('cart', () => {
     expect(res.body.deliveryOptions.map((o) => o.method)).toEqual(['standard', 'express']);
   });
 
-  it('uses the store defaults: £3.99 standard delivery, free from £100, no express', async () => {
+  it('uses the store defaults: £2.99 standard delivery, free from £50, no express', async () => {
     const keys = ['SHIPPING_STANDARD', 'SHIPPING_EXPRESS', 'FREE_SHIPPING_THRESHOLD', 'TAX_RATE'];
     const saved = Object.fromEntries(keys.map((k) => [k, process.env[k]]));
     keys.forEach((k) => delete process.env[k]);
     resetConfig();
     try {
-      const product = await createProduct({ price: 49.99, sizes: [] });
+      const product = await createProduct({ price: 24.99, sizes: [] });
       const { agent } = await signedInAgent(ctx.app);
       await agent.post('/api/cart/add').send({ productId: product.id });
       const res = await agent.get('/api/cart?delivery=express');
       expect(res.body.deliveryMethod).toBe('standard');
-      expect(res.body.summary).toEqual({ subtotal: 49.99, tax: 0, shipping: 3.99, total: 53.98, currency: 'gbp' });
-      expect(res.body.deliveryOptions).toEqual([{ method: 'standard', label: 'Standard delivery (3-5 working days)', price: 3.99 }]);
-      expect(res.body.freeShippingThreshold).toBe(100);
+      expect(res.body.summary).toEqual({ subtotal: 24.99, tax: 0, shipping: 2.99, total: 27.98, currency: 'gbp' });
+      expect(res.body.deliveryOptions).toEqual([{ method: 'standard', label: 'Standard delivery (3-5 working days)', price: 2.99 }]);
+      expect(res.body.freeShippingThreshold).toBe(50);
       expect(res.body.shipToCountries).toEqual(['GB']);
 
-      // £99.98 still pays for delivery; £149.97 (and anything from £100) does not.
+      // £49.98 still pays for delivery; £74.97 (and anything from £50) does not.
       const two = await agent.put('/api/cart/update').send({ productId: product.id, quantity: 2 });
-      expect(two.body.summary.shipping).toBe(3.99);
+      expect(two.body.summary.shipping).toBe(2.99);
       const three = await agent.put('/api/cart/update').send({ productId: product.id, quantity: 3 });
-      expect(three.body.summary).toEqual({ subtotal: 149.97, tax: 0, shipping: 0, total: 149.97, currency: 'gbp' });
+      expect(three.body.summary).toEqual({ subtotal: 74.97, tax: 0, shipping: 0, total: 74.97, currency: 'gbp' });
       expect(three.body.deliveryOptions[0].price).toBe(0);
     } finally {
       keys.forEach((k) => (saved[k] === undefined ? delete process.env[k] : (process.env[k] = saved[k])));

@@ -26,11 +26,11 @@ describe('configuration', () => {
     expect(() => loadConfig({ ...prod, PAYMENT_PROVIDER: 'mock' })).toThrow(/mock/);
   });
 
-  it('defaults to a UK store: pounds, free delivery from £100, no express, UK addresses', () => {
+  it('defaults to a UK store: pounds, £2.99 delivery, free from £50, no express, UK addresses', () => {
     const c = loadConfig(base);
     expect(c.CURRENCY).toBe('gbp');
-    expect(c.SHIPPING_STANDARD).toBe(3.99);
-    expect(c.FREE_SHIPPING_THRESHOLD).toBe(100);
+    expect(c.SHIPPING_STANDARD).toBe(2.99);
+    expect(c.FREE_SHIPPING_THRESHOLD).toBe(50);
     expect(c.SHIPPING_EXPRESS).toBeUndefined();
     expect(c.shipToCountries).toEqual(['GB']);
     expect(loadConfig({ ...base, SHIPPING_EXPRESS: '' }).SHIPPING_EXPRESS).toBeUndefined();
