@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Box, Button, HStack, Spinner, Text } from '@chakra-ui/react';
 import Navbar from '../components/Navbar';
-import Announcement from '../components/Announcement';
 import Footer from '../components/Footer';
 import OrderStatusBadge from '../components/OrderStatusBadge';
 import { listOrdersAPI } from '../services/orders/orderService';
@@ -27,7 +26,6 @@ const Account = () => {
 
   return (
     <div>
-      <Announcement />
       <Navbar />
       <Wrapper>
         <Title>MY ACCOUNT</Title>

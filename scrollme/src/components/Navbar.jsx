@@ -10,7 +10,6 @@ import {
   HiOutlineBars3,
   HiOutlineHeart,
   HiOutlineMagnifyingGlass,
-  HiOutlineShoppingBag,
   HiOutlineUser,
   HiXMark,
 } from 'react-icons/hi2';
@@ -29,7 +28,7 @@ const Header = styled.header`
   z-index: 50;
 `;
 
-// Phone: menu + search | logo | cart. Desktop: logo, nav beside it, icons on the right.
+// Phone: round menu button | logo | search + bag. Desktop: logo, nav beside it, icons on the right.
 const Row = styled.div`
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -101,6 +100,22 @@ const DesktopOnly = styled.span`
   ${DESKTOP} {
     display: inline-flex;
   }
+`;
+
+const PhoneOnly = styled.span`
+  display: inline-flex;
+  ${DESKTOP} {
+    display: none;
+  }
+`;
+
+// The phone menu button: a round, raised button.
+const MenuButton = styled(IconButton)`
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--field);
 `;
 
 const Nav = styled.nav`
@@ -308,8 +323,13 @@ const CategoryList = styled(DrawerList)`
   }
 `;
 
-const CartCount = styled.span`
-  font-size: 15px;
+// "BAG (2)" in place of a bag icon.
+const BagLabel = styled.span`
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
 `;
 
 const Navbar = () => {
@@ -395,8 +415,7 @@ const Navbar = () => {
 
   const cartLink = (
     <IconLink to='/cart' aria-label={`Cart, ${totalQuantity || 0} ${totalQuantity === 1 ? 'item' : 'items'}`}>
-      <HiOutlineShoppingBag size={24} aria-hidden='true' />
-      <CartCount aria-hidden='true'>({totalQuantity || 0})</CartCount>
+      <BagLabel aria-hidden='true'>Bag ({totalQuantity || 0})</BagLabel>
     </IconLink>
   );
 
@@ -424,13 +443,12 @@ const Navbar = () => {
     <Header>
       <Row>
         <PhoneSide>
-          <IconButton type='button' aria-label='Open menu' aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}>
-            <HiOutlineBars3 size={28} />
-          </IconButton>
-          {searchButton}
+          <MenuButton type='button' aria-label='Open menu' aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}>
+            <HiOutlineBars3 size={24} />
+          </MenuButton>
         </PhoneSide>
         <LogoSlot>
-          <Logo stacked size='clamp(15px, 4.5vw, 22px)' />
+          <Logo stacked size='clamp(32px, 9vw, 44px)' />
         </LogoSlot>
         <Nav aria-label='Main'>
           <span ref={megaButtons} style={{ display: 'contents' }}>
@@ -456,6 +474,7 @@ const Navbar = () => {
           )}
         </Nav>
         <Side $end>
+          <PhoneOnly>{searchButton}</PhoneOnly>
           <DesktopOnly>
             {searchButton}
             {isAuthenticated ? (
@@ -513,7 +532,7 @@ const Navbar = () => {
               </IconButton>
             </Side>
             <LogoSlot>
-              <Logo stacked size='clamp(15px, 4.5vw, 22px)' />
+              <Logo stacked size='clamp(32px, 9vw, 44px)' />
             </LogoSlot>
             <Side $end>{cartLink}</Side>
           </DrawerRow>

@@ -1,7 +1,6 @@
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import Announcement from '../components/Announcement';
 import Footer from '../components/Footer';
 import { storeConfig } from '../data';
 
@@ -50,7 +49,6 @@ const Motto = styled.figure`
 // The shop's story, in the owner's words (Nov 2026).
 const About = () => (
   <div>
-    <Announcement />
     <Navbar />
     <Main>
       <h1>About us</h1>

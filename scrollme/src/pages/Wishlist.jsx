@@ -2,7 +2,6 @@ import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchWishlist, removeWishlistItem } from '../store/slices/wishlistSlice';
 import Navbar from '../components/Navbar';
-import Announcement from '../components/Announcement';
 import Footer from '../components/Footer';
 import { useToast } from '@chakra-ui/react';
 import { addToCart } from '../store/slices/cartSlice';
@@ -126,7 +125,6 @@ const Wishlist = () => {
 
   return (
     <>
-      <Announcement />
       <Navbar />
       <PageTitle>Wishlist</PageTitle>
       <Container>

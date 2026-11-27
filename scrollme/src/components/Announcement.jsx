@@ -12,6 +12,7 @@ const Bar = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 0 12px;
+  border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 `;
 
@@ -37,7 +38,7 @@ const Arrow = styled.button`
   color: var(--ink);
 `;
 
-// Rotating announcement bar; pauses while hovered or focused.
+// Rotating announcement bar on the home page, below Specials; pauses while hovered or focused.
 const Announcement = () => {
   const messages = storeConfig.announcements;
   const [index, setIndex] = useState(0);

@@ -12,11 +12,12 @@ import BackToTopButton from '../components/BackToTopButton';
 const Home = () => {
   return (
     <div>
-      <Announcement />
       <Navbar />
       <main>
         <Hero />
         <HomeHighlights />
+        {/* Delivery and returns banner, below Specials (was above the logo). */}
+        <Announcement />
         <HomeCollections />
         <BrandStrip />
         <SourceQuote />

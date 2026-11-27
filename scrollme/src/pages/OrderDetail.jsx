@@ -4,7 +4,6 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { Alert, AlertIcon, Box, Spinner, useToast } from '@chakra-ui/react';
 import Navbar from '../components/Navbar';
-import Announcement from '../components/Announcement';
 import Footer from '../components/Footer';
 import OrderSummary from '../components/OrderSummary';
 import OrderItems from '../components/OrderItems';
@@ -105,7 +104,6 @@ const OrderDetail = () => {
 
   return (
     <div>
-      <Announcement />
       <Navbar />
       <Wrapper>
         {!order && !error && (
