@@ -13,8 +13,8 @@ export const storeConfig = {
   ],
   // Show the hero photos in black and white. Off: the owner chose colour (Nov 2026).
   heroMono: false,
-  // Home page hero. The footwear and caps slides are the owner's photos, used with
-  // permission (public/hero; the receipt in the caps photo is blurred). The others are
+  // Home page hero. The footwear, caps and cold-weather slides are the owner's photos,
+  // used with permission (public/hero; the receipt in the caps photo is blurred). The others are
   // Pexels licence (free for commercial use), product only. No caps are listed yet, so
   // the caps slide opens the "Source an item" form.
   heroSlides: [
@@ -42,8 +42,8 @@ export const storeConfig = {
       subtitle: 'Puffers, jackets and layers',
       cta: 'Shop',
       link: '/products?category=coats-jackets',
-      img: pexels(6045058),
-      position: 'center 45%',
+      img: '/hero/outerwear-owner.webp',
+      position: 'center 10%',
     },
     {
       id: 'hoodies',
