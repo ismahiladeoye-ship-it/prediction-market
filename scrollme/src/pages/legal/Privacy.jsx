@@ -61,7 +61,7 @@ const Privacy = () => {
         <li>To send the newsletter: your consent, which you can withdraw at any time.</li>
       </ul>
 
-      <h2>Cookies and storage on your device</h2>
+      <h2 id='cookies'>Cookies and storage on your device</h2>
       <p>
         We only use cookies that are needed for the website to work, so we don&apos;t ask for consent for them. We don&apos;t use
         advertising or analytics cookies.

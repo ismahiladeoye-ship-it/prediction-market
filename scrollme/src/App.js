@@ -14,6 +14,7 @@ import ComingSoon from './pages/ComingSoon';
 import ForgotPassword from './pages/ForgotPassword';
 import VerifyEmail from './pages/VerifyEmail';
 import useAuthCheck from './hooks/useAuthCheck';
+import CookieNotice from './components/CookieNotice';
 import { departments } from './utils/taxonomy';
 const LazyAllProducts = lazy(() => import('./pages/AllProducts'));
 const LazyCategoryProducts = lazy(() => import('./pages/CategoryProducts'));
@@ -107,6 +108,7 @@ function App() {
           <Route path='*' element={<NotFound />} />
         </Routes>
       </Suspense>
+      <CookieNotice />
     </div>
   );
 }
