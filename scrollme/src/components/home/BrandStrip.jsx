@@ -58,25 +58,29 @@ const Half = styled.ul`
   }
 `;
 
+// Each logo gets about the same area, so wide and square logos look balanced.
+// --h is the phone height in px; computers show them a quarter larger.
 const Item = styled.li`
   flex: none;
   display: flex;
   align-items: center;
-  height: 44px;
-  padding: 0 32px;
+  height: calc(var(--h) * 1px);
+  margin: 0 28px;
   color: var(--ink);
   svg,
   img {
+    display: block;
     height: 100%;
     width: auto;
-    max-width: 160px;
-    object-fit: contain;
   }
   @media (min-width: 900px) {
-    height: 52px;
-    padding: 0 44px;
+    height: calc(var(--h) * 1.25px);
+    margin: 0 40px;
   }
 `;
+
+const AREA = 4000;
+const heightFor = (ratio = 2) => Math.round(Math.min(56, Math.sqrt(AREA / ratio)));
 
 const Note = styled.p`
   text-align: center;
@@ -87,7 +91,7 @@ const Note = styled.p`
 
 const Logo = ({ logo }) =>
   logo.src ? (
-    <img src={logo.src} alt={logo.name} loading='lazy' />
+    <img src={logo.src} alt={logo.name} width={Math.round(logo.ratio * 100)} height={100} />
   ) : (
     <svg viewBox={logo.viewBox} role='img' aria-label={logo.name} fill='currentColor'>
       <path d={logo.path} />
@@ -106,6 +110,7 @@ const BrandStrip = () => {
       {row.map((logo, i) => (
         <Item
           key={`${logo.name}-${i}`}
+          style={{ '--h': heightFor(logo.ratio) }}
           data-repeat={i >= brandLogos.length || undefined}
           aria-hidden={(!copy && i >= brandLogos.length) || undefined}
         >
