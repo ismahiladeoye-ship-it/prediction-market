@@ -1,6 +1,5 @@
 import { useParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import Announcement from '../components/Announcement';
 import ProductGallery from '../components/ProductGallery';
 import Footer from '../components/Footer';
 import {
@@ -39,7 +38,6 @@ const DepartmentProducts = ({ department }) => {
 
   return (
     <div>
-      <Announcement />
       <Navbar />
       <main>
         <ProductGallery

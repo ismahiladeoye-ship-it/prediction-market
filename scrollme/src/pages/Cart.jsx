@@ -1,6 +1,5 @@
 import styled from 'styled-components';
 import Navbar from '../components/Navbar';
-import Announcement from '../components/Announcement';
 import Footer from '../components/Footer';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -348,7 +347,6 @@ const Cart = () => {
 
   return (
     <Container>
-      <Announcement />
       <Navbar />
       <Wrapper>
         <Title>YOUR BAG</Title>

@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { Spinner, useToast } from '@chakra-ui/react';
 import Navbar from '../components/Navbar';
-import Announcement from '../components/Announcement';
 import Footer from '../components/Footer';
 import OrderSummary from '../components/OrderSummary';
 import { viewCart } from '../store/slices/cartSlice';
@@ -132,7 +131,6 @@ const Checkout = () => {
   if (loaded && cart.items.length === 0) {
     return (
       <Container>
-        <Announcement />
         <Navbar />
         <Wrapper>
           <Title>CHECKOUT</Title>
@@ -163,7 +161,6 @@ const Checkout = () => {
 
   return (
     <Container>
-      <Announcement />
       <Navbar />
       <Wrapper>
         <Title>CHECKOUT</Title>

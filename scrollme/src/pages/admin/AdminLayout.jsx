@@ -3,7 +3,6 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { Alert, AlertIcon, Box, Button, Heading, HStack, Spinner, Text } from '@chakra-ui/react';
 import Navbar from '../../components/Navbar';
-import Announcement from '../../components/Announcement';
 import TwoFactorSetup from './TwoFactorSetup';
 import { getMfaStatusAPI } from '../../services/auth/authService';
 import { signOut } from '../../store/session';
@@ -93,7 +92,6 @@ const AdminLayout = () => {
 
   return (
     <div>
-      <Announcement />
       <Navbar />
       <div className='admin-scope'>
         <Box px={{ base: 4, md: 8 }} py={6} maxW='1400px' mx='auto'>

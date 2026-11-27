@@ -1,6 +1,5 @@
 import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import Announcement from '../components/Announcement';
 import ProductGallery from '../components/ProductGallery';
 import Footer from '../components/Footer';
 import { departmentLink, findDepartment } from '../utils/taxonomy';
@@ -17,7 +16,6 @@ const BrandSection = ({ department, slug }) => {
 
   return (
     <div>
-      <Announcement />
       <Navbar />
       <main>
         <ProductGallery

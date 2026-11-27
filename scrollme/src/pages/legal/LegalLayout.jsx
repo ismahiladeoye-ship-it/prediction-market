@@ -2,7 +2,6 @@ import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import Navbar from '../../components/Navbar';
-import Announcement from '../../components/Announcement';
 import Footer from '../../components/Footer';
 import { useShopDetails } from '../../context/ShopDetails';
 import { selectIsAdmin } from '../../store/slices/userSlice';
@@ -142,7 +141,6 @@ const LegalPage = ({ title, children }) => {
   const missing = [!shop.address && 'business address', !shop.email && 'contact email'].filter(Boolean);
   return (
     <div>
-      <Announcement />
       <Navbar />
       <Main>
         <h1>{title}</h1>

@@ -1,6 +1,5 @@
 import styled from 'styled-components';
 import Navbar from '../components/Navbar';
-import Announcement from '../components/Announcement';
 import { mobile, tablet } from '../responsive';
 import { Link as RouterLink, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useEffect } from 'react';
@@ -176,7 +175,6 @@ const Product = () => {
   if (loading || error) {
     return (
       <Container>
-        <Announcement />
         <Navbar />
         <Box
           display='flex'
@@ -212,7 +210,6 @@ const Product = () => {
   }
   return (
     <Container>
-      <Announcement />
       <Navbar />
       <Wrapper>
         <ImgContainer>
